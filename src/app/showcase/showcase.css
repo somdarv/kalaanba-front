@@ -1,0 +1,183 @@
+/* =====================================================================
+   Kalaanba — Isolated UI Kit
+   Scope: every selector lives under .kx-root so it cannot leak.
+   Palette is taken verbatim from the reference screenshots.
+   ===================================================================== */
+
+.kx-root {
+  /* Fixed brand colors */
+  --kx-pink: #f55694;
+  --kx-blue: #56b7f5;
+
+  /* Semantic state colors (added per design need) */
+  --kx-success: #16a34a;
+  --kx-warning: #ea580c;
+  --kx-danger:  #f55656;
+
+  /* Dark mode tokens (default) */
+  --kx-bg: #0b101d;
+  --kx-card: #161b26;
+  --kx-card-2: #1a202d;
+  --kx-fg: #f3f4f8;
+  --kx-fg-muted: #c0c0c0;
+  --kx-on-pink: #ffffff;
+  --kx-on-blue: #0b101d;
+  --kx-border: rgba(255, 255, 255, 0.05);
+  --kx-border-strong: rgba(255, 255, 255, 0.1);
+  --kx-ring: rgba(245, 86, 148, 0.18);
+  --kx-shadow-sm: 0 2px 8px -2px rgba(0, 0, 0, 0.4);
+  --kx-shadow-md: 0 14px 36px -14px rgba(0, 0, 0, 0.55);
+  --kx-shadow-lg: 0 30px 60px -30px rgba(0, 0, 0, 0.7);
+  --kx-shadow-pink: 0 18px 40px -18px rgba(245, 86, 148, 0.45);
+
+  /* Shape */
+  --kx-r-pill: 999px;
+  --kx-r-btn: 1.1rem;
+  --kx-r-card: 1.6rem;
+  --kx-r-card-lg: 2rem;
+  --kx-r-tile: 1.25rem;
+
+  /* Motion */
+  --kx-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --kx-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Type */
+  --kx-font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --kx-font-display: var(--font-sora), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  background: var(--kx-bg);
+  color: var(--kx-fg);
+  font-family: var(--kx-font-sans);
+  color-scheme: dark;
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Light mode overrides */
+.kx-root.kx-light {
+  --kx-bg: #f8f9fb;
+  --kx-card: #ffffff;
+  --kx-card-2: #f3f4f8;
+  --kx-fg: #303030;
+  --kx-fg-muted: #555555;
+  --kx-on-pink: #ffffff;
+  --kx-on-blue: #0b101d;
+  --kx-border: rgba(15, 18, 30, 0.06);
+  --kx-border-strong: rgba(15, 18, 30, 0.12);
+  --kx-ring: rgba(245, 86, 148, 0.14);
+  --kx-shadow-sm: 0 2px 8px -2px rgba(15, 18, 30, 0.06);
+  --kx-shadow-md: 0 12px 30px -14px rgba(15, 18, 30, 0.18);
+  --kx-shadow-lg: 0 30px 60px -30px rgba(15, 18, 30, 0.25);
+  --kx-shadow-pink: 0 18px 40px -18px rgba(245, 86, 148, 0.55);
+  color-scheme: light;
+}
+
+.kx-root ::selection {
+  background: var(--kx-pink);
+  color: var(--kx-on-pink);
+}
+
+/* ---------- Cursor: anything clickable ---------- */
+.kx-root button:not(:disabled),
+.kx-root a,
+.kx-root summary,
+.kx-root label:has(input:not([disabled])),
+.kx-root [role="button"]:not([aria-disabled="true"]),
+.kx-root [role="switch"]:not([aria-disabled="true"]),
+.kx-root [role="radio"]:not([aria-disabled="true"]),
+.kx-root [role="checkbox"]:not([aria-disabled="true"]),
+.kx-root [role="tab"]:not([aria-disabled="true"]),
+.kx-root [role="option"]:not([aria-disabled="true"]),
+.kx-root [role="menuitem"]:not([aria-disabled="true"]) {
+  cursor: pointer;
+}
+.kx-root button:disabled,
+.kx-root [aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+/* ---------- Animations ---------- */
+@keyframes kx-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.55; transform: scale(0.78); }
+}
+@keyframes kx-pulse-ring {
+  0%   { transform: scale(0.6); opacity: 0.7; }
+  100% { transform: scale(2.6); opacity: 0; }
+}
+@keyframes kx-shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes kx-pop-in {
+  0%   { opacity: 0; transform: translateY(6px) scale(0.985); }
+  100% { opacity: 1; transform: translateY(0)    scale(1); }
+}
+@keyframes kx-rise {
+  0%   { opacity: 0; transform: translateY(14px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes kx-toast-in {
+  0%   { opacity: 0; transform: translateY(14px) scale(0.96); }
+  100% { opacity: 1; transform: translateY(0)    scale(1); }
+}
+@keyframes kx-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes kx-progress {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+@keyframes kx-popover {
+  0%   { opacity: 0; transform: translateY(-4px) scale(0.98); }
+  100% { opacity: 1; transform: translateY(0)    scale(1); }
+}
+@keyframes kx-check {
+  0%   { stroke-dashoffset: 24; }
+  100% { stroke-dashoffset: 0; }
+}
+@keyframes kx-aurora-a {
+  0%   { transform: translate3d(0, 0, 0)        scale(1);    }
+  100% { transform: translate3d(8%, 6%, 0)      scale(1.15); }
+}
+@keyframes kx-aurora-b {
+  0%   { transform: translate3d(0, 0, 0)        scale(1);    }
+  100% { transform: translate3d(-10%, -4%, 0)   scale(1.1);  }
+}
+@keyframes kx-mesh-morph {
+  0% {
+    background-position:
+      0% 0%,
+      100% 0%,
+      80% 100%,
+      0% 100%;
+  }
+  100% {
+    background-position:
+      10% 8%,
+      90% 12%,
+      70% 92%,
+      6% 90%;
+  }
+}
+
+/* Subtle scrollbar inside scoped popovers */
+.kx-root .kx-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--kx-border-strong) transparent;
+}
+.kx-root .kx-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
+.kx-root .kx-scroll::-webkit-scrollbar-thumb {
+  background: var(--kx-border-strong); border-radius: 999px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kx-root *,
+  .kx-root *::before,
+  .kx-root *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+}

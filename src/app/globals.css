@@ -1,1 +1,93 @@
 @import "tailwindcss";
+
+@theme {
+  /* Foundation */
+  --color-primary: #f55694;
+  --color-accent-blue: #56b7f5;
+  --color-dark-base: #0b101d;
+  --color-dark-card: #161b26;
+  --color-dark-card-secondary: #1a202d;
+  --color-light-base: #f8f9fb;
+  --color-light-card: #ffffff;
+  --color-light-card-secondary: #f3f4f8;
+  --color-primary-text-dark: #303030;
+  --color-primary-text-light: #f3f4f8;
+  --color-secondary-text-dark: #555555;
+  --color-secondary-text-light: #c0c0c0;
+
+  /* Semantic tokens — swapped by html.light */
+  --color-bg: #0b101d;
+  --color-surface: #161b26;
+  --color-surface-2: #1a202d;
+  --color-border: #1a202d;
+  --color-fg: #f3f4f8;
+  --color-fg-muted: #c0c0c0;
+  --color-on-primary: #0b101d;
+
+  /* Shape */
+  --radius-button: 1.35rem;
+  --radius-card: 1.9rem;
+  --radius-control: 1.45rem;
+
+  /* Motion */
+  --ease-alive: cubic-bezier(0.22, 0.61, 0.36, 1);
+
+  /* Type */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-manrope), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  /* Animations */
+  --animate-live-pulse: kalaanba-pulse 2.4s ease-in-out infinite;
+}
+
+/* Dark by default */
+:root {
+  color-scheme: dark;
+  --color-bg: #0b101d;
+  --color-surface: #161b26;
+  --color-surface-2: #1a202d;
+  --color-border: #1a202d;
+  --color-fg: #f3f4f8;
+  --color-fg-muted: #c0c0c0;
+  --color-on-primary: #0b101d;
+}
+
+html.light {
+  color-scheme: light;
+  --color-bg: #f8f9fb;
+  --color-surface: #ffffff;
+  --color-surface-2: #f3f4f8;
+  --color-border: #f3f4f8;
+  --color-fg: #303030;
+  --color-fg-muted: #555555;
+  --color-on-primary: #303030;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-bg);
+  color: var(--color-fg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+@keyframes kalaanba-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.68; transform: scale(0.92); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
+  }
+}
