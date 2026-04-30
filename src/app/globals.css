@@ -112,6 +112,22 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/* ---------- Global thin theme-aware scrollbar ---------- */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklab, var(--kx-fg-muted) 22%, transparent) transparent;
+}
+html::-webkit-scrollbar { width: 6px; height: 6px; background: transparent; }
+html::-webkit-scrollbar-track { background: transparent; }
+html::-webkit-scrollbar-thumb {
+  background: color-mix(in oklab, var(--kx-fg-muted) 22%, transparent);
+  border-radius: 999px;
+}
+html:hover::-webkit-scrollbar-thumb {
+  background: color-mix(in oklab, var(--kx-fg-muted) 38%, transparent);
+}
+html::-webkit-scrollbar-corner { background: transparent; }
+
 ::selection {
   background: var(--kx-pink);
   color: var(--kx-on-pink);
@@ -139,12 +155,21 @@ button:disabled,
 /* ---------- Scoped scroll skin ---------- */
 .kx-scroll {
   scrollbar-width: thin;
-  scrollbar-color: var(--kx-border-strong) transparent;
+  scrollbar-color: color-mix(in oklab, var(--kx-fg-muted) 22%, transparent) transparent;
 }
-.kx-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
+.kx-scroll:hover {
+  scrollbar-color: color-mix(in oklab, var(--kx-fg-muted) 45%, transparent) transparent;
+}
+.kx-scroll::-webkit-scrollbar { width: 4px; height: 4px; background: transparent; }
+.kx-scroll::-webkit-scrollbar-track { background: transparent; }
 .kx-scroll::-webkit-scrollbar-thumb {
-  background: var(--kx-border-strong); border-radius: 999px;
+  background: color-mix(in oklab, var(--kx-fg-muted) 22%, transparent);
+  border-radius: 999px;
 }
+.kx-scroll:hover::-webkit-scrollbar-thumb {
+  background: color-mix(in oklab, var(--kx-fg-muted) 45%, transparent);
+}
+.kx-scroll::-webkit-scrollbar-corner { background: transparent; }
 
 /* ---------- Animations ---------- */
 @keyframes kx-pulse {
