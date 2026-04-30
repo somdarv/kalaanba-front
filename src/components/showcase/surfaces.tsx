@@ -297,15 +297,45 @@ export function KxCommandPalette({
         role="dialog"
         aria-modal="true"
         className={cn(
-          "relative w-full max-w-xl overflow-hidden rounded-[var(--kx-r-card)] border border-[var(--kx-border)] bg-[var(--kx-card)] shadow-[var(--kx-shadow-lg)]",
+          "relative w-full max-w-xl overflow-hidden rounded-[var(--kx-r-card)] bg-[var(--kx-card)] shadow-[var(--kx-shadow-lg)]",
           "transition-[opacity,transform] duration-300 ease-[var(--kx-ease-out)]",
           open ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2",
         )}
       >
         <span
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 h-[2px]"
-          style={{ background: "linear-gradient(90deg, var(--kx-pink), transparent 50%, var(--kx-blue))" }}
+          className="pointer-events-none absolute inset-0 rounded-[inherit] z-10"
+          style={{
+            WebkitMaskImage:
+              "linear-gradient(180deg, #000 0%, transparent 70%)",
+            maskImage:
+              "linear-gradient(180deg, #000 0%, transparent 70%)",
+          }}
+        >
+          <span
+            aria-hidden
+            className="absolute inset-0 rounded-[inherit]"
+            style={{
+              padding: "1px",
+              background:
+                "linear-gradient(90deg, var(--kx-pink), transparent 50%, var(--kx-blue))",
+              WebkitMask:
+                "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
+              WebkitMaskComposite: "xor",
+              mask: "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
+              maskComposite: "exclude",
+            }}
+          />
+        </span>
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-0 rounded-[inherit] border border-[var(--kx-border)]"
+          style={{
+            WebkitMaskImage:
+              "linear-gradient(180deg, transparent 0%, #000 70%)",
+            maskImage:
+              "linear-gradient(180deg, transparent 0%, #000 70%)",
+          }}
         />
         <div className="flex items-center gap-3 px-4 py-3 border-b border-[var(--kx-border)]">
           <MagnifyingGlass size={18} weight="bold" className="text-[var(--kx-fg-muted)]" />
