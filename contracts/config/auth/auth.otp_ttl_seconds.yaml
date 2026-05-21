@@ -1,0 +1,10 @@
+key: auth.otp_ttl_seconds
+engine: admin-governance
+scope: platform
+value_type: integer
+default: "300"
+approval_level: medium
+description: |
+  Time-to-live (in seconds) of an issued OTP code before it expires and a new
+  one must be requested. Default 5 minutes. Lowering this reduces the brute-force
+  attack window; raising it improves UX for users on flaky networks.

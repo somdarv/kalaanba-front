@@ -1,0 +1,10 @@
+key: challenge.response_window_hours
+engine: challenge
+scope: platform
+value_type: integer
+default: "72"
+approval_level: high
+description: |
+  Hours the challenged club has to respond (accept/counter/decline).
+  Default: 72 hours (3 days).
+  Must be ≥ 1.

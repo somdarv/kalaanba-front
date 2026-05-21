@@ -1,0 +1,122 @@
+openapi: 3.1.0
+info:
+  title: "Admin — List Audit Log"
+  version: "1.0.0"
+  description: |
+    Returns the append-only `admin_audit_log` newest-first, cursor paginated.
+    Super Admin only — denial returns `auth.super_admin_only` (403).
+
+    The audit log records every authenticated mutating request performed by a
+    platform admin (Hub / Kalaanba / Super). It is written exclusively by
+    `AdminAuditMiddleware`. Domain code never writes here (Constitution Law 5).
+
+paths:
+  /api/v1/admin/audit-log:
+    get:
+      summary: List admin audit entries
+      operationId: listAdminAuditLog
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: header
+          name: X-Request-Id
+          required: false
+          schema: { type: string, format: uuid }
+        - in: query
+          name: cursor
+          required: false
+          schema:
+            {
+              type: string,
+              description: Opaque cursor returned in meta.next_cursor,
+            }
+        - in: query
+          name: limit
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 100, default: 25 }
+      responses:
+        "200":
+          description: Audit entries page
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        [
+                          id,
+                          actor_id,
+                          actor_role,
+                          request_id,
+                          method,
+                          path,
+                          response_status,
+                          payload_redacted,
+                          occurred_at,
+                        ]
+                      properties:
+                        id: { type: string, format: uuid }
+                        actor_id:
+                          type: string
+                          description: |
+                            Opaque actor identifier. UUID once the user table
+                            migrates to UUIDv7 PKs; today it is the integer
+                            user PK serialized as a string.
+                        actor_role:
+                          type: string
+                          enum: [hub_admin, kalaanba_admin, super_admin]
+                        request_id: { type: string }
+                        route: { type: ["string", "null"] }
+                        method:
+                          type: string
+                          enum: [POST, PUT, PATCH, DELETE]
+                        path: { type: string }
+                        response_status: { type: integer }
+                        payload_redacted:
+                          type: object
+                          description: |
+                            Request body with secrets / OTPs / passwords /
+                            phone numbers replaced by `[redacted]`. Keys are
+                            preserved so investigators can see *what* field
+                            was touched.
+                        occurred_at: { type: string, format: date-time }
+                  meta:
+                    type: object
+                    required: [next_cursor, limit]
+                    properties:
+                      next_cursor: { type: ["string", "null"] }
+                      limit: { type: integer }
+                      request_id: { type: string }
+                      api_version: { type: string, enum: [v1] }
+        "401":
+          description: Unauthenticated
+        "403":
+          description: |
+            Caller is authenticated but is not Super Admin. Error code:
+            `auth.super_admin_only`.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [error]
+                properties:
+                  error:
+                    type: object
+                    required: [code, message]
+                    properties:
+                      code: { type: string, enum: [auth.super_admin_only] }
+                      message: { type: string }
+                      details: { type: object }
+                      request_id: { type: string }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: sanctum

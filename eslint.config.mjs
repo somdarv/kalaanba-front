@@ -12,6 +12,11 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Archived prior FE work — preserved for reference, exempt from strict lint.
+    "src/components/_archive/**",
+    "src/app/legacy/**",
+    // Generated code.
+    "src/lib/api/generated/**",
   ]),
 ]);
 

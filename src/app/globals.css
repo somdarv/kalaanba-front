@@ -1,113 +1,204 @@
 @import "tailwindcss";
 
 /* =====================================================================
-   Kalaanba — Unified Design Tokens.
-   `--kx-*` tokens are the source of truth, defined globally and
-   toggled by `html.light`. Tailwind utilities are mapped onto them
-   via `@theme inline` so `bg-surface` and `bg-[var(--kx-card)]`
-   resolve to the same color.
+   Kalaanba — Design Tokens (v2)
+
+   Clean, simple semantic names. No prefix. Tokens are the source of truth;
+   Tailwind utilities (`bg-bg`, `text-fg`, `border-border`, `bg-pink`,
+   `text-success`, etc.) map onto them via `@theme inline`.
+
+   Default = DARK. Light theme is opt-in via `data-theme="light"` on <html>
+   (the new ThemeProvider sets this attribute before hydration to avoid FOUC).
+
+   Brand vs state colors are visually distinct:
+     - pink   → primary brand
+     - blue   → secondary brand / accent
+     - success → green
+     - warning → amber  (clearly NOT red)
+     - danger  → red    (clearly NOT pink)
+
+   `--kx-*` aliases below preserve compatibility with archived components
+   under `src/components/_archive/`. New code MUST use the unprefixed names.
    ===================================================================== */
 
 :root {
   color-scheme: dark;
 
   /* Brand */
-  --kx-pink: #f55694;
-  --kx-blue: #56b7f5;
+  --pink: #f55694;
+  --blue: #56b7f5;
 
-  /* Semantic state */
-  --kx-success: #16a34a;
-  --kx-warning: #ea580c;
-  --kx-danger:  #f55656;
+  /* State (visually distinct from each other and from brand) */
+  --success: #16a34a; /* green-600  */
+  --warning: #f59e0b; /* amber-500  */
+  --danger:  #ef4444; /* red-500    */
 
   /* Neutrals — dark default */
-  --kx-bg: #0b101d;
-  --kx-card: #161b26;
-  --kx-card-2: #1a202d;
-  --kx-fg: #f3f4f8;
-  --kx-fg-muted: #c0c0c0;
-  --kx-on-pink: #ffffff;
-  --kx-on-blue: #0b101d;
-  --kx-border: rgba(255, 255, 255, 0.05);
-  --kx-border-strong: rgba(255, 255, 255, 0.10);
-  --kx-ring: rgba(245, 86, 148, 0.18);
+  --bg:           #0b101d;
+  --surface:      #161b26;
+  --surface-2:    #1a202d;
+  --fg:           #f3f4f8;
+  --fg-muted:     #c0c0c0;
+  --on-pink:      #ffffff;
+  --on-blue:      #0b101d;
+  --on-success:   #ffffff;
+  --on-warning:   #1a1100;
+  --on-danger:    #ffffff;
+
+  /* Borders / dividers — always subtle */
+  --border:        rgba(255, 255, 255, 0.05);
+  --border-strong: rgba(255, 255, 255, 0.10);
+  --divider:       rgba(255, 255, 255, 0.06);
+
+  /* Focus ring */
+  --ring: rgba(245, 86, 148, 0.35);
 
   /* Shadows */
-  --kx-shadow-sm: 0 2px 8px -2px rgba(0, 0, 0, 0.4);
-  --kx-shadow-md: 0 14px 36px -14px rgba(0, 0, 0, 0.55);
-  --kx-shadow-lg: 0 30px 60px -30px rgba(0, 0, 0, 0.7);
-  --kx-shadow-pink: 0 18px 40px -18px rgba(245, 86, 148, 0.45);
+  --shadow-sm:   0 2px 8px -2px rgba(0, 0, 0, 0.4);
+  --shadow-md:   0 14px 36px -14px rgba(0, 0, 0, 0.55);
+  --shadow-lg:   0 30px 60px -30px rgba(0, 0, 0, 0.7);
+  --shadow-pink: 0 18px 40px -18px rgba(245, 86, 148, 0.45);
 
   /* Shape */
-  --kx-r-pill: 999px;
-  --kx-r-btn: 1.1rem;
-  --kx-r-card: 1.6rem;
-  --kx-r-card-lg: 2rem;
-  --kx-r-tile: 1.25rem;
+  --radius-pill: 999px;
+  --radius-button: 1.1rem;
+  --radius-card: 1.6rem;
+  --radius-card-lg: 2rem;
+  --radius-control: 1.25rem;
 
-  /* Motion */
-  --kx-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
-  --kx-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  /* Motion — Framer Motion is preferred for component animations.
+     CSS easings remain for ambient/global transitions. */
+  --ease-standard: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 
   /* Type */
-  --kx-font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --kx-font-display: var(--font-sora), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-sans:    var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: var(--font-sora),  var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  /* ---- Backwards-compat aliases for archived components ---- */
+  --kx-pink: var(--pink);
+  --kx-blue: var(--blue);
+  --kx-success: var(--success);
+  --kx-warning: var(--warning);
+  --kx-danger: var(--danger);
+  --kx-bg: var(--bg);
+  --kx-card: var(--surface);
+  --kx-card-2: var(--surface-2);
+  --kx-fg: var(--fg);
+  --kx-fg-muted: var(--fg-muted);
+  --kx-on-pink: var(--on-pink);
+  --kx-on-blue: var(--on-blue);
+  --kx-border: var(--border);
+  --kx-border-strong: var(--border-strong);
+  --kx-ring: var(--ring);
+  --kx-shadow-sm: var(--shadow-sm);
+  --kx-shadow-md: var(--shadow-md);
+  --kx-shadow-lg: var(--shadow-lg);
+  --kx-shadow-pink: var(--shadow-pink);
+  --kx-r-pill: var(--radius-pill);
+  --kx-r-btn: var(--radius-button);
+  --kx-r-card: var(--radius-card);
+  --kx-r-card-lg: var(--radius-card-lg);
+  --kx-r-tile: var(--radius-control);
+  --kx-ease: var(--ease-standard);
+  --kx-ease-out: var(--ease-out);
+  --kx-font-sans: var(--font-sans);
+  --kx-font-display: var(--font-display);
 }
 
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg:        #f8f9fb;
+  --surface:   #ffffff;
+  --surface-2: #f3f4f8;
+  --fg:        #1f2330;
+  --fg-muted:  #555a66;
+  --on-pink:   #ffffff;
+  --on-blue:   #0b101d;
+  --on-success:#ffffff;
+  --on-warning:#1a1100;
+  --on-danger: #ffffff;
+
+  --border:        rgba(15, 18, 30, 0.06);
+  --border-strong: rgba(15, 18, 30, 0.12);
+  --divider:       rgba(15, 18, 30, 0.07);
+
+  --ring: rgba(245, 86, 148, 0.28);
+
+  --shadow-sm:   0 2px 8px -2px rgba(15, 18, 30, 0.06);
+  --shadow-md:   0 12px 30px -14px rgba(15, 18, 30, 0.18);
+  --shadow-lg:   0 30px 60px -30px rgba(15, 18, 30, 0.25);
+  --shadow-pink: 0 18px 40px -18px rgba(245, 86, 148, 0.55);
+}
+
+/* Compatibility selector: archived components toggle `html.light` directly.
+   Mirror the new attribute target so old code still flips the theme. */
 html.light {
   color-scheme: light;
-  --kx-bg: #f8f9fb;
-  --kx-card: #ffffff;
-  --kx-card-2: #f3f4f8;
-  --kx-fg: #303030;
-  --kx-fg-muted: #555555;
-  --kx-on-pink: #ffffff;
-  --kx-on-blue: #0b101d;
-  --kx-border: rgba(15, 18, 30, 0.06);
-  --kx-border-strong: rgba(15, 18, 30, 0.12);
-  --kx-ring: rgba(245, 86, 148, 0.14);
-  --kx-shadow-sm: 0 2px 8px -2px rgba(15, 18, 30, 0.06);
-  --kx-shadow-md: 0 12px 30px -14px rgba(15, 18, 30, 0.18);
-  --kx-shadow-lg: 0 30px 60px -30px rgba(15, 18, 30, 0.25);
-  --kx-shadow-pink: 0 18px 40px -18px rgba(245, 86, 148, 0.55);
+  --bg:        #f8f9fb;
+  --surface:   #ffffff;
+  --surface-2: #f3f4f8;
+  --fg:        #1f2330;
+  --fg-muted:  #555a66;
+  --on-pink:   #ffffff;
+  --on-blue:   #0b101d;
+  --on-success:#ffffff;
+  --on-warning:#1a1100;
+  --on-danger: #ffffff;
+  --border:        rgba(15, 18, 30, 0.06);
+  --border-strong: rgba(15, 18, 30, 0.12);
+  --divider:       rgba(15, 18, 30, 0.07);
+  --ring: rgba(245, 86, 148, 0.28);
+  --shadow-sm:   0 2px 8px -2px rgba(15, 18, 30, 0.06);
+  --shadow-md:   0 12px 30px -14px rgba(15, 18, 30, 0.18);
+  --shadow-lg:   0 30px 60px -30px rgba(15, 18, 30, 0.25);
+  --shadow-pink: 0 18px 40px -18px rgba(245, 86, 148, 0.55);
 }
 
-/* Tailwind v4 theme — aliases that point at the unified tokens so
-   utilities like `bg-bg`, `text-fg`, `bg-surface`, `border-border`,
-   `text-primary`, `font-display`, `ease-alive`, `rounded-card`, and
-   `animate-live-pulse` keep working across the codebase. */
+/* Tailwind v4 utility aliases. `bg-bg`, `bg-surface`, `text-fg`,
+   `border-border`, `bg-pink`, `text-success`, `bg-warning`, etc. */
 @theme inline {
-  --color-primary: var(--kx-pink);
-  --color-accent-blue: var(--kx-blue);
+  --color-pink: var(--pink);
+  --color-blue: var(--blue);
 
-  --color-bg: var(--kx-bg);
-  --color-surface: var(--kx-card);
-  --color-surface-2: var(--kx-card-2);
-  --color-border: var(--kx-border);
-  --color-fg: var(--kx-fg);
-  --color-fg-muted: var(--kx-fg-muted);
-  --color-on-primary: var(--kx-on-pink);
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
 
-  --color-success: var(--kx-success);
-  --color-warning: var(--kx-warning);
-  --color-danger:  var(--kx-danger);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-divider: var(--divider);
+  --color-ring: var(--ring);
 
-  --radius-button: var(--kx-r-btn);
-  --radius-card: var(--kx-r-card);
-  --radius-control: var(--kx-r-tile);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger:  var(--danger);
 
-  --ease-alive: var(--kx-ease);
+  --color-on-pink: var(--on-pink);
+  --color-on-blue: var(--on-blue);
+  --color-on-success: var(--on-success);
+  --color-on-warning: var(--on-warning);
+  --color-on-danger: var(--on-danger);
 
-  --font-sans: var(--kx-font-sans);
-  --font-display: var(--kx-font-display);
+  --radius-button: var(--radius-button);
+  --radius-card: var(--radius-card);
+  --radius-control: var(--radius-control);
+
+  --ease-standard: var(--ease-standard);
+  --ease-out: var(--ease-out);
+
+  --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
 
   --animate-live-pulse: kx-pulse 2.4s ease-in-out infinite;
 }
 
 body {
-  background: var(--kx-bg);
-  color: var(--kx-fg);
-  font-family: var(--kx-font-sans);
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -115,22 +206,22 @@ body {
 /* ---------- Global thin theme-aware scrollbar ---------- */
 html {
   scrollbar-width: thin;
-  scrollbar-color: color-mix(in oklab, var(--kx-fg-muted) 22%, transparent) transparent;
+  scrollbar-color: color-mix(in oklab, var(--fg-muted) 22%, transparent) transparent;
 }
 html::-webkit-scrollbar { width: 6px; height: 6px; background: transparent; }
 html::-webkit-scrollbar-track { background: transparent; }
 html::-webkit-scrollbar-thumb {
-  background: color-mix(in oklab, var(--kx-fg-muted) 22%, transparent);
+  background: color-mix(in oklab, var(--fg-muted) 22%, transparent);
   border-radius: 999px;
 }
 html:hover::-webkit-scrollbar-thumb {
-  background: color-mix(in oklab, var(--kx-fg-muted) 38%, transparent);
+  background: color-mix(in oklab, var(--fg-muted) 38%, transparent);
 }
 html::-webkit-scrollbar-corner { background: transparent; }
 
 ::selection {
-  background: var(--kx-pink);
-  color: var(--kx-on-pink);
+  background: var(--pink);
+  color: var(--on-pink);
 }
 
 /* ---------- Cursor: anything clickable ---------- */
@@ -155,23 +246,23 @@ button:disabled,
 /* ---------- Scoped scroll skin ---------- */
 .kx-scroll {
   scrollbar-width: thin;
-  scrollbar-color: color-mix(in oklab, var(--kx-fg-muted) 22%, transparent) transparent;
+  scrollbar-color: color-mix(in oklab, var(--fg-muted) 22%, transparent) transparent;
 }
 .kx-scroll:hover {
-  scrollbar-color: color-mix(in oklab, var(--kx-fg-muted) 45%, transparent) transparent;
+  scrollbar-color: color-mix(in oklab, var(--fg-muted) 45%, transparent) transparent;
 }
 .kx-scroll::-webkit-scrollbar { width: 4px; height: 4px; background: transparent; }
 .kx-scroll::-webkit-scrollbar-track { background: transparent; }
 .kx-scroll::-webkit-scrollbar-thumb {
-  background: color-mix(in oklab, var(--kx-fg-muted) 22%, transparent);
+  background: color-mix(in oklab, var(--fg-muted) 22%, transparent);
   border-radius: 999px;
 }
 .kx-scroll:hover::-webkit-scrollbar-thumb {
-  background: color-mix(in oklab, var(--kx-fg-muted) 45%, transparent);
+  background: color-mix(in oklab, var(--fg-muted) 45%, transparent);
 }
 .kx-scroll::-webkit-scrollbar-corner { background: transparent; }
 
-/* ---------- Animations ---------- */
+/* ---------- Animations (kept under kx- name for archive compat) ---------- */
 @keyframes kx-pulse {
   0%, 100% { opacity: 1; transform: scale(1); }
   50%      { opacity: 0.55; transform: scale(0.78); }
@@ -251,9 +342,7 @@ button:disabled,
   }
 }
 
-/* Living surfaces opt out of the reduced-motion blanket — they're
-   ambient, never block interaction, and the brand depends on them
-   feeling alive. */
+/* Living surfaces opt out of the reduced-motion blanket. */
 .kx-alive {
   animation-play-state: running !important;
 }

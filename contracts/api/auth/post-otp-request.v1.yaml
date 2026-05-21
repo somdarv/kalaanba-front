@@ -1,0 +1,87 @@
+openapi: 3.1.0
+info:
+  title: "Auth — Request OTP"
+  version: "1.0.0"
+  description: |
+    Issues a one-time password to a phone number via the active provider
+    (config key `auth.otp_provider`). Returns 202 — no token is issued at
+    this step.
+
+paths:
+  /api/v1/auth/otp/request:
+    post:
+      summary: Request an OTP for a phone number
+      operationId: requestOtp
+      security: []
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema: { type: string, minLength: 1, maxLength: 128 }
+        - in: header
+          name: X-Request-Id
+          required: false
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phone_e164]
+              additionalProperties: false
+              properties:
+                phone_e164:
+                  type: string
+                  description: E.164-formatted phone number, e.g. +233244123456
+                  pattern: "^\\+[1-9]\\d{6,14}$"
+                  maxLength: 16
+      responses:
+        "202":
+          description: OTP accepted for delivery
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: object
+                    required: [expires_at, masked_phone, otp_length]
+                    properties:
+                      expires_at: { type: string, format: date-time }
+                      masked_phone:
+                        type: string
+                        description: "PII-safe rendering, e.g. +233 *** *** 4567"
+                      otp_length: { type: integer, minimum: 4, maximum: 10 }
+                  meta:
+                    type: object
+                    properties:
+                      request_id: { type: string }
+                      api_version: { type: string, enum: [v1] }
+                      idempotent_replay: { type: boolean }
+        "400": { $ref: "#/components/schemas/ErrorResponse" }
+        "422": { $ref: "#/components/schemas/ErrorResponse" }
+        "429": { $ref: "#/components/schemas/ErrorResponse" }
+
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              description: |
+                Stable error key. Possible values:
+                  - auth.idempotency_key_required
+                  - auth.invalid_phone_format
+                  - auth.otp_rate_limited
+                  - auth.otp_provider_unavailable
+            message: { type: string }
+            details: { type: object }
+            request_id: { type: string }

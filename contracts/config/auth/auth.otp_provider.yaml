@@ -1,0 +1,12 @@
+key: auth.otp_provider
+engine: admin-governance
+scope: platform
+value_type: string
+default: "mock"
+approval_level: high
+description: |
+  Selects which OTP delivery channel is used for live traffic. Allowed values:
+  - "mock"     : in-memory, captured by MockOtpProvider (dev/test only — never
+                 valid in production).
+  - "whatsapp" : WhatsApp Business Cloud API (introduced in Build Plan Phase 4).
+  Changing this key requires Hub Admin approval and Trust+Security review.

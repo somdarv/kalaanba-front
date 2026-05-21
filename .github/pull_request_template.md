@@ -20,6 +20,7 @@
 
 ## Engine Boundary Self-Check
 
+- [ ] Canonical engine doc(s) at `docs/engines/<engine>/` were read for this change and cited in the PR description (per `.github/instructions/engine-docs-mandatory.instructions.md`).
 - [ ] This PR does not cross engine boundaries except via events/contracts.
 - [ ] No hardcoded configurable values.
 - [ ] Audit/ledger entries created where required.

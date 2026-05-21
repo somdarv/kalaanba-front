@@ -1,0 +1,114 @@
+openapi: 3.1.0
+info:
+  title: "Auth — Create Session"
+  version: "1.0.0"
+  description: |
+    Bootstrap session issuance. Email + password → Sanctum personal access
+    token. Will coexist with an OTP-based login (WP-B) behind the
+    `auth.allow_password_login` config key.
+
+paths:
+  /api/v1/auth/sessions:
+    post:
+      summary: Issue a bearer token from credentials
+      operationId: createSession
+      security: []
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema: { type: string, minLength: 1, maxLength: 128 }
+        - in: header
+          name: X-Request-Id
+          required: false
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              additionalProperties: false
+              properties:
+                email:
+                  type: string
+                  format: email
+                  maxLength: 254
+                password:
+                  type: string
+                  minLength: 1
+                  maxLength: 255
+                device_name:
+                  type: string
+                  maxLength: 64
+                  nullable: true
+      responses:
+        "200":
+          description: Session created
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: object
+                    required: [token, token_type, expires_at, user]
+                    properties:
+                      token: { type: string }
+                      token_type: { type: string, enum: [Bearer] }
+                      expires_at: { type: string, format: date-time }
+                      user:
+                        type: object
+                        required: [id, name, email, role]
+                        properties:
+                          id: { type: string }
+                          name: { type: string }
+                          email: { type: string, format: email }
+                          role:
+                            type: string
+                            description: Backing value of Kalaanba\Support\Auth\Role
+                            enum:
+                              - fan
+                              - player
+                              - club_rep
+                              - club_admin
+                              - comp_org
+                              - referee
+                              - officiator
+                              - facility_mgr
+                              - hub_admin
+                              - kalaanba_admin
+                              - super_admin
+                  meta:
+                    type: object
+                    properties:
+                      request_id: { type: string }
+                      api_version: { type: string, enum: [v1] }
+                      idempotent_replay: { type: boolean }
+        "400":
+          $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              {
+                type: string,
+                description: "Stable engine.action key, e.g. auth.idempotency_key_required",
+              }
+            message: { type: string }
+            details: { type: object }
+            request_id: { type: string }

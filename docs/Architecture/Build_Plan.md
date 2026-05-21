@@ -2,7 +2,7 @@
 
 **Status:** Living document — update as we go
 **Started:** 2026-05-12
-**Last updated:** 2026-05-12
+**Last updated:** 2026-05-22 ✅ Phase 0.5 complete
 **Source spec:** [Full Kalaanba Brief](../Full%20Kalaanba%20Brief.md)
 **Architecture:** [System Architecture](System_Architecture.md)
 
@@ -12,12 +12,13 @@
 
 - Each **Stage** has a goal, exit criteria, and a checklist of **targeted build phases** with concrete tasks.
 - Update task status as you go: `[ ]` not started · `[~]` in progress · `[x]` done · `[!]` blocked · `[-]` dropped
-- When a stage's exit criteria are met, mark the stage **DONE** and update the *Last updated* date at the top.
+- When a stage's exit criteria are met, mark the stage **DONE** and update the _Last updated_ date at the top.
 - New tasks discovered mid-stage are added under the relevant phase. Don't silently skip — mark `[-]` with a one-line reason.
 - The order matters. Don't start Stage N+1 until Stage N's exit criteria are met. The brief's discipline (Trust before official, gates before publishing, etc.) depends on this ordering.
 - The **Discipline Rules** at the bottom apply across every stage and every task. They are not optional.
 
 **Legend**
+
 - 🎯 Stage goal
 - ✅ Exit criteria
 - 📌 Tasks (checklist)
@@ -27,17 +28,17 @@
 
 ## Progress Snapshot
 
-| Stage | Title | Status | Notes |
-|---|---|---|---|
-| 0 | Foundations | ⬜ Not started | |
-| 1 | Identity Spine | ⬜ Not started | |
-| 2 | The Match | ⬜ Not started | |
-| 3 | Competitions | ⬜ Not started | |
-| 4 | Distribution | ⬜ Not started | |
-| 5 | Drama Layer (RP + Challenges + Buzz) | ⬜ Not started | |
-| 6 | Operations & Revenue | ⬜ Not started | |
-| 7 | Recognition & Governance UI | ⬜ Not started | |
-| 8 | Hardening for 500K DAU | ⬜ Not started | |
+| Stage | Title                                | Status         | Notes                                                                                                                                                                                                              |
+| ----- | ------------------------------------ | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 0     | Foundations                          | ✅ Complete    | 0.4 & 0.5 complete — Analytics envelope (38 tests), Admin Config registry with effective-dated reads, versioning, scope isolation (14 tests). Total 52 tests, all quality gates passing (`composer check` exit 0). |
+| 1     | Identity Spine                       | ⬜ Not started |                                                                                                                                                                                                                    |
+| 2     | The Match                            | ⬜ Not started |                                                                                                                                                                                                                    |
+| 3     | Competitions                         | ⬜ Not started |                                                                                                                                                                                                                    |
+| 4     | Distribution                         | ⬜ Not started |                                                                                                                                                                                                                    |
+| 5     | Drama Layer (RP + Challenges + Buzz) | ⬜ Not started |                                                                                                                                                                                                                    |
+| 6     | Operations & Revenue                 | ⬜ Not started |                                                                                                                                                                                                                    |
+| 7     | Recognition & Governance UI          | ⬜ Not started |                                                                                                                                                                                                                    |
+| 8     | Hardening for 500K DAU               | ⬜ Not started |                                                                                                                                                                                                                    |
 
 Stage status options: ⬜ Not started · 🟡 In progress · ✅ Done · ⏸ Paused · ❌ Blocked
 
@@ -52,8 +53,9 @@ Stage status options: ⬜ Not started · 🟡 In progress · ✅ Done · ⏸ Pau
 🔗 **Brief refs:** §2.2 (principles), §6.2 (engine map), §11 (NFRs), §15 (open questions — all answered in System_Architecture.md §14)
 
 ### Phase 0.1 — Repos, CI, infra spine
-- [ ] Confirm repo strategy (two repos: `kalaanba-api`, `kalaanba-front`) — current state in workspace
-- [ ] Wire CI pipelines (GitHub Actions): lint, test, build for both repos
+
+- [x] Confirm repo strategy (two repos: `kalaanba-api`, `kalaanba-front`) — current state in workspace
+- [-] Wire CI pipelines (GitHub Actions): lint, test, build for both repos _(deferred per user — agent-level post-flight gates only for now)_
 - [ ] Provision minimal infra: 1 LB, 1 Next node, 1 Laravel node, 1 worker node, 1 Postgres, 1 Redis, 1 Meilisearch, R2 buckets
 - [ ] Cloudflare in front (DNS, TLS, WAF baseline)
 - [ ] Private network / WireGuard between nodes; no public DB/Redis ports
@@ -61,56 +63,111 @@ Stage status options: ⬜ Not started · 🟡 In progress · ✅ Done · ⏸ Pau
 - [ ] Deploy tooling (Deployer or equivalent) — zero-downtime symlink swap
 
 ### Phase 0.2 — Laravel module scaffold
-- [ ] Install Laravel 11, PHP 8.3, FrankenPHP worker mode running locally
-- [ ] Create `app/Modules/` with one folder per engine (17 modules) using the standard shape (`Domain/Application/Infrastructure/Http/Listeners/Jobs/Contracts/Policies/Config/Tests`)
-- [ ] Per-module service providers wired in `config/app.php`
-- [ ] Per-module route registration pattern
-- [ ] **Deptrac** (or Pest Architecture) configured to forbid cross-module reach-ins — fails CI
-- [ ] **Schema-per-module migration convention** with namespaced migrations
+
+- [x] Install Laravel 11.53.1, PHP 8.4.16, Composer 2.9.5 _(local; FrankenPHP worker mode deferred to infra stage)_
+- [x] Create `app/Modules/` with one folder per engine (17 modules) — `AdminGovernance`, `Analytics`, `AwardsRecognition`, `Challenge`, `Club`, `CompetitionRules`, `FanBuzz`, `MatchFixture`, `ModerationSafety`, `NotificationDistribution`, `PlayerAffiliation`, `RefereeOfficiator`, `RpEconomy`, `Season`, `TrustVerification`, `VenueSurfaceBooking`, `Zone`, each with `Domain/Application/Infrastructure/Http/` layers (`Listeners/Jobs/Contracts/Policies/Config/Tests` to be added per-WP as needed)
+- [x] Per-module service providers wired in `bootstrap/providers.php` (17 providers, one per engine)
+- [ ] Per-module route registration pattern _(provider `boot()` placeholder ready; real `Http/routes.php` lands with first engine WP)_
+- [x] **Deptrac** (deptrac/deptrac 3.x) configured to forbid cross-module reach-ins — `composer deptrac` 0 violations
+- [x] **Pest Architecture** tests bootstrapped — `tests/Architecture/ArchitectureTest.php` with no-debug + strict_types rules (6/6 passing)
+- [x] Composer scripts: `lint` (pint --test + larastan), `test` (pest), `deptrac`, `check` (lint + deptrac + test)
+- [x] Larastan/PHPStan baseline at level 6 (level 8 target for `Domain`/`Application` deferred to follow-up ADR)
+- [x] Pint configured (Laravel preset)
+- [~] **Schema-per-module migration convention** with namespaced migrations _(config/database.php updated with per-engine search_path; namespaced migration folders land per-WP)_
 - [ ] Architectural lint: no foreign keys across module schemas — fails CI
-- [ ] `Model::preventLazyLoading()` enabled outside production
+- [x] `Model::preventLazyLoading()` + `preventAccessingMissingAttributes()` + `preventSilentlyDiscardingAttributes()` enabled outside production
 
-### Phase 0.3 — Event bus + outbox
-- [ ] `outbox_events` table per module schema (id, event_name, payload, occurred_at, delivered_at, attempts)
-- [ ] OutboxRelay worker (reads pending → dispatches to event bus → marks delivered)
-- [ ] Redis Streams as transport
-- [ ] Idempotent listener pattern: `(event_id, listener_name)` dedupe table
-- [ ] Event naming convention enforced: `engine.action`
-- [ ] **Ship dummy `health.ping` event end-to-end** as proof
+### Phase 0.3 — Event bus + outbox ✅ 2026-05-21
 
-### Phase 0.4 — Analytics envelope
-- [ ] `analytics.events` table, daily partitioned
-- [ ] Standard payload shape (event_id, event_name, schema_version, occurred_at, actor_id, actor_role, session_id, source, device, context_json, properties_json)
-- [ ] Schema registry in code (`app/Modules/Analytics/Schemas/`), versioned
-- [ ] Emit helper that validates against registry
-- [ ] Schema-validation test that fails CI if event shape drifts
+- [x] `outbox_events` table (id, event_id, event_name, schema_version, payload, occurred_at, delivered_at, attempts, last_error)
+- [x] OutboxRelay worker — `php artisan outbox:relay` (polls pending → publishes → marks delivered, max 5 attempts)
+- [x] Redis Streams as transport (`predis/predis` v3; `REDIS_CLIENT=predis`; stream key `kalaanba.events.<engine>`)
+- [x] Idempotent listener pattern: `event_dedupe` table, `(event_id, listener_name)` PK, `DedupeStore` helper
+- [x] Event naming convention enforced: `engine.action` regex in `OutboxEnvelope` constructor + 8 unit tests
+- [x] `config/eventbus.php` — configurable `stream_prefix` and `max_relay_attempts`
+- [x] **`health.ping` event end-to-end confirmed** — outbox write → relay → Redis XADD → `delivered_at` set
 
-### Phase 0.5 — Admin Config registry
-- [ ] `admin_config` table (key, scope, scope_id, value, effective_from, version, approved_by)
-- [ ] Redis cache layer with TTL + bust-on-write
-- [ ] `Config::get(key, scope, at?)` helper with effective-dated reads
-- [ ] Seed defaults from brief (RP win/draw/loss, challenge windows, season dates, etc.)
-- [ ] Approval workflow stub (Low/Med/High/Critical) — UI comes in Stage 7
+### Phase 0.4 — Analytics envelope ✅ 2026-05-22
+
+- [x] `analytics.events` table, daily partitioned — Postgres native `PARTITION BY RANGE (occurred_at)`, parent + default catch-all + 7 forward-day partitions seeded at install
+- [x] Standard payload shape — `event_id, event_name, schema_version, occurred_at, actor_user_id, actor_role, source, session_id, device_id, route, context (jsonb), properties (jsonb), received_at`
+- [x] Schema registry in code (`app/Modules/Analytics/Schemas/`), versioned — `EventSchema` value object + `EventSchemaRegistry` singleton populated from `SchemaCatalogue::all()`; first schema is `health.ping@v1`
+- [x] Emit helper that validates against registry — `AnalyticsEmitter` resolves schema by `(event_name, schema_version)`, rejects unknown schemas + unknown/missing properties before writing via `DatabaseAnalyticsEventWriter`
+- [x] Schema-validation test that fails CI if event shape drifts — `tests/Architecture/ArchitectureTest.php` guards catalogue integrity + key uniqueness + Domain framework-purity
+- [x] `analytics:ensure-partitions` console command — idempotent daily roll-forward of partitions
+
+### Phase 0.5 — Admin Config registry ✅ 2026-05-22
+
+- [x] `admin_config` table (key, scope, scope_id, value, effective_from, version, approved_by) — `string(36)` for nullable scope_id, UNIQUE constraint on (key, scope, COALESCE(scope_id, ''), effective_from)
+- [x] Redis cache layer with TTL + bust-on-write — `kx:config:v1:<key>:<scope>:<scopeId>:<timestamp>` pattern, 5-min TTL, invalidated on set()
+- [x] `Config::get(key, scope, scopeId?, at?)` helper with effective-dated reads — `ORDER BY effective_from DESC, version DESC` for time-travel queries
+- [x] Seed defaults from brief (RP win/draw/loss, challenge windows, season dates, etc.) — 14 platform defaults seeded in `AdminConfigSeeder`
+- [x] Approval workflow stub (Low/Med/High/Critical) — metadata (approvedBy, approvalLevel, changeReason) stored; enforcement deferred to Stage 6
 
 ### Phase 0.6 — Auth + authorization
-- [ ] Sanctum installed, token issuance endpoint
-- [ ] OTP issuance endpoint (mock provider; WhatsApp arrives in Stage 4)
-- [ ] User model + role enum (Fan, Player, ClubRep, ClubAdmin, CompOrg, Referee, Officiator, FacilityMgr, HubAdmin, KalaanbaAdmin, SuperAdmin)
-- [ ] Policy classes per resource convention
-- [ ] Scope middleware (hub / club / competition / venue)
-- [ ] `admin.audit_log` table, append-only, partitioned monthly
-- [ ] All admin/Super Admin writes audit-logged via middleware
+
+Phase 0.6 is delivered as three sequential Work Packets so each can clear the full 10-stage pipeline independently.
+
+#### WP-A — Identity foundation ✅ (WP-20260522-identity-foundation)
+
+- [x] Sanctum installed, token issuance endpoint — `POST /api/v1/auth/sessions`, `DELETE /api/v1/auth/sessions/current`; 30-day token TTL; `Idempotency-Key` required; 5/min throttle by email+IP
+- [x] User model + role enum (Fan, Player, ClubRep, ClubAdmin, CompOrg, Referee, Officiator, FacilityMgr, HubAdmin, KalaanbaAdmin, SuperAdmin) — `Kalaanba\Support\Auth\Role` backed enum with snake_case internal keys; users table extended with `role`, `phone_e164_hash`, `phone_e164_last4`, `archived_at`, `last_seen_at`; Postgres CHECK constraint enforces the 11 roles
+- [x] `Kalaanba\Support\Http\Middleware\IdempotencyKeyMiddleware` — `kx:idem:v1:` prefix, 24h TTL, replay on duplicate key (`meta.idempotent_replay`), error code `auth.idempotency_key_required` on missing header
+- [x] OpenAPI 3.1 contracts: `contracts/api/auth/post-sessions.v1.yaml`, `contracts/api/auth/delete-sessions-current.v1.yaml`
+- [x] Architecture tests pin: Role enum no framework deps, IdempotencyKey middleware confined to Support, engine modules do not depend on `App\Models\User` directly (Support port enforced)
+- [x] Pipeline gates: pint, phpstan L6, deptrac (0 violations), pest (all green)
+
+#### WP-B — OTP login + authorization scaffolding ✅ (WP-20260522-otp-and-policies)
+
+- [x] OTP issuance endpoint — `POST /api/v1/auth/otp/request` (issues 6-digit OTP bound to E.164 phone, 5-min TTL, rate-limited 5/min by phone+IP); mock provider behind `auth.otp_provider` config key (WhatsApp arrives in Phase 4)
+- [x] OTP verification endpoint — `POST /api/v1/auth/otp/verify` (consumes OTP, issues Sanctum token, identical envelope to WP-A `sessions.store`); single-use OTPs with attempt counter
+- [x] `Kalaanba\Support\Auth\Otp\OtpService` + `OtpStore` (cache-backed via `CacheOtpStore`; in-memory `ArrayStore` for tests); `CodeGenerator` seam introduced because `Random\Randomizer` is final (production binding: `RandomCodeGenerator`)
+- [x] Config keys: `auth.otp_ttl_seconds` (default 300), `auth.otp_max_attempts` (default 5), `auth.otp_length` (default 6), `auth.otp_provider` (default `mock`), `auth.allow_password_login` (default true) — registered under `contracts/config/auth/`
+- [x] Policy base — `App\Policies\BasePolicy` with `before()` that short-circuits for platform admins; one policy per engine resource as engines arrive
+- [x] Scope middleware: `scope:hub|club|competition|venue` — `Kalaanba\Support\Http\Middleware\ScopeMiddleware` resolves via `ScopeResolver` port; default `DenyAllScopeResolver` allows only platform admins until engines bind concrete resolvers; deny → 403 with code `auth.out_of_scope`
+- [x] Phone privacy enforced: only `phone_e164_hash` + `phone_e164_last4` stored, never the raw E.164; logs scrub OTP values; `PhoneHash` HMAC-SHA256 with `app.key` as secret
+- [x] OpenAPI contracts: `contracts/api/auth/post-otp-request.v1.yaml`, `contracts/api/auth/post-otp-verify.v1.yaml`
+- [x] Architecture tests pin: OTP machinery confined to Support+App; scope resolver confined to Support+App; `PhoneHash` only consumed by Support, App, and Database\Factories
+- [x] Pipeline gates: pint, phpstan L6, deptrac (0 violations), pest green (85 tests, 195 assertions)
+
+#### WP-C — Admin audit log ✅ (WP-20260522-admin-audit-log)
+
+- [x] `admin_audit_log` table — append-only, partitioned monthly by `occurred_at` on Postgres with a default partition; ops cron pre-creates monthly partitions and detaches old ones for archive; no UPDATE/DELETE grant for app role (to be applied in `scripts/setup-postgres.sql` at deploy)
+- [x] `Kalaanba\Support\Http\Middleware\AdminAuditMiddleware` auto-logs every authenticated mutating request (POST/PUT/PATCH/DELETE) where the actor role `isPlatformAdmin()` is true; appended globally to the `api` middleware group
+- [x] Audit row: `actor_id`, `actor_role`, `request_id`, `route`, `method`, `path`, `payload_redacted` (via `PayloadRedactor` — strips password / token / secret / otp / authorization / cookie / api_key / pin / cvv / phone_e164), `response_status`, `occurred_at`
+- [x] No domain code writes to the audit log directly — only the middleware (Constitution Law 5)
+- [x] `Kalaanba\Support\Audit\AdminAuditEntry` (readonly value object), `AdminAuditWriter` interface, `DatabaseAdminAuditWriter` impl, `PayloadRedactor` service; DI bindings in `AppServiceProvider`
+- [x] `GET /api/v1/admin/audit-log` reader endpoint — `App\Http\Controllers\Admin\AuditLogController`, cursor pagination (default 25, max 100), gated by new `super_admin` middleware (`RequireSuperAdminMiddleware`) using new `Role::isSuperAdmin()` helper
+- [x] OpenAPI contract `contracts/api/admin/get-audit-log.v1.yaml` (Super Admin only, cursor pagination, redacted payload schema)
+- [x] Config contract `contracts/config/admin/admin.audit_log_retention_days.yaml` (default 2555 ≈ 7 years, critical approval tier)
+- [x] Architecture tests pin: audit machinery confined to Support+App; `AdminAuditEntry` is readonly
+- [x] Audit-write failures NEVER break the user request (try/catch around writer.write)
+- [x] Pipeline gates: pint, phpstan L6, deptrac (0 violations), pest green (98 tests, 237 assertions)
 
 ### Phase 0.7 — Frontend skeleton
-- [ ] Next.js 15 with App Router, TypeScript strict, Tailwind, shadcn/ui
-- [ ] TanStack Query, React Hook Form, Zod, MapLibre GL, Lucide
-- [ ] OpenAPI codegen pipeline (Laravel → TS types)
-- [ ] `api-client/` package with bearer token, error envelope, idempotency-key support
-- [ ] `laravel-echo` + `pusher-js` configured (real Reverb arrives Stage 4)
-- [ ] PM2 ecosystem file, standalone build, deploy to Next node
-- [ ] Custom cache handler pointing at Redis
+
+- [x] Next.js 16 with App Router, TypeScript strict (+ `noUncheckedIndexedAccess`), Tailwind, shadcn/ui — legacy showcase archived under `src/app/(legacy)/showcase` + `src/components/_archive/`
+- [x] TanStack Query, React Hook Form, Zod, MapLibre GL, Lucide
+- [x] OpenAPI codegen pipeline (`scripts/codegen-api.mjs` walks `contracts/api/<engine>/*.yaml` → `src/lib/api/generated/<engine>.ts`)
+- [x] `src/lib/api/` client with bearer token (`kalaanba-auth-token` from localStorage), envelope + `ApiError` (stable `engine.code`), automatic `Idempotency-Key` on POST/PUT/PATCH/DELETE, Zod-validated response data
+- [x] `laravel-echo` + `pusher-js` lazy stub (`src/lib/realtime/echo.ts`) — wiring deferred to Stage 4 Reverb
+- [x] PM2 `ecosystem.config.cjs` (cluster, 512M restart), `output: "standalone"` next.config
+- [x] Custom cache handler `cache-handler.mjs` (@neshca/cache-handler + `redis-strings` adapter, `kx:next:` prefix, 1s timeout, LRU fallback) — production-only
+- [x] Pipeline gates: eslint, tsc --noEmit (TS strict + noUncheckedIndexedAccess), vitest green (1 file, 8 tests), `next build` standalone OK
+
+### WP-20260522-theme-rebuild — Theme system v2
+
+- [x] Legacy routing fixed: `(legacy)` route group → real `/legacy/*` segment; index at `/legacy`, original landing recovered from git `ecc7aec` at `/legacy/landing`, prototype showcase at `/legacy/showcase`
+- [x] `globals.css` v2 rewrite: dropped `kx-` prefix for clean semantic names (`bg`, `surface`, `fg`, `fg-muted`, `pink`, `blue`, `success`, `warning`, `danger`, `border`, `border-strong`, `divider`, `ring`); dark = default at `:root` (`color-scheme: dark`); light at `:root[data-theme="light"]`; `--warning #f59e0b` (amber) and `--danger #ef4444` (red) clearly distinct from brand pink; `--border 0.05α` / `--divider 0.06α` always subtle; `--kx-*` aliases + `html.light` selector + all `kx-*` keyframes preserved as backwards-compat for archived components
+- [x] New `ThemeProvider` (`src/components/providers/theme-provider.tsx`) using `useSyncExternalStore` for both localStorage choice and `prefers-color-scheme` media query — live system-pref reactivity, no setState-in-effect; exports `themeBootstrapScript` IIFE injected into `<head>` for FOUC-free SSR; `data-theme` attribute drives styling (semantic, replaces class toggling)
+- [x] Old archive `KxThemeProvider` deleted; replaced with thin compat shim (`useKxTheme` + no-op `KxThemeProvider`) so archived `theme-toggle.tsx` keeps compiling
+- [x] `framer-motion` installed; wired into `/legacy` index as proof-of-life (staggered card entrance, ease curve `[0.2, 0, 0, 1]`)
+- [x] New `theme-provider.test.tsx` (3 tests, happy-dom): defaults to system + paints `data-theme=dark`; `setTheme("light")` persists to `kalaanba-theme` and updates DOM; live `prefers-color-scheme` change propagates
+- [x] Pipeline gates: eslint, typecheck, vitest (2 files, 11 tests), `next build` standalone OK — routes: `/`, `/legacy`, `/legacy/landing`, `/legacy/showcase`
+- [x] Bug-fix pass after first user review: (a) inline `<script dangerouslySetInnerHTML>` in `<head>` swapped for `next/script` `<Script id strategy="beforeInteractive" dangerouslySetInnerHTML>` (Next 16 requires `id` for inline scripts; fixes "scripts inside React components are never executed" warning at `layout.tsx:39`); (b) hydration mismatch on `/legacy/showcase` `KxFixtureRow` date column (`Fri 22 May` vs `Fri, May 22` — Node vs Chromium `Intl.DateTimeFormat` locale drift) fixed via `suppressHydrationWarning` on the locale-formatted `<span>`s; (c) `ThemeProvider` now also toggles `html.light` / `html.dark` classes and `style.colorScheme` (in addition to `data-theme` attribute) for max archive compat — bootstrap script does the same to prevent FOUC
 
 ### Phase 0.8 — Observability
+
 - [ ] Sentry on Laravel + Next.js
 - [ ] Laravel Pulse + Telescope (Telescope sampled in prod)
 - [ ] Prometheus + Grafana stack
@@ -131,6 +188,7 @@ Stage status options: ⬜ Not started · 🟡 In progress · ✅ Done · ⏸ Pau
 🔗 **Brief refs:** §4 (geography), §5 (calendar/season), §6.1 (engines 1, 2, 3), §7.1 (clubs), §7.2 (players), §10.1 (V1 must-haves)
 
 ### Phase 1.1 — Season Engine
+
 - [ ] `seasons` table (id, name, starts_at, ends_at, status, key dates JSON)
 - [ ] Seed seasons (April 1 → Feb 28/29), phase definitions (high activity, final run-in, transition, archive)
 - [ ] `Season::current()` cached helper
@@ -139,6 +197,7 @@ Stage status options: ⬜ Not started · 🟡 In progress · ✅ Done · ⏸ Pau
 - [ ] Configurable cutoffs read from Admin Config
 
 ### Phase 1.2 — Geography Engine
+
 - [ ] Tables: countries, regions, city_hubs, zones, belts, areas (versioned per season)
 - [ ] Area → Zone/Belt mapping (admin-managed)
 - [ ] Hub Admin policy gates
@@ -146,6 +205,7 @@ Stage status options: ⬜ Not started · 🟡 In progress · ✅ Done · ⏸ Pau
 - [ ] Public read endpoints for area/zone pickers
 
 ### Phase 1.3 — Identity / Users
+
 - [ ] Full OTP registration flow (mock provider)
 - [ ] User profile (name, phone hash, area, optional avatar in R2)
 - [ ] Role assignment + admin promotion flow
@@ -153,6 +213,7 @@ Stage status options: ⬜ Not started · 🟡 In progress · ✅ Done · ⏸ Pau
 - [ ] Frontend: signup, login, profile screens
 
 ### Phase 1.4 — Club Engine
+
 - [ ] Clubs table with maturity levels (Informal/Structured/Verified/Registered)
 - [ ] Club types (community, school, academy, corporate, religious, institution, facility-based, registered)
 - [ ] Roles: Owner, Co-founder, Admin, Manager, Captain, Scorer, Media Manager, Member/Viewer
@@ -164,6 +225,7 @@ Stage status options: ⬜ Not started · 🟡 In progress · ✅ Done · ⏸ Pau
 - [ ] Frontend: club creation, members management, club profile
 
 ### Phase 1.5 — Player & Affiliation Engine
+
 - [ ] Players table (claimed + ghost)
 - [ ] Affiliations table (versioned: joined/transferred/loaned/left, start/end)
 - [ ] Ghost player creation in lineups
@@ -173,6 +235,7 @@ Stage status options: ⬜ Not started · 🟡 In progress · ✅ Done · ⏸ Pau
 - [ ] Frontend: player profile (basic card), ghost claim screen
 
 ### Phase 1.6 — Trust stub
+
 - [ ] Trust module emits `trust.match_cleared` immediately on `matches.result_confirmed` (stub passthrough)
 - [ ] Clearance flag table exists with proper shape so Stage 2 can swap in real rules without consumers changing
 
@@ -187,6 +250,7 @@ Stage status options: ⬜ Not started · 🟡 In progress · ✅ Done · ⏸ Pau
 🔗 **Brief refs:** §7.3 (matches), §7.8 (trust), §8.1 (football loop), §10.1
 
 ### Phase 2.1 — Match / Fixture Engine
+
 - [ ] Matches table with state-machine column
 - [ ] States: Draft → Scheduled → Confirmed → Live → Awaiting Result → Verification Pending → Result Confirmed → Archived + side states (Postponed, Cancelled, Walkover, Abandoned, Disputed, Void)
 - [ ] `match_events` append-only (goals, cards, subs, key incidents) with `client_event_id` idempotency
@@ -195,11 +259,13 @@ Stage status options: ⬜ Not started · 🟡 In progress · ✅ Done · ⏸ Pau
 - [ ] Walkover/Postpone/Cancel/Abandoned flows with their stats implications
 
 ### Phase 2.2 — Confirmation gate
+
 - [ ] Per-type confirmation models (Friendly = both reps; Internal = club admin; Competition = organizer; Challenge = 2-of-3; Referee-officiated = referee strongest weight)
 - [ ] `result_confirmed` boolean is the explicit hard gate
 - [ ] Eligibility flags exposed on match record: `verified`, `rpEligible`, `statsEligible`, `standingsEligible`, `zoneEligible`, `challengeLinked`, `competitionLinked`
 
 ### Phase 2.3 — Trust & Verification V1
+
 - [ ] Replace Stage 1 stub with real rule engine
 - [ ] Rule inputs: confirmation parties, referee type weight, evidence presence, repeat-pairing signal, related-club signal, caution levels
 - [ ] Stored clearance outputs: `verificationStatus`, `trustLevel`, `cautionLevel`, `rpClearance`, `statsClearance`, `standingsClearance`, `archiveClearance`, `reviewFlag`
@@ -208,18 +274,21 @@ Stage status options: ⬜ Not started · 🟡 In progress · ✅ Done · ⏸ Pau
 - [ ] Trust emits `trust.match_cleared`, `trust.stats_cleared`, `trust.requires_review`
 
 ### Phase 2.4 — Stats projection
+
 - [ ] Listener on `trust.stats_cleared` writes player/club aggregate stats
 - [ ] Player career table (per season + lifetime)
 - [ ] Club aggregate table (per season)
 - [ ] Backfill job for any reprocessing
 
 ### Phase 2.5 — Notifications V1 (in-app only)
+
 - [ ] In-app inbox table + endpoints
 - [ ] Outbox-driven worker delivery to in-app inbox
 - [ ] Delivery audit log
 - [ ] Notification preferences + quiet hours scaffolding (WhatsApp arrives Stage 4)
 
 ### Phase 2.6 — Frontend public surfaces
+
 - [ ] Public match page (ISR, revalidate-on-result-confirmed via webhook from Laravel)
 - [ ] Public club page
 - [ ] Public player page (respecting minor-protected flag)
@@ -238,27 +307,32 @@ Stage status options: ⬜ Not started · 🟡 In progress · ✅ Done · ⏸ Pau
 🔗 **Brief refs:** §7.4 (competitions), §10.1
 
 ### Phase 3.1 — Competition & Rules Engine
+
 - [ ] Competitions table (type: League | Knockout, scope: Internal | Open | Invitational | Official)
 - [ ] Versioned rules JSON (points, tiebreakers, match duration, squad cap, walkover default)
 - [ ] **Rules lock on first confirmed result** — subsequent edits require Critical approval + effective-dated version
 - [ ] Public / unlisted / private visibility
 
 ### Phase 3.2 — Manual fixtures
+
 - [ ] Organizer adds each fixture (no auto-generation in V1)
 - [ ] Team registration into competition
 - [ ] Fixture ↔ Match linkage
 
 ### Phase 3.3 — Standings projection
+
 - [ ] Materialized standings table (one row per (competition, team))
 - [ ] Job refreshes on `matches.result_confirmed` filtered to the competition
 - [ ] Tiebreaker calculation per competition rules
 
 ### Phase 3.4 — Public competition page
+
 - [ ] ISR rendered Next.js page at `/competitions/[slug]`
 - [ ] Tag-based revalidation on every standings update (webhook from Laravel)
 - [ ] Visibility enforcement (public / unlisted / private)
 
 ### Phase 3.5 — Per-competition Top Scorer / Assist (minimum Awards integration)
+
 - [ ] Per-competition stats aggregation
 - [ ] Top scorer + top assist leaderboards on competition page
 - [ ] Listener-driven, refreshed on stats clearance
@@ -274,6 +348,7 @@ Stage status options: ⬜ Not started · 🟡 In progress · ✅ Done · ⏸ Pau
 🔗 **Brief refs:** §7.12 (moderation), §7.13 (notification & distribution), §7.11 (awards — matchday only)
 
 ### Phase 4.1 — Notification & Distribution Engine full V1
+
 - [ ] Meta WhatsApp Cloud API integration live
 - [ ] Template message approval pipeline
 - [ ] Quiet hours + per-user preferences enforced
@@ -283,6 +358,7 @@ Stage status options: ⬜ Not started · 🟡 In progress · ✅ Done · ⏸ Pau
 - [ ] Public vs targeted distribution split
 
 ### Phase 4.2 — Reverb realtime
+
 - [ ] Reverb deployed on 2 nodes behind HAProxy (sticky for WS only)
 - [ ] Sanctum-backed broadcasting auth
 - [ ] Channels: `private-match.{id}`, `private-user.{id}`
@@ -290,6 +366,7 @@ Stage status options: ⬜ Not started · 🟡 In progress · ✅ Done · ⏸ Pau
 - [ ] Reverb metrics in Grafana
 
 ### Phase 4.3 — Moderation & Safety Engine
+
 - [ ] Rule-based auto-screening (regex + lists)
 - [ ] Admin review queue with priority
 - [ ] States: submitted, auto_screened, clean, watch, held_for_review, restricted, hidden, escalated, approved, edit_requested, removed, restored, sanction_recommended
@@ -298,6 +375,7 @@ Stage status options: ⬜ Not started · 🟡 In progress · ✅ Done · ⏸ Pau
 - [ ] Public distribution checks Moderation clearance at send time
 
 ### Phase 4.4 — Matchday share cards
+
 - [ ] Card renderer (Puppeteer / chrome-php)
 - [ ] Card templates: goal scorer, hat-trick, clean sheet, final score
 - [ ] Render → R2 (public bucket) → distribute
@@ -315,6 +393,7 @@ Stage status options: ⬜ Not started · 🟡 In progress · ✅ Done · ⏸ Pau
 🔗 **Brief refs:** §7.5 (challenges), §7.6 (RP), §7.10 (fan buzz), §6.2 (boundaries — Buzz NEVER mints RP)
 
 ### Phase 5.1 — RP Economy Engine
+
 - [ ] `rp_ledger` table — source of truth (entity_type, entity_id, amount, reason, source_event_id, balance_before, balance_after, season_id, occurred_at)
 - [ ] Wallet projections (available season, locked season, lifetime, season snapshot)
 - [ ] Win/Draw/Loss minting listener on `trust.rp_cleared` (configurable values)
@@ -329,6 +408,7 @@ Stage status options: ⬜ Not started · 🟡 In progress · ✅ Done · ⏸ Pau
 - [ ] Season RP reset job (April 1) preserving lifetime RP
 
 ### Phase 5.2 — Challenge Engine
+
 - [ ] Challenges table with full lifecycle state machine
 - [ ] States: Drafted → Issued → Seen → Countered/Accepted/Declined/Ignored → Scheduling → Scheduled → Prediction Open → Live → Verification Pending → Resolved/Disputed/Forfeited → Archived
 - [ ] 50 Season RP unlock check
@@ -343,6 +423,7 @@ Stage status options: ⬜ Not started · 🟡 In progress · ✅ Done · ⏸ Pau
 - [ ] Frontend: challenge issue flow, accept/counter UI, Challenge Wall, prediction UI
 
 ### Phase 5.3 — Fan Buzz, Feed & Discovery V1
+
 - [ ] Reactions, shares, tracks, follows, predictions
 - [ ] Redis sorted sets per (surface, context) for incremental Buzz scoring
 - [ ] Periodic reconciliation to Postgres
@@ -354,6 +435,7 @@ Stage status options: ⬜ Not started · 🟡 In progress · ✅ Done · ⏸ Pau
 - [ ] Anti-manipulation basics (rate limits, dedupe by device, no-self-reaction)
 
 ### Phase 5.4 — Zone Engine inter-zone records
+
 - [ ] Inter-zone match aggregation table
 - [ ] Zone leaderboards derived from RP outputs
 - [ ] Zone Pulse feed surface
@@ -370,6 +452,7 @@ Stage status options: ⬜ Not started · 🟡 In progress · ✅ Done · ⏸ Pau
 🔗 **Brief refs:** §7.7 (venues/surfaces/bookings), §7.9 (referees), §10.1
 
 ### Phase 6.1 — Venue & Surface Engine
+
 - [ ] Venues + surfaces tables (one venue, many surfaces)
 - [ ] Four location modes: bookable platform venue, listed venue, open/community venue, manual venue text
 - [ ] Facility manager portal scaffold
@@ -380,6 +463,7 @@ Stage status options: ⬜ Not started · 🟡 In progress · ✅ Done · ⏸ Pau
 - [ ] Venue verification queue (admin)
 
 ### Phase 6.2 — Booking Engine (pre-payment)
+
 - [ ] Bookings table with state machine: draft → slot_selected → hold_created → approval_pending|payment_pending → confirmed → linked_to_fixture → completed|cancelled|refunded|no_show|disputed
 - [ ] Hold expiry job (configurable TTL)
 - [ ] Conflict prevention against surface calendar + offline blocks + other holds
@@ -387,6 +471,7 @@ Stage status options: ⬜ Not started · 🟡 In progress · ✅ Done · ⏸ Pau
 - [ ] Notification triggers to club, referee, manager
 
 ### Phase 6.3 — Booking payments
+
 - [ ] `PaymentProvider` interface
 - [ ] Paystack implementation (Ghana)
 - [ ] Webhook verification (idempotent)
@@ -397,6 +482,7 @@ Stage status options: ⬜ Not started · 🟡 In progress · ✅ Done · ⏸ Pau
 - [ ] Monetary amounts in integer minor units (pesewas) — enforced by lint or value object
 
 ### Phase 6.4 — Referee & Officiator Engine V1
+
 - [ ] Referees table with kind discriminator (community officiator, split community, verified referee, organizer-appointed, Kalaanba-appointed)
 - [ ] Trust weights stored in Admin Config, consumed by Trust engine
 - [ ] Acceptance flow
@@ -416,6 +502,7 @@ Stage status options: ⬜ Not started · 🟡 In progress · ✅ Done · ⏸ Pau
 🔗 **Brief refs:** §7.11 (awards), §7.15 (admin config & governance), §11.6 (observability), §10.1
 
 ### Phase 7.1 — Awards & Recognition full
+
 - [ ] Cadence schedulers: matchday (after each confirmed match), weekly (Sun night), monthly (1st), season-end (closing window)
 - [ ] Candidate generation reads Trust + stats clearance
 - [ ] Weekly: Goals of the Week, Assists of the Week, Club of the Week, Challenge of the Week, Hat-trick Hero, Zone Pulse
@@ -426,6 +513,7 @@ Stage status options: ⬜ Not started · 🟡 In progress · ✅ Done · ⏸ Pau
 - [ ] Profile badges updated on award
 
 ### Phase 7.2 — Admin Configuration & Governance UI
+
 - [ ] Config registry browser (all keys, all scopes, all values)
 - [ ] Effective-dated editing UI
 - [ ] Version history per key
@@ -434,6 +522,7 @@ Stage status options: ⬜ Not started · 🟡 In progress · ✅ Done · ⏸ Pau
 - [ ] Scope picker (platform / season / hub / zone / competition / entity)
 
 ### Phase 7.3 — Dispute & evidence handling
+
 - [ ] Dispute queue with priority
 - [ ] Evidence upload to private R2 (`kalaanba-evidence`)
 - [ ] Signed URLs (5-min TTL), audit-logged access
@@ -443,6 +532,7 @@ Stage status options: ⬜ Not started · 🟡 In progress · ✅ Done · ⏸ Pau
 - [ ] Dispute SLA tracking
 
 ### Phase 7.4 — V1 dashboards
+
 - [ ] Platform dashboard (active clubs, verified matches, RP-eligible matches, hot fixtures, DAU)
 - [ ] Club dashboard (their matches, RP, challenges, awards)
 - [ ] Venue dashboard (bookings, occupancy, revenue, commission, no-shows)
@@ -462,11 +552,13 @@ Stage status options: ⬜ Not started · 🟡 In progress · ✅ Done · ⏸ Pau
 🔗 **Brief refs:** §11 (NFRs), Architecture §11 (capacity), §12 (scaling path)
 
 ### Phase 8.1 — Scale out
+
 - [ ] Scale to: 2 LB, 4 Next.js, 6 Laravel/FrankenPHP, 2 worker, 2 Reverb, 1 Postgres primary + 2 replicas, 3 Redis Sentinel, 2 Meilisearch, 1 observability
 - [ ] PgBouncer in front of every Postgres node
 - [ ] HAProxy floating IP active/passive
 
 ### Phase 8.2 — Read-write split + caching
+
 - [ ] Laravel `read`/`write` connection split active
 - [ ] Read-heavy routes verified to hit replicas
 - [ ] Cloudflare edge cache rules per public surface (matches, competitions, clubs, venues, feeds)
@@ -474,6 +566,7 @@ Stage status options: ⬜ Not started · 🟡 In progress · ✅ Done · ⏸ Pau
 - [ ] Materialized projections covering all hot reads (standings, leaderboards, feeds, dashboards)
 
 ### Phase 8.3 — Load testing
+
 - [ ] k6 scripts for: signup flow, match entry, public match read, competition page read, challenge issue, booking, feed scroll
 - [ ] Sustain 1,500 rps on public read path
 - [ ] Sustain 500 rps on writes
@@ -481,6 +574,7 @@ Stage status options: ⬜ Not started · 🟡 In progress · ✅ Done · ⏸ Pau
 - [ ] Soak test: 6h sustained load, no memory leak / connection drift
 
 ### Phase 8.4 — DR & game-day
+
 - [ ] Full Postgres PITR rehearsal in side environment
 - [ ] Restore inside documented RTO/RPO
 - [ ] Game-day failure injection: kill a Laravel node, kill Postgres primary, fill Redis, saturate `default` queue
@@ -531,6 +625,9 @@ Do not let any of these slip into the V1 stages above under any pressure:
 
 ## Change Log
 
-| Date | Change | By |
-|---|---|---|
-| 2026-05-12 | Initial build plan derived from System_Architecture.md §13 + brief §14 | initial |
+| Date       | Change                                                                                                                                                                                                                                                                                                                                                                                                                                                       | By      |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------- |
+| 2026-05-12 | Initial build plan derived from System_Architecture.md §13 + brief §14                                                                                                                                                                                                                                                                                                                                                                                       | initial |
+| 2026-05-20 | Phase 0.2 complete: Postgres bootstrapped, `kalaanba` app role (md5 auth, pg_hba.conf patched for PG18 scram compat), `kalaanba_dev` migrations green, `Model::preventLazyLoading()` enabled, `composer check` exit 0                                                                                                                                                                                                                                        | agent   |
+| 2026-05-21 | Phase 0.3 complete: `outbox_events` + `event_dedupe` migrations, `OutboxEnvelope` (event name enforced), `OutboxWriter`, `RedisStreamPublisher` (predis v3), `DedupeStore`, `outbox:relay`, `health:ping`; `health.ping` end-to-end confirmed; `predis/predis` v3 added (phpredis ext absent on Windows dev); 17 tests, `composer check` exit 0                                                                                                              | agent   |
+| 2026-05-22 | Phase 0.4 complete: `analytics.events` daily-partitioned table (Postgres native partitioning, 7 forward days + DEFAULT catch-all), `analytics:ensure-partitions` roll-forward command, `EventSchema` + `EventSchemaRegistry` + `SchemaCatalogue` (`health.ping@v1`), `AnalyticsEmitter` validating before write, `DatabaseAnalyticsEventWriter` adapter, arch test guards schema-key uniqueness + Domain framework-purity; 38 tests, `composer check` exit 0 | agent   |

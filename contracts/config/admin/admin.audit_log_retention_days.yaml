@@ -1,0 +1,11 @@
+key: admin.audit_log_retention_days
+engine: admin-governance
+scope: platform
+value_type: integer
+default: "2555"
+approval_level: critical
+description: |
+  Number of days admin audit-log partitions are retained online before being
+  detached for cold archive. Default ≈ 7 years to match common financial /
+  regulatory retention guidance. Critical-tier change — irreversible data
+  loss possible if shortened without compensating archive in place.

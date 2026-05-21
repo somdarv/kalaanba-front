@@ -1,0 +1,10 @@
+key: rp.win
+engine: rp-economy
+scope: platform
+value_type: integer
+default: "10"
+approval_level: low
+description: |
+  Respect Points awarded to a team for a match win.
+  Applies to all matches in all competitions unless overridden per scope.
+  Must be ≥ 1.

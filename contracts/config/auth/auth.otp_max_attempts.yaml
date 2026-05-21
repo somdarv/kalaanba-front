@@ -1,0 +1,10 @@
+key: auth.otp_max_attempts
+engine: admin-governance
+scope: platform
+value_type: integer
+default: "5"
+approval_level: medium
+description: |
+  Maximum number of verification attempts permitted per issued OTP. After this
+  many wrong submissions the OTP record is invalidated and the user must
+  request a new one. Defends against on-line code guessing.

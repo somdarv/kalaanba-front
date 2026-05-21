@@ -1,0 +1,11 @@
+key: auth.otp_length
+engine: admin-governance
+scope: platform
+value_type: integer
+default: "6"
+approval_level: high
+description: |
+  Length (in decimal digits) of generated OTPs. 6 digits = ~20 bits of entropy,
+  paired with auth.otp_max_attempts (default 5) and auth.otp_ttl_seconds
+  (default 300). Changes require Hub-level approval because they alter the
+  security/usability trade-off across all login surfaces.

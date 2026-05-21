@@ -42,6 +42,7 @@ You are the **Implementer**.
 - [ ] Events to emit identified
 - [ ] Idempotency strategy chosen
 - [ ] `engineering-standards.instructions.md` re-read — file size, naming, layering, DB indexing, API versioning, error handling, observability all respected
+- [ ] Canonical engine doc(s) at `docs/engines/<engine>/` read THIS TURN, and cited explicitly in the response (per `.github/instructions/engine-docs-mandatory.instructions.md`)
 
 ## Post-flight gates (RUN LOCALLY — refuse to mark Stage 6 done if any fail)
 

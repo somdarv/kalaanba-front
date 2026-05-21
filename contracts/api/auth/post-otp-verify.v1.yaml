@@ -1,0 +1,117 @@
+openapi: 3.1.0
+info:
+  title: "Auth — Verify OTP"
+  version: "1.0.0"
+  description: |
+    Verifies a one-time password against the active phone-bound OTP record
+    and, on success, issues a Sanctum bearer token identical in shape to
+    POST /api/v1/auth/sessions (WP-A).
+
+paths:
+  /api/v1/auth/otp/verify:
+    post:
+      summary: Verify an OTP and exchange it for a bearer token
+      operationId: verifyOtp
+      security: []
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema: { type: string, minLength: 1, maxLength: 128 }
+        - in: header
+          name: X-Request-Id
+          required: false
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phone_e164, otp]
+              additionalProperties: false
+              properties:
+                phone_e164:
+                  type: string
+                  pattern: "^\\+[1-9]\\d{6,14}$"
+                  maxLength: 16
+                otp:
+                  type: string
+                  pattern: "^[0-9]{4,10}$"
+                  maxLength: 10
+                device_name:
+                  type: string
+                  maxLength: 64
+                  nullable: true
+      responses:
+        "200":
+          description: OTP verified, token issued
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: object
+                    required: [token, token_type, expires_at, user]
+                    properties:
+                      token: { type: string }
+                      token_type: { type: string, enum: [Bearer] }
+                      expires_at: { type: string, format: date-time }
+                      user:
+                        type: object
+                        required: [id, name, email, role]
+                        properties:
+                          id: { type: string }
+                          name: { type: string }
+                          email: { type: string, format: email }
+                          role:
+                            type: string
+                            enum:
+                              - fan
+                              - player
+                              - club_rep
+                              - club_admin
+                              - comp_org
+                              - referee
+                              - officiator
+                              - facility_mgr
+                              - hub_admin
+                              - kalaanba_admin
+                              - super_admin
+                  meta:
+                    type: object
+                    properties:
+                      request_id: { type: string }
+                      api_version: { type: string, enum: [v1] }
+                      idempotent_replay: { type: boolean }
+        "400": { $ref: "#/components/schemas/ErrorResponse" }
+        "422":
+          description: |
+            OTP failure. Error codes:
+              - auth.otp_invalid
+              - auth.otp_expired
+              - auth.otp_attempts_exhausted
+              - auth.otp_not_found
+              - auth.account_archived
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429": { $ref: "#/components/schemas/ErrorResponse" }
+
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details: { type: object }
+            request_id: { type: string }

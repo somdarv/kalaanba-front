@@ -1,0 +1,9 @@
+key: challenge.min_rp_to_issue
+engine: challenge
+scope: platform
+value_type: integer
+default: "50"
+approval_level: medium
+description: |
+  Minimum Respect Points a club must have to issue a challenge.
+  Prevents farming and low-effort challenges.

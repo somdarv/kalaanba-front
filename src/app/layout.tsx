@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Inter, Sora } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
-import { KxThemeProvider } from "@/components/showcase/theme-provider";
+import { AppProviders } from "@/components/providers/app-providers";
+import { themeBootstrapScript } from "@/components/providers/theme-provider";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -23,29 +25,24 @@ export const metadata: Metadata = {
     "Kalaanba runs grassroots football in Ghana — leagues, tournaments, and a verified record of every player's career.",
 };
 
-// Inline before-paint script: applies the persisted theme class to <html>
-// before first paint so light-mode users never see a dark flash.
-const themeBootstrap = `
-(function () {
-  try {
-    var stored = localStorage.getItem('kalaanba-theme');
-    if (stored === 'light') document.documentElement.classList.add('light');
-  } catch (e) {}
-})();
-`;
-
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${sora.variable}`} suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: themeBootstrap }} />
-      </head>
+    <html
+      lang="en"
+      className={`${inter.variable} ${sora.variable}`}
+      suppressHydrationWarning
+    >
       <body className="min-h-dvh bg-bg text-fg">
-        <KxThemeProvider>{children}</KxThemeProvider>
+        <Script
+          id="kalaanba-theme-bootstrap"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{ __html: themeBootstrapScript }}
+        />
+        <AppProviders>{children}</AppProviders>
       </body>
     </html>
   );
