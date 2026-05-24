@@ -155,16 +155,21 @@ Phase 0.6 is delivered as three sequential Work Packets so each can clear the fu
 - [x] Custom cache handler `cache-handler.mjs` (@neshca/cache-handler + `redis-strings` adapter, `kx:next:` prefix, 1s timeout, LRU fallback) — production-only
 - [x] Pipeline gates: eslint, tsc --noEmit (TS strict + noUncheckedIndexedAccess), vitest green (1 file, 8 tests), `next build` standalone OK
 
-### WP-20260522-theme-rebuild — Theme system v2
+### WP-20260522-theme-rebuild — Theme system v2 ❌ Reversed 2026-05-24
 
 - [x] Legacy routing fixed: `(legacy)` route group → real `/legacy/*` segment; index at `/legacy`, original landing recovered from git `ecc7aec` at `/legacy/landing`, prototype showcase at `/legacy/showcase`
-- [x] `globals.css` v2 rewrite: dropped `kx-` prefix for clean semantic names (`bg`, `surface`, `fg`, `fg-muted`, `pink`, `blue`, `success`, `warning`, `danger`, `border`, `border-strong`, `divider`, `ring`); dark = default at `:root` (`color-scheme: dark`); light at `:root[data-theme="light"]`; `--warning #f59e0b` (amber) and `--danger #ef4444` (red) clearly distinct from brand pink; `--border 0.05α` / `--divider 0.06α` always subtle; `--kx-*` aliases + `html.light` selector + all `kx-*` keyframes preserved as backwards-compat for archived components
-- [x] New `ThemeProvider` (`src/components/providers/theme-provider.tsx`) using `useSyncExternalStore` for both localStorage choice and `prefers-color-scheme` media query — live system-pref reactivity, no setState-in-effect; exports `themeBootstrapScript` IIFE injected into `<head>` for FOUC-free SSR; `data-theme` attribute drives styling (semantic, replaces class toggling)
-- [x] Old archive `KxThemeProvider` deleted; replaced with thin compat shim (`useKxTheme` + no-op `KxThemeProvider`) so archived `theme-toggle.tsx` keeps compiling
-- [x] `framer-motion` installed; wired into `/legacy` index as proof-of-life (staggered card entrance, ease curve `[0.2, 0, 0, 1]`)
-- [x] New `theme-provider.test.tsx` (3 tests, happy-dom): defaults to system + paints `data-theme=dark`; `setTheme("light")` persists to `kalaanba-theme` and updates DOM; live `prefers-color-scheme` change propagates
-- [x] Pipeline gates: eslint, typecheck, vitest (2 files, 11 tests), `next build` standalone OK — routes: `/`, `/legacy`, `/legacy/landing`, `/legacy/showcase`
-- [x] Bug-fix pass after first user review: (a) inline `<script dangerouslySetInnerHTML>` in `<head>` swapped for `next/script` `<Script id strategy="beforeInteractive" dangerouslySetInnerHTML>` (Next 16 requires `id` for inline scripts; fixes "scripts inside React components are never executed" warning at `layout.tsx:39`); (b) hydration mismatch on `/legacy/showcase` `KxFixtureRow` date column (`Fri 22 May` vs `Fri, May 22` — Node vs Chromium `Intl.DateTimeFormat` locale drift) fixed via `suppressHydrationWarning` on the locale-formatted `<span>`s; (c) `ThemeProvider` now also toggles `html.light` / `html.dark` classes and `style.colorScheme` (in addition to `data-theme` attribute) for max archive compat — bootstrap script does the same to prevent FOUC
+- [x] `globals.css` v2 rewrite: dropped `kx-` prefix for clean semantic names (kept in place — still the basis of the new design language)
+- [-] Runtime `ThemeProvider` + bootstrap script + `ThemeToggle` — **removed 2026-05-24** because the switcher stuttered and felt cheap. CSS light/dark token blocks preserved. New switcher (cookie-based, SSR-stable, settings-only segmented control) will be built in Phase 6 of the UI rebuild — see [docs/design-system/REBUILD_PLAN.md](../design-system/REBUILD_PLAN.md).
+
+### WP-20260524-ui-rebuild — UI Foundation rebuild (live)
+
+🔗 Canonical docs: [docs/design-system/README.md](../design-system/README.md)
+
+- [x] Old theme system fully excised (provider, test, toggle, bootstrap script, barrel export, archive shim).
+- [x] Design language spec authored — `docs/design-system/DESIGN_LANGUAGE.md` (solid · proactive · premium).
+- [x] Phase-by-phase rebuild plan authored — `docs/design-system/REBUILD_PLAN.md`.
+- [x] `src/components/ui/` cleared. Legacy showcase preserved under `_archive/` for visual reference only.
+- [ ] **Next**: Phase 1 — token rename + `@theme inline` registration so utilities resolve.
 
 ### Phase 0.8 — Observability
 

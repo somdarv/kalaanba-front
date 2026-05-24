@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Sora } from "next/font/google";
-import Script from "next/script";
 import "./globals.css";
 import { AppProviders } from "@/components/providers/app-providers";
-import { themeBootstrapScript } from "@/components/providers/theme-provider";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -37,11 +35,6 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-dvh bg-bg text-fg">
-        <Script
-          id="kalaanba-theme-bootstrap"
-          strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{ __html: themeBootstrapScript }}
-        />
         <AppProviders>{children}</AppProviders>
       </body>
     </html>

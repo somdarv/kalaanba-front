@@ -7,8 +7,9 @@
    Tailwind utilities (`bg-bg`, `text-fg`, `border-border`, `bg-pink`,
    `text-success`, etc.) map onto them via `@theme inline`.
 
-   Default = DARK. Light theme is opt-in via `data-theme="light"` on <html>
-   (the new ThemeProvider sets this attribute before hydration to avoid FOUC).
+   Default = DARK. Light theme is opt-in via `data-theme="light"` on <html>.
+   The runtime theme-switcher was removed; both schemes remain defined so
+   a new switching mechanism can be built on top of these tokens.
 
    Brand vs state colors are visually distinct:
      - pink   → primary brand

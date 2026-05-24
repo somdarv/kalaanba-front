@@ -1,23 +1,17 @@
 "use client";
 
 /**
- * Compat shim — the original archive `KxThemeProvider` was deleted in
- * WP-20260522-theme-rebuild. This file exists ONLY so archived
- * components (`theme-toggle.tsx`, etc.) continue to compile and run by
- * delegating to the new `ThemeProvider` at
- * `@/components/providers/theme-provider`.
- *
- * Do NOT use these exports in new code. New code uses `useTheme()`
- * from `@/components/providers/theme-provider` directly.
+ * Inert stub — the live theme system was removed. Archived showcase
+ * components keep importing `useKxTheme` / `KxThemeProvider` /
+ * `KxThemeToggle`, so these no-op exports keep the archive routes
+ * building. The toggle renders nothing; the hook returns a fixed
+ * dark mode. Do NOT use in new code.
  */
 
-import { useTheme } from "@/components/providers/theme-provider";
-
 export function useKxTheme() {
-  const { resolvedTheme, setTheme } = useTheme();
   return {
-    mode: resolvedTheme,
-    toggle: () => setTheme(resolvedTheme === "dark" ? "light" : "dark"),
+    mode: "dark" as const,
+    toggle: () => {},
   };
 }
 
