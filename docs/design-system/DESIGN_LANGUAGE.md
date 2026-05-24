@@ -1,6 +1,6 @@
 # Kalaanba — Design Language
 
-> **Tagline**: *Solid. Proactive. Premium.*
+> **Tagline**: _Solid. Proactive. Premium._
 > **Status**: Spec — implementation begins per `REBUILD_PLAN.md`.
 > **Last updated**: 2026-05-24
 
@@ -11,12 +11,15 @@ This document is the **source of truth** for how Kalaanba looks, moves, and resp
 ## 1. North Star — Three Principles
 
 ### 1.1 Solid
+
 Weight, depth, and intention in every surface. Borders carry the structure; shadows whisper, not shout. No floating, no haze, no "uncertain" elements. A user should feel the product is **built**, not assembled.
 
 ### 1.2 Proactive
-The UI moves *with* the user. Hover gives feedback before the click. Focus is loud. Pressed states are immediate. The product anticipates — search starts narrowing as you type, primary actions glow on hover, the cursor always tells you what's clickable. Nothing is passive.
+
+The UI moves _with_ the user. Hover gives feedback before the click. Focus is loud. Pressed states are immediate. The product anticipates — search starts narrowing as you type, primary actions glow on hover, the cursor always tells you what's clickable. Nothing is passive.
 
 ### 1.3 Premium
+
 Restraint is the brand. One primary action per viewport. Generous whitespace. Tight display tracking. Quiet defaults. The "wow" moments (aurora hero, score reveals) are deliberate, not constant. The product trusts itself enough to be calm.
 
 ---
@@ -29,7 +32,7 @@ Tokens live in `src/app/globals.css`. **Code never references colors literally �
 
 - Semantic, not brand-literal: `--primary` not `--pink`.
 - Paired foreground/background: every fillable token gets an `--on-X` partner. Example: `--primary` (bg) ↔ `--on-primary` (text/icon color readable on it). Swap the brand color, every pairing rebalances.
-- Internal-key names are stable; the *value* may change per theme/season.
+- Internal-key names are stable; the _value_ may change per theme/season.
 
 ### 2.2 Color tokens (the full set)
 
@@ -78,15 +81,15 @@ Tokens live in `src/app/globals.css`. **Code never references colors literally �
 --radius-card-lg    2rem      /* hero / feature cards */
 ```
 
-### 2.4 Elevation — *recipes*, not loose shadows
+### 2.4 Elevation — _recipes_, not loose shadows
 
 Premium = combined recipes. Each tier is a **prescription**: background + border + shadow + optional inset highlight.
 
-| Tier | Use cases | Recipe |
-|---|---|---|
-| **flat** | Inline regions, list rows, dividers | `bg-surface` + `border-border` |
-| **raised** | Cards, panels, sticky bars | `bg-surface-elev` + `border-border-strong` + `shadow-md` + inset highlight `0 1px 0 rgba(255,255,255,0.04)` |
-| **floating** | Modals, popovers, toasts, dropdowns | `bg-surface-overlay` + `border-border-strong` + `shadow-lg` + `backdrop-blur(18px)` |
+| Tier         | Use cases                           | Recipe                                                                                                      |
+| ------------ | ----------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| **flat**     | Inline regions, list rows, dividers | `bg-surface` + `border-border`                                                                              |
+| **raised**   | Cards, panels, sticky bars          | `bg-surface-elev` + `border-border-strong` + `shadow-md` + inset highlight `0 1px 0 rgba(255,255,255,0.04)` |
+| **floating** | Modals, popovers, toasts, dropdowns | `bg-surface-overlay` + `border-border-strong` + `shadow-lg` + `backdrop-blur(18px)`                         |
 
 The inset top highlight on `raised` and the blur on `floating` are what separate this from "flat web".
 
@@ -117,13 +120,13 @@ One ease, two durations. Anything outside this needs justification.
 
 ### 3.2 Interaction recipe (applies to every interactive primitive)
 
-| State | Effect |
-|---|---|
-| Default | Token-defined |
-| Hover | `translateY(-1px)` + border step up + (if filled) shadow step up |
-| Focus-visible | `--focus-ring` outline 2px offset 2px |
-| Active / Press | `translate(0)` + `scale(0.985)` + shadow step down |
-| Disabled | `opacity: 0.5` + `pointer-events: none` + `cursor: not-allowed` |
+| State          | Effect                                                           |
+| -------------- | ---------------------------------------------------------------- |
+| Default        | Token-defined                                                    |
+| Hover          | `translateY(-1px)` + border step up + (if filled) shadow step up |
+| Focus-visible  | `--focus-ring` outline 2px offset 2px                            |
+| Active / Press | `translate(0)` + `scale(0.985)` + shadow step down               |
+| Disabled       | `opacity: 0.5` + `pointer-events: none` + `cursor: not-allowed`  |
 
 ### 3.3 Reduced motion
 
@@ -136,6 +139,7 @@ One ease, two durations. Anything outside this needs justification.
 ### 4.1 Catalogue (target — built per REBUILD_PLAN)
 
 **Primitives** (`src/components/ui/`):
+
 - `Button` — variants `primary | secondary | ghost | danger`, sizes `sm | md | lg`, with leading/trailing icon + loading.
 - `IconButton` — circular, same variants/sizes.
 - `Card` — `flat | raised`, `interactive` flag.
@@ -151,6 +155,7 @@ One ease, two durations. Anything outside this needs justification.
 - `Skeleton` — shimmer animation only here, gated by `--dur-graceful`.
 
 **Composed pieces** (`src/components/site/` or `src/components/<feature>/`):
+
 - `<LiveSurface variant="aurora" | "mesh" | "glass">` — the one opt-in flourish primitive that rehouses the aurora/mesh keyframes. Used on landing/hero only.
 - `<Eyebrow>` — the 12px uppercase tracked label.
 - `<StatBlock>` — numeric display with tabular-nums.
@@ -197,7 +202,7 @@ ADR will be drafted before implementation.
 
 ## 7. What's archived (do not copy)
 
-`src/components/_archive/` and `src/app/legacy/` preserve the previous "kx-*" language for visual reference. **Do not import from these paths in new code.** They are excluded from typecheck/eslint and may rot. The `/legacy/showcase` route stays built so designers can compare old vs new.
+`src/components/_archive/` and `src/app/legacy/` preserve the previous "kx-\*" language for visual reference. **Do not import from these paths in new code.** They are excluded from typecheck/eslint and may rot. The `/legacy/showcase` route stays built so designers can compare old vs new.
 
 ---
 
