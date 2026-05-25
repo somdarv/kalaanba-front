@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter, Sora } from "next/font/google";
 import "./globals.css";
 import { AppProviders } from "@/components/providers/app-providers";
+import { ThemeProvider } from "@/components/providers/theme-provider";
+import { ThemeScript } from "@/components/providers/theme-script";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -34,8 +36,13 @@ export default function RootLayout({
       className={`${inter.variable} ${sora.variable}`}
       suppressHydrationWarning
     >
+      <head>
+        <ThemeScript />
+      </head>
       <body className="min-h-dvh bg-bg text-fg">
-        <AppProviders>{children}</AppProviders>
+        <ThemeProvider>
+          <AppProviders>{children}</AppProviders>
+        </ThemeProvider>
       </body>
     </html>
   );

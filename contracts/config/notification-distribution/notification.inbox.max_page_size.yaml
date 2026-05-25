@@ -1,0 +1,10 @@
+key: notification.inbox.max_page_size
+engine: notification-distribution
+scope: platform
+value_type: integer
+default: "100"
+approval_level: medium
+description: |
+  Hard cap on the `limit` query parameter for GET /api/v1/me/notifications.
+  Requests asking for more are clamped to this value. Raising this above
+  ~200 risks API latency budget breach (engineering-standards §13).

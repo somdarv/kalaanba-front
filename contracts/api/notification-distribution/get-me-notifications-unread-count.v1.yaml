@@ -1,0 +1,46 @@
+openapi: 3.1.0
+info:
+  title: "Notification Inbox — Unread count"
+  version: "1.0.0"
+
+paths:
+  /api/v1/me/notifications/unread-count:
+    get:
+      summary: Return the authenticated user's unread inbox badge count
+      operationId: getMyNotificationsUnreadCount
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: header
+          name: X-Request-Id
+          required: false
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: |
+            Count of inbox items whose status is not in {seen, acted_on, expired,
+            cancelled}. Capped at notification.inbox.unread_badge_cap; when the
+            true count exceeds the cap, `truncated` is `true`.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: object
+                    required: [count, truncated]
+                    properties:
+                      count: { type: integer, minimum: 0 }
+                      truncated: { type: boolean }
+                  meta:
+                    type: object
+        "401":
+          description: Missing or invalid bearer token
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: SanctumPersonalAccessToken

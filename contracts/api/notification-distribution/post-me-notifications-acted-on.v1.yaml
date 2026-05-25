@@ -1,0 +1,43 @@
+openapi: 3.1.0
+info:
+  title: "Notification Inbox — Mark acted-on"
+  version: "1.0.0"
+
+paths:
+  /api/v1/me/notifications/{id}/acted-on:
+    post:
+      summary: Mark an actionable inbox item as completed by the authenticated user
+      operationId: markMyNotificationActedOn
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema: { type: string, minLength: 1, maxLength: 128 }
+        - in: header
+          name: X-Request-Id
+          required: false
+          schema: { type: string, format: uuid }
+      responses:
+        "204":
+          description: |
+            Item is now in `acted_on` status. Idempotent: re-applying to an
+            already-acted-on/expired/cancelled item is a no-op.
+        "401":
+          description: Missing or invalid bearer token
+        "404":
+          description: |
+            Item not found OR not owned by the authenticated user. We do not
+            distinguish to avoid leaking the existence of other users' items.
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: SanctumPersonalAccessToken

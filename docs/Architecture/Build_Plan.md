@@ -287,7 +287,7 @@ Phase 0.6 is delivered as three sequential Work Packets so each can clear the fu
 
 ### Phase 2.5 — Notifications V1 (in-app only)
 
-- [ ] In-app inbox table + endpoints
+- [x] In-app inbox table + endpoints _(WP-20260525-notif-inbox-v1 — `notification_inbox` table, GET /me/notifications, GET /me/notifications/unread-count, POST /me/notifications/{id}/seen, POST /me/notifications/{id}/acted-on; contracts in `contracts/api/notification-distribution/` + 3 config keys; module bound in `NotificationDistributionServiceProvider`)_
 - [ ] Outbox-driven worker delivery to in-app inbox
 - [ ] Delivery audit log
 - [ ] Notification preferences + quiet hours scaffolding (WhatsApp arrives Stage 4)

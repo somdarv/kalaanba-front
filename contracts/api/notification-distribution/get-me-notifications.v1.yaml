@@ -1,0 +1,111 @@
+openapi: 3.1.0
+info:
+  title: "Notification Inbox — List my notifications"
+  version: "1.0.0"
+
+paths:
+  /api/v1/me/notifications:
+    get:
+      summary: List the authenticated user's in-app inbox items, newest first
+      operationId: listMyNotifications
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: header
+          name: X-Request-Id
+          required: false
+          schema: { type: string, format: uuid }
+        - in: query
+          name: cursor
+          required: false
+          description: Opaque cursor from a prior response's `meta.next_cursor`.
+          schema: { type: string, maxLength: 256 }
+        - in: query
+          name: limit
+          required: false
+          description: |
+            Page size. Clamped to [1, notification.inbox.max_page_size]. Defaults
+            to notification.inbox.default_page_size when omitted.
+          schema: { type: integer, minimum: 1, maximum: 100 }
+        - in: query
+          name: status
+          required: false
+          description: Filter by lifecycle status (stable internal key).
+          schema:
+            type: string
+            enum: [created, queued, sent, delivered, seen, acted_on, expired, cancelled, failed]
+        - in: query
+          name: category
+          required: false
+          description: Filter by source category (stable internal key).
+          schema:
+            type: string
+            enum: [match, challenge, trust, referee, competition, rp, player, admin, system]
+      responses:
+        "200":
+          description: Page of inbox items
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: "#/components/schemas/InboxItem" }
+                  meta:
+                    type: object
+                    required: [next_cursor, limit]
+                    properties:
+                      next_cursor: { type: [string, "null"] }
+                      limit: { type: integer }
+        "401":
+          description: Missing or invalid bearer token
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: SanctumPersonalAccessToken
+  schemas:
+    InboxItem:
+      type: object
+      required:
+        - id
+        - template_key
+        - category
+        - urgency
+        - status
+        - title
+        - body
+        - action_url
+        - source_type
+        - source_id
+        - created_at
+        - seen_at
+        - acted_on_at
+        - expires_at
+      properties:
+        id: { type: string, format: uuid }
+        template_key:
+          type: string
+          description: Stable internal key (e.g. match.result.confirmation.request).
+        category:
+          type: string
+          enum: [match, challenge, trust, referee, competition, rp, player, admin, system]
+        urgency:
+          type: string
+          enum: [info, normal, important, urgent, critical]
+        status:
+          type: string
+          enum: [created, queued, sent, delivered, seen, acted_on, expired, cancelled, failed]
+        title: { type: string }
+        body: { type: string }
+        action_url: { type: [string, "null"] }
+        source_type: { type: string }
+        source_id: { type: [string, "null"] }
+        created_at: { type: string, format: date-time }
+        seen_at: { type: [string, "null"], format: date-time }
+        acted_on_at: { type: [string, "null"], format: date-time }
+        expires_at: { type: [string, "null"], format: date-time }

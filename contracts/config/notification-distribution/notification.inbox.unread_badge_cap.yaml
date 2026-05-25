@@ -1,0 +1,11 @@
+key: notification.inbox.unread_badge_cap
+engine: notification-distribution
+scope: platform
+value_type: integer
+default: "99"
+approval_level: low
+description: |
+  Maximum integer returned by GET /api/v1/me/notifications/unread-count. The
+  exact count is computed up to this cap; anything beyond is reported as the
+  cap value with `truncated: true`. Keeps the badge endpoint cheap on hot
+  inboxes (engineering-standards §13).

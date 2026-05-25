@@ -23,42 +23,67 @@
    ===================================================================== */
 
 :root {
-  color-scheme: dark;
+  color-scheme: dark light;
 
-  /* Brand */
+  /* Brand (literal source colors) */
   --pink: #f55694;
   --blue: #56b7f5;
 
+  /* Semantic brand aliases — use these in new code (DESIGN_LANGUAGE §2.2) */
+  --primary:         var(--pink);
+  --primary-hover:   color-mix(in oklab, var(--pink) 92%, white 8%);
+  --primary-pressed: color-mix(in oklab, var(--pink) 88%, black 12%);
+  --accent:          var(--blue);
+
   /* State (visually distinct from each other and from brand) */
-  --success: #16a34a; /* green-600  */
-  --warning: #f59e0b; /* amber-500  */
-  --danger:  #ef4444; /* red-500    */
+  --success: #16a34a; /* green-600              */
+  --warning: #f59e0b; /* amber-500              */
+  --danger:  #ef4444; /* dark-mode: brighter red so error text/icons read clearly on dark surfaces */
 
   /* Neutrals — dark default */
-  --bg:           #0b101d;
-  --surface:      #161b26;
-  --surface-2:    #1a202d;
-  --fg:           #f3f4f8;
-  --fg-muted:     #c0c0c0;
-  --on-pink:      #ffffff;
-  --on-blue:      #0b101d;
-  --on-success:   #ffffff;
-  --on-warning:   #1a1100;
-  --on-danger:    #ffffff;
+  --bg:              #0b101d;
+  --surface:         #161b26;
+  --surface-2:       #1a202d;
+  --surface-elev:    var(--surface-2);                                  /* raised cards, popovers */
+  --surface-overlay: color-mix(in oklab, var(--bg) 78%, white 4%);      /* sheets, dialog backdrops */
+  --fg:              #f3f4f8;
+  --fg-muted:        #c0c0c0;
+  --fg-subtle:       color-mix(in oklab, var(--fg) 55%, transparent);   /* placeholders, captions */
+  --on-pink:         #ffffff;
+  --on-blue:         #ffffff;
+  --on-primary:      var(--on-pink);
+  --on-accent:       var(--on-blue);
+  --on-success:      #ffffff;
+  --on-warning:      #1a1100;
+  --on-danger:       #ffffff;
 
-  /* Borders / dividers — always subtle */
-  --border:        rgba(255, 255, 255, 0.05);
-  --border-strong: rgba(255, 255, 255, 0.10);
-  --divider:       rgba(255, 255, 255, 0.06);
+  /* Borders / dividers — subtle but visible */
+  --border:        rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.14);
+  --divider:       rgba(255, 255, 255, 0.10);
+
+  /* Hover overlay — used by ghost/quiet surfaces. Light mode overrides below
+     swap to a subtle brand tint so light-mode hovers don't look greyish. */
+  --hover-overlay:    rgba(255, 255, 255, 0.10);
+  --hover-overlay-strong: rgba(255, 255, 255, 0.14);
+
+  /* Secondary button hover — a clean neutral lift in both themes.
+     Dark: surface-2 brightened with white; Light: a touch darker than surface-2. */
+  --secondary-hover:  #232a39;
+  --secondary-active: #2a3142;
 
   /* Focus ring */
-  --ring: rgba(245, 86, 148, 0.35);
+  --ring:        rgba(245, 86, 148, 0.35);
+  --focus-ring:  var(--ring);
 
   /* Shadows */
   --shadow-sm:   0 2px 8px -2px rgba(0, 0, 0, 0.4);
   --shadow-md:   0 14px 36px -14px rgba(0, 0, 0, 0.55);
   --shadow-lg:   0 30px 60px -30px rgba(0, 0, 0, 0.7);
   --shadow-pink: 0 18px 40px -18px rgba(245, 86, 148, 0.45);
+  /* Pressed = inset shadow flips the surface from "raised" to "sunk in".
+     Used by Pressable / Button / Chip to express the press without translate. */
+  --shadow-pressed: inset 0 2px 0 rgba(0, 0, 0, 0.22), inset 0 1px 2px rgba(0, 0, 0, 0.18);
 
   /* Shape */
   --radius-pill: 999px;
@@ -67,14 +92,22 @@
   --radius-card-lg: 2rem;
   --radius-control: 1.25rem;
 
-  /* Motion — Framer Motion is preferred for component animations.
-     CSS easings remain for ambient/global transitions. */
-  --ease-standard: cubic-bezier(0.22, 0.61, 0.36, 1);
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  /* Motion — "cozy yet authoritative" (DESIGN_LANGUAGE §3.1 / §3.2).
+     CSS owns state-feedback on primitives. Framer Motion owns orchestration
+     and is lazy-loaded per route. */
+  --ease-out:      cubic-bezier(0.22, 1, 0.36, 1);    /* default — soft landing */
+  --ease-entrance: cubic-bezier(0.16, 1.05, 0.4, 1);  /* hint of overshoot on arrival */
+  --ease-exit:     cubic-bezier(0.4, 0, 1, 1);        /* confident, snappy exit */
+  --ease-standard: var(--ease-out);                    /* legacy alias for archive */
+
+  --dur-quick:      160ms; /* state changes (hover, focus, press) */
+  --dur-graceful:   280ms; /* entries, transitions */
+  --dur-deliberate: 420ms; /* large overlays (sheets, dialogs) */
 
   /* Type */
   --font-sans:    var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-display: var(--font-sora),  var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-input:   max(16px, 1rem); /* iOS zoom trap — DESIGN_LANGUAGE §9.3 */
 
   /* ---- Backwards-compat aliases for archived components ---- */
   --kx-pink: var(--pink);
@@ -111,25 +144,35 @@
   color-scheme: light;
   --bg:        #f8f9fb;
   --surface:   #ffffff;
-  --surface-2: #f3f4f8;
+  --surface-2: #fafbfd;
   --fg:        #1f2330;
   --fg-muted:  #555a66;
   --on-pink:   #ffffff;
-  --on-blue:   #0b101d;
+  --on-blue:   #ffffff;
   --on-success:#ffffff;
   --on-warning:#1a1100;
   --on-danger: #ffffff;
+  --danger:    #cc3838; /* muted red reads better on light surfaces */
 
-  --border:        rgba(15, 18, 30, 0.06);
-  --border-strong: rgba(15, 18, 30, 0.12);
-  --divider:       rgba(15, 18, 30, 0.07);
+  --border:        rgba(15, 18, 30, 0.10);
+  --border-strong: rgba(15, 18, 30, 0.18);
+  --divider:       rgba(15, 18, 30, 0.12);
+
+  /* Light-mode hover: a soft brand tint reads warmer & more premium than
+     a flat grey wash. Pink at 7% feels like a hint, not a stain. */
+  --hover-overlay:        rgba(245, 86, 148, 0.07);
+  --hover-overlay-strong: rgba(245, 86, 148, 0.12);
+
+  --secondary-hover:  #eef0f4;
+  --secondary-active: #e4e7ed;
 
   --ring: rgba(245, 86, 148, 0.28);
 
-  --shadow-sm:   0 2px 8px -2px rgba(15, 18, 30, 0.06);
-  --shadow-md:   0 12px 30px -14px rgba(15, 18, 30, 0.18);
-  --shadow-lg:   0 30px 60px -30px rgba(15, 18, 30, 0.25);
+  --shadow-sm:   0 1px 6px -1px rgba(15, 18, 30, 0.07);
+  --shadow-md:   0 4px 18px -4px rgba(15, 18, 30, 0.10);
+  --shadow-lg:   0 10px 32px -8px rgba(15, 18, 30, 0.14);
   --shadow-pink: 0 18px 40px -18px rgba(245, 86, 148, 0.55);
+  --shadow-pressed: inset 0 2px 0 rgba(15, 18, 30, 0.08), inset 0 1px 2px rgba(15, 18, 30, 0.06);
 }
 
 /* Compatibility selector: archived components toggle `html.light` directly.
@@ -138,63 +181,101 @@ html.light {
   color-scheme: light;
   --bg:        #f8f9fb;
   --surface:   #ffffff;
-  --surface-2: #f3f4f8;
+  --surface-2: #fafbfd;
   --fg:        #1f2330;
   --fg-muted:  #555a66;
   --on-pink:   #ffffff;
-  --on-blue:   #0b101d;
+  --on-blue:   #ffffff;
   --on-success:#ffffff;
   --on-warning:#1a1100;
   --on-danger: #ffffff;
-  --border:        rgba(15, 18, 30, 0.06);
-  --border-strong: rgba(15, 18, 30, 0.12);
-  --divider:       rgba(15, 18, 30, 0.07);
+  --danger:    #cc3838;
+  --border:        rgba(15, 18, 30, 0.10);
+  --border-strong: rgba(15, 18, 30, 0.18);
+  --divider:       rgba(15, 18, 30, 0.12);
+  --hover-overlay:        rgba(245, 86, 148, 0.07);
+  --hover-overlay-strong: rgba(245, 86, 148, 0.12);
   --ring: rgba(245, 86, 148, 0.28);
-  --shadow-sm:   0 2px 8px -2px rgba(15, 18, 30, 0.06);
-  --shadow-md:   0 12px 30px -14px rgba(15, 18, 30, 0.18);
-  --shadow-lg:   0 30px 60px -30px rgba(15, 18, 30, 0.25);
+  --shadow-sm:   0 1px 6px -1px rgba(15, 18, 30, 0.07);
+  --shadow-md:   0 4px 18px -4px rgba(15, 18, 30, 0.10);
+  --shadow-lg:   0 10px 32px -8px rgba(15, 18, 30, 0.14);
   --shadow-pink: 0 18px 40px -18px rgba(245, 86, 148, 0.55);
+  --secondary-hover:  #eef0f4;
+  --secondary-active: #e4e7ed;
 }
 
 /* Tailwind v4 utility aliases. `bg-bg`, `bg-surface`, `text-fg`,
-   `border-border`, `bg-pink`, `text-success`, `bg-warning`, etc. */
+   `border-border`, `bg-primary`, `text-on-primary`, `bg-accent`, etc. */
 @theme inline {
-  --color-pink: var(--pink);
-  --color-blue: var(--blue);
+  /* Brand — semantic */
+  --color-primary:         var(--primary);
+  --color-primary-hover:   var(--primary-hover);
+  --color-primary-pressed: var(--primary-pressed);
+  --color-on-primary:      var(--on-primary);
 
-  --color-bg: var(--bg);
-  --color-surface: var(--surface);
-  --color-surface-2: var(--surface-2);
-  --color-fg: var(--fg);
-  --color-fg-muted: var(--fg-muted);
+  --color-accent:    var(--accent);
+  --color-on-accent: var(--on-accent);
 
-  --color-border: var(--border);
-  --color-border-strong: var(--border-strong);
-  --color-divider: var(--divider);
-  --color-ring: var(--ring);
-
-  --color-success: var(--success);
-  --color-warning: var(--warning);
-  --color-danger:  var(--danger);
-
+  /* Brand — literal (archive compat + brand-specific helpers) */
+  --color-pink:    var(--pink);
+  --color-blue:    var(--blue);
   --color-on-pink: var(--on-pink);
   --color-on-blue: var(--on-blue);
+
+  /* Neutrals */
+  --color-bg:              var(--bg);
+  --color-surface:         var(--surface);
+  --color-surface-2:       var(--surface-2);
+  --color-surface-elev:    var(--surface-elev);
+  --color-surface-overlay: var(--surface-overlay);
+  --color-fg:              var(--fg);
+  --color-fg-muted:        var(--fg-muted);
+  --color-fg-subtle:       var(--fg-subtle);
+
+  /* Borders / dividers / focus */
+  --color-border:        var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-divider:       var(--divider);
+  --color-ring:          var(--ring);
+  --color-focus-ring:    var(--focus-ring);
+
+  /* State */
+  --color-success:    var(--success);
+  --color-warning:    var(--warning);
+  --color-danger:     var(--danger);
   --color-on-success: var(--on-success);
   --color-on-warning: var(--on-warning);
-  --color-on-danger: var(--on-danger);
+  --color-on-danger:  var(--on-danger);
 
-  --radius-button: var(--radius-button);
-  --radius-card: var(--radius-card);
+  /* Shape */
+  --radius-pill:    var(--radius-pill);
+  --radius-button:  var(--radius-button);
+  --radius-card:    var(--radius-card);
+  --radius-card-lg: var(--radius-card-lg);
   --radius-control: var(--radius-control);
 
+  /* Motion */
+  --ease-out:      var(--ease-out);
+  --ease-entrance: var(--ease-entrance);
+  --ease-exit:     var(--ease-exit);
   --ease-standard: var(--ease-standard);
-  --ease-out: var(--ease-out);
 
-  --font-sans: var(--font-sans);
+  --duration-quick:      var(--dur-quick);
+  --duration-graceful:   var(--dur-graceful);
+  --duration-deliberate: var(--dur-deliberate);
+
+  /* Type */
+  --font-sans:    var(--font-sans);
   --font-display: var(--font-display);
+  --text-input:   var(--font-input);
 
+  /* Named animations */
   --animate-live-pulse: kx-pulse 2.4s ease-in-out infinite;
 }
+
+/* Shadow tokens are referenced via Tailwind arbitrary syntax
+   (e.g. `shadow-[var(--shadow-pressed)]`) to avoid name collisions
+   between the source `--shadow-*` vars and Tailwind's `--shadow-*` keyspace. */
 
 body {
   background: var(--bg);
@@ -202,6 +283,42 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  /* Mobile tap discipline — DESIGN_LANGUAGE §3.7 / §9.5 */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Mobile snappiness — shave graceful / deliberate ~15% on small screens
+   so the "cozy" never tips into "laggy" on a phone (DESIGN_LANGUAGE §3.2 / §9.6). */
+@media (max-width: 640px) {
+  :root {
+    --dur-graceful:   240ms;
+    --dur-deliberate: 360ms;
+  }
+}
+
+/* Theme flip — added on <html> for ~200ms while the user toggles the theme.
+   Cross-fades color tokens across every element without paying for transitions
+   the rest of the time (DESIGN_LANGUAGE §3.2: state changes ride `dur-quick`). */
+@media (prefers-reduced-motion: no-preference) {
+  html.theme-flipping,
+  html.theme-flipping *,
+  html.theme-flipping *::before,
+  html.theme-flipping *::after {
+    transition:
+      background-color var(--dur-quick) var(--ease-out),
+      color            var(--dur-quick) var(--ease-out),
+      border-color     var(--dur-quick) var(--ease-out),
+      fill             var(--dur-quick) var(--ease-out),
+      stroke           var(--dur-quick) var(--ease-out),
+      box-shadow       var(--dur-quick) var(--ease-out) !important;
+  }
+}
+
+/* Chrome surfaces don't want long-press text-selection (DESIGN_LANGUAGE §9.5).
+   Opt in via class so app content stays selectable. */
+.kx-chrome {
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 /* ---------- Global thin theme-aware scrollbar ---------- */
@@ -267,6 +384,11 @@ button:disabled,
 @keyframes kx-pulse {
   0%, 100% { opacity: 1; transform: scale(1); }
   50%      { opacity: 0.55; transform: scale(0.78); }
+}
+@keyframes kx-fab-in {
+  0%   { opacity: 0; transform: scale(0.85); }
+  60%  { opacity: 1; transform: scale(1.04); }
+  100% { opacity: 1; transform: scale(1); }
 }
 @keyframes kx-pulse-ring {
   0%   { transform: scale(0.6); opacity: 0.7; }

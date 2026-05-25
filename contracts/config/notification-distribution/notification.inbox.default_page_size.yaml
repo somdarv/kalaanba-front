@@ -1,0 +1,10 @@
+key: notification.inbox.default_page_size
+engine: notification-distribution
+scope: platform
+value_type: integer
+default: "25"
+approval_level: low
+description: |
+  Default page size returned by GET /api/v1/me/notifications when the caller
+  does not supply a `limit` query parameter. Must be <= the max page size.
+  Tune up for power users, down to reduce payload on slow networks.

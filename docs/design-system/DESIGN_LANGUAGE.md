@@ -113,24 +113,60 @@ One ease, two durations. Anything outside this needs justification.
 
 ## 3. Motion Rules
 
-### 3.1 Motion is feedback, not decoration
+### 3.1 Feel — _cozy yet authoritative_
 
-- **State changes (CSS)**: hover, focus, press, disabled — every interactive primitive owns these in CSS. No JS, no Framer. Reasons: zero hydration cost, SSR-correct, accessible without React state.
-- **Orchestration (Framer Motion)**: page transitions, dialog enter/exit, list reordering, chart reveals, `<LiveSurface>` aurora. Anything that involves multiple elements moving in sequence.
+Motion should feel like a well-built physical control: a soft, welcoming arrival and a confident, firm settle. Never spongy, never abrupt. The product should breathe, not bounce.
 
-### 3.2 Interaction recipe (applies to every interactive primitive)
+### 3.2 Motion tokens (canonical — register all in `@theme inline`)
 
-| State          | Effect                                                           |
-| -------------- | ---------------------------------------------------------------- |
-| Default        | Token-defined                                                    |
-| Hover          | `translateY(-1px)` + border step up + (if filled) shadow step up |
-| Focus-visible  | `--focus-ring` outline 2px offset 2px                            |
-| Active / Press | `translate(0)` + `scale(0.985)` + shadow step down               |
-| Disabled       | `opacity: 0.5` + `pointer-events: none` + `cursor: not-allowed`  |
+```
+/* Easings */
+--ease-out:      cubic-bezier(0.22, 1, 0.36, 1);   /* default — soft landing */
+--ease-entrance: cubic-bezier(0.16, 1.05, 0.4, 1); /* hint of overshoot for arrivals */
+--ease-exit:     cubic-bezier(0.4, 0, 1, 1);       /* confident, snappy exit */
 
-### 3.3 Reduced motion
+/* Durations */
+--dur-quick:      160ms;  /* state changes (hover, focus, press) */
+--dur-graceful:   280ms;  /* entries, transitions */
+--dur-deliberate: 420ms;  /* large overlays (sheets, dialogs) */
+```
+
+Animations ≤ 240ms on small screens — slow eases feel laggy on a phone. The motion utilities ship `@media (max-width: 640px)` overrides that drop graceful/deliberate by ~15%.
+
+### 3.3 Where motion lives
+
+- **State changes → CSS.** Hover, focus, press, disabled — every interactive primitive owns these in plain CSS. Zero hydration cost, SSR-correct, accessible without React state.
+- **Orchestration → Framer Motion.** Page transitions, dialog enter/exit, list reordering, chart reveals, `<LiveSurface>` aurora. Anything that involves multiple elements moving in sequence.
+- **Framer is lazy-loaded** per route shell that needs it — never imported at the root.
+
+### 3.4 Animatable properties
+
+- **Default**: `transform` and `opacity` only — GPU-composited, free.
+- **Allowed exception**: `width` / `height` / `max-height` for special components where the geometric change _is_ the animation (e.g. accordion, expanding card, growth bar). These are expensive — keep them under `--dur-graceful`, never run them in lists, and pair with `will-change` only while animating.
+- **Never animated**: `top`, `left`, `right`, `bottom`, `margin`, `padding`, `border-width`.
+
+### 3.5 Interaction recipe (applies to every interactive primitive)
+
+Both touch and pointer matter — Kalaanba runs on phones and on desk admin tools. Hover is desktop-only; tap state is universal. The CSS below guarantees both.
+
+| State                            | Effect                                                                              |
+| -------------------------------- | ----------------------------------------------------------------------------------- |
+| Default                          | Token-defined                                                                       |
+| Hover (`@media (hover: hover)`)  | `translateY(-1px)` + border step up + (if filled) shadow step up — desktop/pen only |
+| Focus-visible                    | `--focus-ring` outline 2px offset 2px                                               |
+| Active / Press (touch + desktop) | `translate(0)` + `scale(0.985)` + tint shift + shadow step down                     |
+| Disabled                         | `opacity: 0.5` + `pointer-events: none` + `cursor: not-allowed`                     |
+
+Hover effects **must** be wrapped in `@media (hover: hover) and (pointer: fine)` so they don't stick on touch devices after a tap. Active state is the primary feedback channel on touch.
+
+### 3.6 Reduced motion
 
 `prefers-reduced-motion: reduce` collapses all transitions to 1ms **except** elements marked `.kx-alive` (the LiveSurface escape hatch — opt-in).
+
+### 3.7 Tap discipline
+
+- `-webkit-tap-highlight-color: transparent` is set globally; the `:active` recipe replaces it.
+- Focus rings appear via `:focus-visible` only (no ring on tap, ring on keyboard).
 
 ---
 
@@ -153,6 +189,14 @@ One ease, two durations. Anything outside this needs justification.
 - `Toast` — `floating` recipe + slide-in.
 - `Tabs` — segmented + underlined variants.
 - `Skeleton` — shimmer animation only here, gated by `--dur-graceful`.
+- `Pressable` — single source of truth for the touch+hover interaction recipe (active scale, hover-guard, tap-highlight kill, focus-visible ring). Every other interactive primitive composes this rather than reimplementing.
+
+**Mobile chrome** (`src/components/ui/` — first-class, not afterthoughts):
+
+- `BottomSheet` — primary modal surface on mobile. Swipe-to-dismiss, optional snap points, safe-area aware. On desktop (`@media (min-width: 768px)`) degrades to a centered `Dialog`. Both share the same `Overlay` base.
+- `BottomNav` — primary navigation on mobile, anchored to the thumb zone, `env(safe-area-inset-bottom)`-padded. On desktop, swaps to a top/side nav.
+- `KeyboardFooter` — sticky CTA bar that lifts above the on-screen keyboard (via `interactiveWidget=resizes-content` + safe-area). Used on login, checkout, OTP entry, any single-purpose form.
+- `Toast` — anchored bottom-center on mobile, top-right on desktop. Above safe-area inset.
 
 **Composed pieces** (`src/components/site/` or `src/components/<feature>/`):
 
@@ -211,3 +255,64 @@ ADR will be drafted before implementation.
 - Token additions or renames → ADR in `docs/adr/`.
 - New primitive → entry in `REBUILD_PLAN.md` + storybook-style page in `src/app/(internal)/design/` (future).
 - Motion or color tweaks → bump version stamp at top of this file + journal entry.
+
+---
+
+## 9. Mobile-first rules (mandatory)
+
+Kalaanba is consumed primarily on phones. Every primitive, layout, and screen ships mobile-first; desktop is a progressive enhancement.
+
+### 9.1 Touch targets
+
+- **Minimum hit area: 44 × 44 px** (iOS HIG). 48 × 48 preferred for primary actions.
+- Visual size may be smaller; the hit area is padded out with invisible space (`min-h-11 min-w-11` or equivalent).
+- This applies to **every** interactive: buttons, icon buttons, chips, badges-as-links, tab labels, list rows, close affordances. Sub-44 hit areas are a refusal trigger.
+
+### 9.2 Viewport & layout
+
+- Use `100dvh`, **never** `100vh` (fixes iOS Safari URL-bar collapse jitter).
+- Viewport meta: `width=device-width, initial-scale=1, viewport-fit=cover, interactiveWidget=resizes-content`.
+- Container edge padding: `padding-inline: max(1rem, env(safe-area-inset-left/right))`.
+- Sticky bottom bars: `padding-bottom: env(safe-area-inset-bottom)`.
+- Design first at **360 px** width (smallest common Android); breakpoints `sm 640`, `md 768`, `lg 1024`, `xl 1280` are progressive enhancements.
+- Density: mobile = comfortable default; desktop opts into compact via `@media (min-width: 1024px)`.
+
+### 9.3 Form inputs (iOS zoom trap)
+
+- Inputs use `font-size: max(16px, 1rem)`. Below 16 px iOS auto-zooms on focus — never acceptable.
+- Token: `--font-input: max(16px, 1rem)` — TextField composes this.
+- Every `<input>` declares `inputmode`, `autocomplete`, and `enterkeyhint` appropriate to its purpose (TextField API enforces or warns).
+- Single-CTA forms (login, OTP, checkout) wrap the action in `<KeyboardFooter>` so it stays visible above the keyboard.
+
+### 9.4 Theme & system chrome
+
+- `<meta name="theme-color">` is paired (`media="(prefers-color-scheme: dark)"` and `light`) and updated dynamically when the user picks an explicit theme. iOS status bar and Android system bar then follow.
+- `color-scheme: dark light` on `:root` so native form controls render in the right palette.
+- PWA-future: `apple-mobile-web-app-status-bar-style` set when manifest ships.
+
+### 9.5 Gestures & scroll
+
+- `overscroll-behavior: contain` on scroll regions inside sheets and lists — kills pull-to-refresh hijacks and bounce leak.
+- Sheets dismiss via swipe-down on touch (Framer drag handlers); on desktop, dismiss via Escape + backdrop click.
+- No long-press-to-select on UI chrome — `user-select: none` on headers, nav, buttons.
+
+### 9.6 Performance budget
+
+- Animations ≤ 240 ms on small screens (see §3.2 token override).
+- Framer Motion is **lazy-loaded** per route — never imported at the root.
+- Images: `next/image` with explicit dimensions; never raw `<img>` for content.
+- Bundle: keep landing route's first-load JS under 150 kB gzipped.
+
+### 9.7 Definition of "mobile-ready"
+
+A primitive or screen is mobile-ready when **all** of the following hold:
+
+1. Renders correctly at 360 px width with no horizontal scroll.
+2. Every interactive hit area ≥ 44 × 44 px.
+3. Hover effects are wrapped in `@media (hover: hover) and (pointer: fine)`.
+4. Active/press state is visible without hover.
+5. If it contains a sticky bottom element, it pads with `env(safe-area-inset-bottom)`.
+6. If it contains form inputs, font-size ≥ 16 px and a sticky CTA pattern is used for single-purpose forms.
+7. Reduced-motion honored.
+
+QA (Stage 8) refuses sign-off if any of the seven are missing.

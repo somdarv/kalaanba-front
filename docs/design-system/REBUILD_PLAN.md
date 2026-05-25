@@ -32,15 +32,17 @@ This document is **the** checklist for the rebuild. Each session ticks one or mo
 
 ## Phase 1 — Tokens
 
-- [ ] Rename brand tokens to semantic in `globals.css`: `--pink`/`--blue` → `--primary`/`--accent` (keep `--kx-*` aliases for archive).
-- [ ] Add missing tokens per `DESIGN_LANGUAGE.md` §2.2: `--primary-hover`, `--primary-pressed`, `--surface-elev`, `--surface-overlay`, `--fg-subtle`, `--focus-ring`.
-- [ ] Register **every** semantic token in `@theme inline` so Tailwind utilities resolve: `bg-primary`, `text-on-primary`, `border-border-strong`, `bg-surface-elev`, etc.
-- [ ] Add motion tokens: `--dur-quick`, `--dur-graceful`. Make `--ease-out` the single public ease.
-- [ ] Add elevation utility classes for the three recipes (`.elev-flat`, `.elev-raised`, `.elev-floating`) — or commit to Tailwind utility recipes only.
-- [ ] Update `app/page.tsx` to use the new token names so the landing button actually fills.
-- [ ] `npm run build` green; visually inspect `/`.
+- [x] Rename brand tokens to semantic in `globals.css`: `--pink`/`--blue` retained as literal source, semantic `--primary` / `--accent` aliases added (keeps `--kx-*` aliases for archive).
+- [x] Add missing tokens per `DESIGN_LANGUAGE.md` §2.2: `--primary-hover` (color-mix), `--primary-pressed` (color-mix), `--surface-elev`, `--surface-overlay`, `--fg-subtle`, `--focus-ring`, `--on-primary`, `--on-accent`.
+- [x] Register **every** semantic token in `@theme inline` so Tailwind utilities resolve: `bg-primary`, `bg-primary-hover`, `bg-primary-pressed`, `text-on-primary`, `bg-accent`, `text-on-accent`, `bg-surface-elev`, `bg-surface-overlay`, `text-fg-subtle`, `outline-focus-ring`, etc.
+- [x] Add motion tokens: `--ease-out`, `--ease-entrance`, `--ease-exit`, `--dur-quick (160ms)`, `--dur-graceful (280ms)`, `--dur-deliberate (420ms)`. Mobile override (`@media (max-width: 640px)`) shaves graceful → 240ms, deliberate → 360ms.
+- [x] Add input token: `--font-input: max(16px, 1rem)` and Tailwind alias `--text-input` (prevents iOS zoom on focus).
+- [x] Set globals: `-webkit-tap-highlight-color: transparent` on `body`, `color-scheme: dark light` on `:root`, `.kx-chrome` opt-in class for `user-select: none` on chrome elements.
+- [ ] Add elevation utility classes for the three recipes (`.elev-flat`, `.elev-raised`, `.elev-floating`) — deferred to Phase 2 where they'll be co-built with Card.
+- [x] Update `app/page.tsx` to use the new token names so the landing button actually fills.
+- [x] `npm run build` green; visually inspect `/`.
 
-**Exit criteria**: every utility class referenced in markup resolves. Landing button has a pink fill.
+**Exit criteria**: every utility class referenced in markup resolves. Landing button has a pink fill, lifts on desktop hover only, presses on tap, focus-ring on keyboard. ✅
 
 ---
 
@@ -48,45 +50,73 @@ This document is **the** checklist for the rebuild. Each session ticks one or mo
 
 Build in this order — each unblocks the next.
 
-### 2.1 Button + IconButton
+### 2.1 Pressable (build first — every other primitive composes it)
 
+- [ ] Single source of truth for the interaction recipe in `DESIGN_LANGUAGE.md` §3.5.
+- [ ] Wraps hover effects in `@media (hover: hover) and (pointer: fine)` so they don't stick on touch.
+- [ ] Active/press state: `scale(0.985)` + tint shift + shadow step down — visible on both touch and desktop.
+- [ ] `:focus-visible` ring (no ring on tap, ring on keyboard).
+- [ ] `min-h-11 min-w-11` enforced for hit area ≥ 44×44 px.
+- [ ] Unit test: hover doesn't apply on `(hover: none)` simulated viewport.
+
+### 2.2 Button + IconButton
+
+- [ ] Composes `Pressable`.
 - [ ] Variants: `primary | secondary | ghost | danger`.
-- [ ] Sizes: `sm (h-9) | md (h-11) | lg (h-13)`.
-- [ ] States: hover-lift, focus-ring, active-scale, loading, disabled.
+- [ ] Sizes: `sm (h-11) | md (h-12) | lg (h-13)` — sm is **44 px floor**, not 36 px. Use padding to vary visual weight.
+- [ ] States: hover-lift (desktop only), focus-ring, active-scale, loading, disabled.
 - [ ] Leading/trailing icon slots.
-- [ ] `IconButton` shares the variant matrix but is square + circular.
-- [ ] Unit test: keyboard navigation, disabled blocks click, loading suppresses click.
+- [ ] `IconButton` shares the variant matrix but is square + circular, min 44×44.
+- [ ] Unit test: keyboard navigation, disabled blocks click, loading suppresses click, hit area ≥ 44×44.
 
-### 2.2 Card
+### 2.3 Card
 
 - [ ] Tones: `flat | raised` (recipes from §2.4).
-- [ ] `interactive` flag → hover lift + border-strong.
+- [ ] `interactive` flag → composes `Pressable` for hover lift + border-strong (desktop) + active state (touch).
 - [ ] Sub-components: `Card.Header`, `Card.Content`, `Card.Footer`.
 - [ ] Inset top highlight on `raised`.
 
-### 2.3 TextField + SearchField
+### 2.4 TextField + SearchField
 
-- [ ] Label, hint, error, left icon, right slot.
-- [ ] Sizes: `md (h-11) | lg (h-13)`.
-- [ ] Focus state: border-primary + ring inset + label color shift.
-- [ ] Error state: border-danger + ring-danger + message color.
-- [ ] `SearchField` preset (search icon + clear button when value).
+- [x] Label, hint, error, left icon, right slot.
+- [x] Sizes: `md (h-12) | lg (h-13)` — input min-height 44 px.
+- [x] **`font-size: var(--font-input)`** (≥ 16 px) on the input itself to prevent iOS zoom.
+- [x] API requires `inputMode`, `autoComplete`, `enterKeyHint` (typed props; dev warning if missing on a known semantic field).
+- [x] Focus state: border-primary + ring inset + label color shift.
+- [x] Error state: border-danger + ring-danger + message color.
+- [x] `SearchField` preset (search icon + clear button when value; `enterKeyHint="search"`).
 
-### 2.4 Badge + Avatar
+### 2.5 Badge + Avatar
 
-- [ ] `Badge` variants tied to state colors (`neutral | primary | success | warning | danger`).
-- [ ] `Avatar` sizes (`sm | md | lg | xl`) + initials fallback + ring on hover.
+- [x] `Badge` variants tied to state colors (`neutral | primary | success | warning | danger`).
+- [x] `Avatar` sizes (`sm | md | lg | xl`) + initials fallback + ring on hover (desktop only).
 
-**Exit criteria**: all four primitives exported from `src/components/ui/index.ts`, used on a private design-preview page at `src/app/(internal)/design/page.tsx` for visual QA.
+**Exit criteria**: all five primitives exported from `src/components/ui/index.ts`, used on a private design-preview page at `src/app/(internal)/design/page.tsx` for visual QA at 360px and 1280px.
+
+---
+
+## Phase 2.5 — Mobile chrome (first-class, not afterthoughts)
+
+Kalaanba runs primarily on phones. These primitives are part of the foundation, not later additions.
+
+- [ ] **`Overlay`** — shared base for sheets/dialogs: backdrop, focus-trap, Escape handling, scroll-lock with `overscroll-behavior: contain`.
+- [ ] **`BottomSheet`** — primary modal surface on mobile. Swipe-to-dismiss (Framer drag handlers), optional snap points, safe-area-aware (`padding-bottom: env(safe-area-inset-bottom)`). On `@media (min-width: 768px)` becomes a centered `Dialog` (same component, different presentation).
+- [ ] **`BottomNav`** — anchored to thumb zone, 44×44 tap targets, safe-area-padded. Hides on desktop (≥ 1024 px) where top/side nav takes over.
+- [ ] **`KeyboardFooter`** — sticky CTA bar that stays above the on-screen keyboard. Uses `interactiveWidget=resizes-content` viewport meta + `env(safe-area-inset-bottom)`. Required pattern for login, OTP, single-purpose forms.
+- [ ] **`Toast`** — bottom-center on mobile, top-right on desktop. Above safe-area.
+- [ ] Global viewport meta set in `app/layout.tsx`: `width=device-width, initial-scale=1, viewport-fit=cover, interactiveWidget=resizes-content`.
+- [ ] Global app shell uses `min-h-dvh` not `min-h-screen`.
+- [ ] `<meta name="theme-color">` pair (dark + light media-queried) in layout head.
+
+**Exit criteria**: design-preview page demonstrates BottomSheet, BottomNav, KeyboardFooter, Toast working at 360 px. No horizontal scroll on any preview at 360 px. iOS Safari URL-bar collapse no longer jitters layout.
 
 ---
 
 ## Phase 3 — Overlays & feedback
 
-- [ ] `Tooltip` (Floating UI or Radix).
-- [ ] `Dialog` (Radix headless + Framer enter/exit).
-- [ ] `Sheet` (mobile bottom sheet variant of Dialog).
-- [ ] `Toast` (Sonner or custom; `floating` recipe).
+- [ ] `Tooltip` (Floating UI or Radix) — desktop-only (hover-gated); on touch becomes a long-press popover or is suppressed.
+- [ ] `Dialog` — desktop centered modal (`BottomSheet`'s desktop face, shared `Overlay`).
+- [ ] (`BottomSheet` and `Toast` already shipped in Phase 2.5.)
 - [ ] Reduced-motion check on all four.
 
 ---
@@ -130,9 +160,9 @@ Build in this order — each unblocks the next.
 
 ## Definition of done — per-component
 
-A primitive ships only when:
+A primitive ships only when **all** of the following hold:
 
-1. ✅ Implements every state from `DESIGN_LANGUAGE.md §3.2`.
+1. ✅ Implements every state from `DESIGN_LANGUAGE.md §3.5`.
 2. ✅ Keyboard-accessible without mouse.
 3. ✅ Focus-visible ring present, contrast ≥ 3:1.
 4. ✅ Reduced-motion respected.
@@ -140,6 +170,7 @@ A primitive ships only when:
 6. ✅ Appears on the internal design-preview page.
 7. ✅ No `_archive/` import.
 8. ✅ Uses only tokens (no hardcoded colors, durations, or sizes).
+9. ✅ **Mobile-ready per `DESIGN_LANGUAGE.md §9.7`**: renders at 360 px width with no horizontal scroll; every hit area ≥ 44×44 px; hover effects guarded by `@media (hover: hover) and (pointer: fine)`; active/press state visible without hover; safe-area-padded if sticky-bottom; `font-size ≥ 16px` on any input it contains.
 
 ---
 
@@ -148,3 +179,5 @@ A primitive ships only when:
 Tick boxes above as each session lands work. Append a one-line note here per session for traceability — Sankofa will also log in `JOURNAL.md`.
 
 - **2026-05-24** — Plan authored. `src/components/ui/` cleared. Ready for Phase 1.
+- **2026-05-24** — Mobile-first + cozy/authoritative folded into DESIGN_LANGUAGE §3 / §9; new Phase 2.5 added; `design-system-mandatory.instructions.md` created.
+- **2026-05-24** — **Phase 1 complete.** Semantic tokens registered, motion tokens (3 eases × 3 durations + mobile override) live, `--font-input` token added, tap-highlight killed, `color-scheme: dark light`. Landing button rebuilt with full interaction recipe. Build ✅ / tests ✅ (1 file, 8 tests).
