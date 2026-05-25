@@ -31,9 +31,10 @@ import { cn } from "@/lib/cn";
  *   icon:     h-9 w-9 round; tone-coloured background
  *   progress: 2px bar across the bottom, animated scaleX 0 → 1 over `duration`
  *
- * Per the design language, the entrance is **opacity-only** (no translate).
- * The bottom progress bar uses `scaleX`, which is permitted — it's a single
- * decoration, not a position change.
+ * Entrance: opacity fade-in + 8px slide-up via `transform`. The toast
+ * arrives from off-stage so this is spatial motion (legitimate physical
+ * metaphor), not synthetic state feedback. The bottom progress bar uses
+ * `scaleX`, which is decoration — not a position change.
  *
  * Tones map onto the same intent vocabulary as Badge:
  *   primary | blue | success | warning | danger
@@ -119,8 +120,10 @@ export function Toast({
       role="status"
       className={cn(
         "relative flex w-full max-w-sm items-start gap-3 overflow-hidden rounded-card border border-border bg-surface p-4 shadow-lg",
-        "transition-opacity duration-300 ease-out",
-        shown ? "opacity-100" : "opacity-0",
+        // Soft entrance: opacity + 8px slide-up. The toast arrives from
+        // off-stage — spatial motion, not synthetic feedback.
+        "transition-[opacity,transform] duration-graceful ease-entrance",
+        shown ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0",
         className,
       )}
     >

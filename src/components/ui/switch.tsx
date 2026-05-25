@@ -62,9 +62,11 @@ export function Switch({
         aria-hidden
         className={cn(
           // Solid white knob in both themes — reads as a physical toggle.
-          "absolute size-5 rounded-full bg-white shadow-sm ring-1 ring-black/10",
-          // No translate motion — knob is anchored to either edge.
-          checked ? "right-0.5" : "left-0.5",
+          "absolute left-0.5 size-5 rounded-full bg-white shadow-sm ring-1 ring-black/10",
+          // The knob sliding IS the metaphor — physical translation, not
+          // synthetic state feedback. Soft graceful ease across the track.
+          "transition-transform duration-graceful ease-out",
+          checked ? "translate-x-5" : "translate-x-0",
         )}
       />
     </button>

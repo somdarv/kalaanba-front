@@ -1,0 +1,26 @@
+key: admin.godmode_impersonation_enabled
+engine: admin-governance
+scope: platform
+value_type: boolean
+default: "true"
+default_overrides:
+  production: "false"
+approval_level: medium
+description: |
+  Toggles the "Impersonate user" action in the God Mode admin panel
+  (Filament `/admin`). When true, a SuperAdmin can issue a Sanctum token
+  on behalf of any non-SuperAdmin user and act as them.
+
+  Defaults to `true` in `local` and `testing` environments because pre-alpha
+  development requires it. Defaults to `false` in `production` so that
+  even a compromised SuperAdmin session cannot silently impersonate users
+  without first flipping this flag (which itself is audit-logged).
+
+  Required reading before flipping in production:
+    - ADR-0002 (God Mode admin portal)
+    - Constitution Law 5 (every meaningful action audited)
+    - Phase 9 pre-launch hardening checklist (2FA on SuperAdmin)
+
+  Impersonation events are logged to `admin_audit_log` with
+  `route = '/admin/users/{id}/impersonate'` and the target user id in
+  the redacted payload.

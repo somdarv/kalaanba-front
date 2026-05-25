@@ -171,16 +171,53 @@ Phase 0.6 is delivered as three sequential Work Packets so each can clear the fu
 - [x] `src/components/ui/` cleared. Legacy showcase preserved under `_archive/` for visual reference only.
 - [ ] **Next**: Phase 1 — token rename + `@theme inline` registration so utilities resolve.
 
-### Phase 0.8 — Observability
+### Phase 0.7.5 — God Mode developer admin portal (Filament v3)
 
-- [ ] Sentry on Laravel + Next.js
+🔗 Canonical decision: [ADR-0002](../adr/0002-filament-godmode-admin-portal.md)
+
+> Two-admin mental model: **God Mode `/admin` (Filament, dev-only, internal)** is distinct from the future **Public Admin Portal (Next.js, Stage 6+, brand-fit, scoped per role)**.
+
+- [ ] Install `filament/filament` v3 in `kalaanba-api`; configure panel at `/admin` route prefix
+- [ ] Wire `RequireSuperAdminMiddleware` (WP-C) onto the Filament panel
+- [ ] Light brand theming: Kalaanba palette (primary + danger + success), Inter font, replace default logo with Kalaanba wordmark
+- [ ] Auto-discovery configured for `app/Modules/<Engine>/Filament/Resources/` so engine WPs can drop in their own resources
+- [ ] **Resource: `UserResource`** — list/edit/archive users, change role, impersonate, reset password (dev only)
+- [ ] **Resource: `OutboxEventResource`** — list `outbox_events`, view payload, re-emit action, mark delivered
+- [ ] **Resource: `AdminAuditLogResource`** — read-only viewer, filters by actor/route/method/status, payload pretty-print
+- [ ] **Resource: `AdminConfigResource`** — CRUD over `admin_config`; effective-dated reads + write-with-version
+- [ ] **Resource: `AnalyticsEventResource`** — read-only, filters by event_name/actor/date
+- [ ] **Custom page: User Inspector** — pick a user, tabbed view (profile, audit-log entries, outbox events emitted, active Sanctum tokens, recent OTP requests)
+- [ ] **Custom page: Event Replayer** — re-emit any `outbox_events` row
+- [ ] **Custom page: Data Injector v0** — one-click "create mock user with phone 0244000001", "create mock outbox event"
+- [ ] Every Filament action passes through existing `AdminAuditMiddleware` (Constitution Law 5)
+- [ ] No domain logic inside Filament resources — call into module Application services only
+- [ ] Pipeline gates: pint, phpstan L6, deptrac (0 violations), pest green
+
+> **Forward-compatibility rule (binding from Phase 1.1 onwards):** every engine Work Packet must list `app/Modules/<Engine>/Filament/Resources/*.php` deliverables in its definition-of-done.
+
+### Phase 0.8 — Observability (Lite)
+
+> Pre-alpha scope: ship the bare minimum to catch real errors and stay informed. The full stack (Prometheus / Grafana / Loki / Tempo / Telescope) is deferred to **Phase 9 — Pre-launch hardening** because it pays off only with real production traffic + an on-call rotation.
+
+- [ ] Sentry on Laravel (`sentry/sentry-laravel`) — DSN via env, sample rate 100% during alpha
+- [ ] Sentry on Next.js (`@sentry/nextjs`) — client + server + edge instrumentations
+- [ ] Horizon dashboard mounted (read-only on `/admin/horizon`, gated by `RequireSuperAdminMiddleware`)
+- [ ] JSON-format logs to stdout (`config/logging.php` `stack` driver → `stderr` formatter with structured JSON)
+- [ ] UptimeRobot (or BetterStack) on `GET /api/v1/health` (Laravel) + Next.js root
+- [ ] Pipeline gates: pint, phpstan, deptrac, pest
+
+### Phase 9 — Pre-launch hardening (deferred observability + security)
+
+> Opened pre-beta, before public marketing. Out-of-scope for pre-alpha + alpha.
+
 - [ ] Laravel Pulse + Telescope (Telescope sampled in prod)
 - [ ] Prometheus + Grafana stack
-- [ ] Loki + Promtail; JSON logs to stdout
+- [ ] Loki + Promtail; JSON logs already to stdout from Phase 0.8
 - [ ] OpenTelemetry → Tempo
-- [ ] UptimeRobot / BetterStack on public endpoints
-- [ ] Horizon dashboard accessible to ops
 - [ ] Baseline alerts: p95 latency, 5xx rate, queue depth, replication lag, Redis memory, disk %
+- [ ] 2FA enforcement on `SuperAdmin` role (TOTP + recovery codes)
+- [ ] Optional: relocate `/admin` behind IP allowlist + signed cookie
+- [ ] Filament resource audit — confirm no unintended write paths leaked into public surfaces
 
 ---
 

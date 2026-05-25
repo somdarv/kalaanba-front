@@ -112,7 +112,13 @@ export function RadioGroup<T extends string>({
                 <span
                   className={cn(
                     "size-2.5 rounded-full bg-primary",
-                    active ? "opacity-100" : "opacity-0",
+                    // Bloom in: fade + scale. The dot is the metaphor for
+                    // "this one is selected" — its appearance should feel
+                    // soft, not snapped.
+                    "transition-[opacity,transform] duration-quick ease-out",
+                    active
+                      ? "scale-100 opacity-100"
+                      : "scale-0 opacity-0",
                   )}
                 />
               </span>

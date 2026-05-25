@@ -42,3 +42,4 @@ The Architect (Stage 4) proposes an ADR when a Work Packet introduces a new arch
 | ADR                                             | Title                                                      | Status   | Date       |
 | ----------------------------------------------- | ---------------------------------------------------------- | -------- | ---------- |
 | [0001](0001-modular-monolith-with-event-bus.md) | Modular monolith with schema-per-engine + outbox event bus | Accepted | 2026-05-12 |
+| [0002](0002-filament-godmode-admin-portal.md)   | Filament v3 as the God Mode developer admin portal         | Accepted | 2026-05-25 |

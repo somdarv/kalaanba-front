@@ -1,0 +1,30 @@
+key: admin.godmode_data_injector_enabled
+engine: admin-governance
+scope: platform
+value_type: boolean
+default: "true"
+default_overrides:
+  production: "false"
+approval_level: medium
+description: |
+  Toggles the "Data Injector" custom page in the God Mode admin panel
+  (Filament `/admin/data-injector`). When true, a SuperAdmin can trigger
+  one-click scenarios that synthesise mock data:
+    - create mock user with placeholder E.164 phone
+    - create mock outbox event
+    - create mock club / players / fixture (later, as engines ship)
+
+  Defaults to `true` in `local` and `testing` because pre-alpha requires
+  it for rapid iteration. Defaults to `false` in `production` so a
+  compromised SuperAdmin cannot pollute the production dataset without
+  an explicit, audit-logged flag flip.
+
+  Every injection action is logged to `admin_audit_log` with
+  `route = '/admin/data-injector/{action}'` and the synthesised entity
+  ids in the redacted payload.
+
+  Required reading before flipping in production:
+    - ADR-0002 (God Mode admin portal)
+    - Constitution Law 13 (archive, don't delete — mock data must use
+      a `mock = true` flag or a tagged `created_via_godmode` column so
+      it can be bulk-archived later)

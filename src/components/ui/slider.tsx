@@ -132,8 +132,24 @@ export function Slider({
     e.preventDefault();
     (e.target as Element).setPointerCapture?.(e.pointerId);
     handlePointer(e.clientX);
-    const onMove = (ev: PointerEvent) => handlePointer(ev.clientX);
+    // rAF-throttle pointermove: never queue more updates than the
+    // screen can paint. Without this, fast drags fire 100+ React
+    // state updates per second and the thumb appears to lag.
+    let pendingX: number | null = null;
+    let rafId = 0;
+    const flush = () => {
+      rafId = 0;
+      if (pendingX != null) {
+        handlePointer(pendingX);
+        pendingX = null;
+      }
+    };
+    const onMove = (ev: PointerEvent) => {
+      pendingX = ev.clientX;
+      if (!rafId) rafId = requestAnimationFrame(flush);
+    };
     const onUp = () => {
+      if (rafId) cancelAnimationFrame(rafId);
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerup", onUp);
     };
@@ -189,7 +205,7 @@ export function Slider({
 
       <div
         className={cn(
-          "relative h-10",
+          "relative h-10 touch-none select-none",
           disabled && "cursor-not-allowed opacity-50",
         )}
         onPointerDown={onPointerDown}
@@ -323,16 +339,27 @@ export function RangeSlider({
     );
     activeThumb.current = nearestThumb(raw);
     updateThumb(activeThumb.current, raw);
+    // rAF throttle (see Slider above).
+    let pendingX: number | null = null;
+    let rafId = 0;
+    const flush = () => {
+      rafId = 0;
+      if (pendingX != null && trackRef.current && activeThumb.current) {
+        const next = valueFromClient(
+          trackRef.current.getBoundingClientRect(),
+          pendingX,
+          bounds,
+        );
+        updateThumb(activeThumb.current, next);
+      }
+      pendingX = null;
+    };
     const onMove = (ev: PointerEvent) => {
-      if (!trackRef.current || !activeThumb.current) return;
-      const next = valueFromClient(
-        trackRef.current.getBoundingClientRect(),
-        ev.clientX,
-        bounds,
-      );
-      updateThumb(activeThumb.current, next);
+      pendingX = ev.clientX;
+      if (!rafId) rafId = requestAnimationFrame(flush);
     };
     const onUp = () => {
+      if (rafId) cancelAnimationFrame(rafId);
       activeThumb.current = null;
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerup", onUp);
@@ -393,7 +420,7 @@ export function RangeSlider({
 
       <div
         className={cn(
-          "relative h-10",
+          "relative h-10 touch-none select-none",
           disabled && "cursor-not-allowed opacity-50",
         )}
         aria-label={label ? undefined : ariaLabel}

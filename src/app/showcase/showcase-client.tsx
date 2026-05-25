@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { z } from "zod";
 import {
   Avatar,
   Badge,
@@ -41,17 +42,36 @@ import {
   Toast,
   ToastProvider,
   useToast,
+  BottomSheet,
+  BottomNav,
+  KeyboardFooter,
+  Tooltip,
+  Dialog,
+  LiveSurface,
   Textarea,
   TextField,
   ThemeToggle,
   VStack,
   NotificationBell,
+  Field,
+  Form,
+  FormFooter,
+  FormSection,
+  FormSubmitButton,
+  List,
+  ListItem,
+  EmptyState,
+  ErrorState,
+  ScrollTo,
+  ScrollControls,
+  AppShell,
+  SiteHeader,
   type ButtonIntent,
   type ButtonSize,
   type SelectOption,
 } from "@/components/ui";
 import { useTheme } from "@/components/providers/theme-provider";
-import { MagnifyingGlass, EnvelopeSimple, Lock, User } from "@phosphor-icons/react";
+import { MagnifyingGlass, EnvelopeSimple, Lock, User, House, Play, Bell, UserCircle } from "@phosphor-icons/react";
 
 // ---------- tiny icon set used across demos (no extra deps) ----------
 
@@ -133,11 +153,24 @@ export function ShowcaseClient() {
           <SectionTabs />
           <SectionProgress />
           <SectionToast />
+          <SectionBottomSheet />
+          <SectionBottomNav />
+          <SectionKeyboardFooter />
+          <SectionTooltip />
+          <SectionDialog />
+          <SectionSkeleton />
+          <SectionLiveSurface />
+          <SectionForm />
+          <SectionList />
+          <SectionStates />
+          <SectionAppShell />
+          <SectionScrollTo />
           <SectionBadge />
           <SectionAvatar />
           <SectionNotificationBell />
         </VStack>
       </main>
+      <ScrollControls targets={["top", "middle", "bottom"]} />
     </div>
   );
 }
@@ -1634,6 +1667,853 @@ function ToastQueueDemo() {
         Danger
       </Button>
     </HStack>
+  );
+}
+
+function SectionBottomSheet() {
+  const [open, setOpen] = useState(false);
+  const [openLong, setOpenLong] = useState(false);
+  return (
+    <Section
+      title="BottomSheet"
+      subtitle="Mobile-first modal surface. Bottom-anchored with drag-to-dismiss on phones; centered dialog on tablets and up. Fade-in only — drag is the one place real translateY is allowed because it follows the finger 1:1."
+    >
+      <Stack gap={3}>
+        <Row label="basic">
+          <HStack gap={2}>
+            <Button onClick={() => setOpen(true)}>Open sheet</Button>
+            <Button intent="secondary" onClick={() => setOpenLong(true)}>
+              Open long sheet
+            </Button>
+          </HStack>
+        </Row>
+      </Stack>
+
+      <BottomSheet
+        open={open}
+        onOpenChange={setOpen}
+        title="Confirm result"
+        description="Both clubs need to verify the final score before RP is paid out."
+      >
+        <Stack gap={3}>
+          <p className="text-sm text-fg-muted">
+            Once confirmed, the result becomes part of both clubs&apos;
+            verified record. This action cannot be undone.
+          </p>
+          <HStack gap={2} className="justify-end">
+            <Button intent="ghost" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={() => setOpen(false)}>Confirm</Button>
+          </HStack>
+        </Stack>
+      </BottomSheet>
+
+      <BottomSheet
+        open={openLong}
+        onOpenChange={setOpenLong}
+        title="Match details"
+        description="Scroll inside the sheet — body scroll is locked."
+      >
+        <Stack gap={3}>
+          {Array.from({ length: 24 }).map((_, i) => (
+            <Card key={i}>
+              <Card.Content>
+                <div className="text-sm font-medium text-fg">
+                  Event #{i + 1}
+                </div>
+                <div className="mt-1 text-xs text-fg-muted">
+                  Sample row to demonstrate inner scrolling and overscroll
+                  containment.
+                </div>
+              </Card.Content>
+            </Card>
+          ))}
+        </Stack>
+      </BottomSheet>
+    </Section>
+  );
+}
+
+function SectionBottomNav() {
+  type Tab = "home" | "play" | "buzz" | "you";
+  const [tab, setTab] = useState<Tab>("home");
+  return (
+    <Section
+      title="BottomNav"
+      subtitle="Thumb-zone tab bar. Visible only on <lg viewports; hidden on desktop where top/side nav takes over. 44×44 tap targets, safe-area-padded. Try resizing the window."
+    >
+      <Stack gap={3}>
+        <Row label="preview (live, fixed bottom)">
+          <p className="text-sm text-fg-muted">
+            The nav is mounted below — look at the bottom of your viewport.
+            Active item is{" "}
+            <span className="font-semibold text-fg">{tab}</span>.
+          </p>
+        </Row>
+      </Stack>
+      <BottomNav<Tab>
+        value={tab}
+        onChange={setTab}
+        items={[
+          { value: "home", label: "Home", icon: <House size={22} weight="regular" /> },
+          { value: "play", label: "Play", icon: <Play size={22} weight="regular" /> },
+          { value: "buzz", label: "Buzz", icon: <Bell size={22} weight="regular" />, badge: 3 },
+          { value: "you", label: "You", icon: <UserCircle size={22} weight="regular" /> },
+        ]}
+      />
+    </Section>
+  );
+}
+
+function SectionKeyboardFooter() {
+  const [value, setValue] = useState("");
+  return (
+    <Section
+      title="KeyboardFooter"
+      subtitle="Sticky CTA bar that floats above the on-screen keyboard. Required for OTP / login / single-step forms. The container is sticky-positioned and safe-area-padded; pair with interactive-widget=resizes-content viewport meta."
+    >
+      <div className="relative max-h-80 overflow-y-auto rounded-card border border-border bg-bg">
+        <Stack gap={3} className="p-4">
+          <TextField
+            label="Your message"
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            placeholder="Type something…"
+            inputMode="text"
+            enterKeyHint="send"
+            autoComplete="off"
+          />
+          {Array.from({ length: 12 }).map((_, i) => (
+            <p key={i} className="text-sm text-fg-muted">
+              Filler line {i + 1} — scroll this container to see the footer
+              stay anchored.
+            </p>
+          ))}
+        </Stack>
+        <KeyboardFooter>
+          <HStack gap={2} className="justify-end">
+            <Button intent="ghost" size="sm">
+              Cancel
+            </Button>
+            <Button size="sm" disabled={!value}>
+              Send
+            </Button>
+          </HStack>
+        </KeyboardFooter>
+      </div>
+    </Section>
+  );
+}
+
+function SectionTooltip() {
+  return (
+    <Section
+      title="Tooltip"
+      subtitle="Hover/focus label for icon-only or terse controls. Opacity fade only. Use for *supplementary* hints — the child still needs its own aria-label."
+    >
+      <Stack gap={3}>
+        <Row label="sides">
+          <HStack gap={3}>
+            <Tooltip label="Top tooltip" side="top">
+              <Button intent="secondary" size="sm">
+                Top
+              </Button>
+            </Tooltip>
+            <Tooltip label="Bottom tooltip" side="bottom">
+              <Button intent="secondary" size="sm">
+                Bottom
+              </Button>
+            </Tooltip>
+            <Tooltip label="Left" side="left">
+              <Button intent="secondary" size="sm">
+                Left
+              </Button>
+            </Tooltip>
+            <Tooltip label="Right" side="right">
+              <Button intent="secondary" size="sm">
+                Right
+              </Button>
+            </Tooltip>
+          </HStack>
+        </Row>
+        <Row label="on an icon button">
+          <Tooltip label="Search the directory">
+            <Button intent="ghost" size="sm" aria-label="Search">
+              <MagnifyingGlass size={16} weight="bold" />
+            </Button>
+          </Tooltip>
+        </Row>
+      </Stack>
+    </Section>
+  );
+}
+
+function SectionDialog() {
+  const [open, setOpen] = useState(false);
+  const [openDanger, setOpenDanger] = useState(false);
+  return (
+    <Section
+      title="Dialog"
+      subtitle="Centered modal for all viewports. Heavy backdrop blur — the world outside the card is unmistakably out of focus. No drag, no bottom anchoring — that's BottomSheet's job."
+    >
+      <Stack gap={3}>
+        <Row label="basic">
+          <HStack gap={2}>
+            <Button onClick={() => setOpen(true)}>Open dialog</Button>
+            <Button intent="secondary" onClick={() => setOpenDanger(true)}>
+              Destructive
+            </Button>
+          </HStack>
+        </Row>
+      </Stack>
+
+      <Dialog
+        open={open}
+        onOpenChange={setOpen}
+        title="Invite teammates"
+        description="They'll get an email with a link to join your club."
+        footer={
+          <>
+            <Button intent="ghost" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={() => setOpen(false)}>Send invites</Button>
+          </>
+        }
+      >
+        <Stack gap={3}>
+          <TextField
+            label="Email addresses"
+            placeholder="kofi@example.com, ama@example.com"
+            autoFocus
+          />
+          <p className="text-xs text-fg-muted">
+            Each invitee can choose their role after they sign up.
+          </p>
+        </Stack>
+      </Dialog>
+
+      <Dialog
+        open={openDanger}
+        onOpenChange={setOpenDanger}
+        title="Delete this match?"
+        description="This permanently removes the fixture, its events, and any pending RP. This cannot be undone."
+        size="sm"
+        footer={
+          <>
+            <Button intent="ghost" onClick={() => setOpenDanger(false)}>
+              Cancel
+            </Button>
+            <Button intent="danger" onClick={() => setOpenDanger(false)}>
+              Delete
+            </Button>
+          </>
+        }
+      >
+        <p className="text-sm text-fg-muted">
+          Make sure both clubs agree before deleting — there is no recovery
+          path.
+        </p>
+      </Dialog>
+    </Section>
+  );
+}
+
+function SectionSkeleton() {
+  return (
+    <Section
+      title="Skeleton"
+      subtitle="Cold-load placeholder. Animated background-position only — no transform. Pauses for reduced-motion. Use composite recipes (Text, Avatar, Button, Card) instead of stacking primitives by hand."
+    >
+      <Stack gap={4}>
+        <Row label="primitives">
+          <HStack gap={3} className="items-center">
+            <Skeleton width={120} height={12} />
+            <Skeleton width={80} height={12} />
+            <Skeleton width={44} height={44} shape="circle" />
+            <Skeleton width={120} height={32} shape="pill" />
+          </HStack>
+        </Row>
+        <Row label="text — 3 lines">
+          <div className="w-full max-w-md">
+            <Skeleton.Text lines={3} />
+          </div>
+        </Row>
+        <Row label="avatar sizes">
+          <HStack gap={3} className="items-center">
+            <Skeleton.Avatar size="sm" />
+            <Skeleton.Avatar size="md" />
+            <Skeleton.Avatar size="lg" />
+            <Skeleton.Avatar size="xl" />
+          </HStack>
+        </Row>
+        <Row label="button">
+          <HStack gap={3} className="items-center">
+            <Skeleton.Button size="sm" width="6rem" />
+            <Skeleton.Button size="md" width="8rem" />
+            <Skeleton.Button size="lg" width="10rem" />
+          </HStack>
+        </Row>
+        <Row label="card composite">
+          <div className="grid w-full max-w-2xl grid-cols-1 gap-3 sm:grid-cols-2">
+            <Skeleton.Card />
+            <Skeleton.Card withAvatar={false} lines={3} />
+          </div>
+        </Row>
+      </Stack>
+    </Section>
+  );
+}
+
+function SectionLiveSurface() {
+  return (
+    <Section
+      title="LiveSurface"
+      subtitle="Opt-in ambient surface treatment. Four variants — tinted (static wash), aurora (drifting blobs), mesh (multi-stop radial), glass (frosted). Decorative; not used by default primitives. Drift pauses under prefers-reduced-motion."
+    >
+      <Stack gap={4}>
+        <Row label="tinted (static)">
+          <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-3">
+            <LiveSurface variant="tinted" toneA="primary">
+              <div className="text-sm font-semibold text-fg">Primary wash</div>
+              <p className="mt-1 text-xs text-fg-muted">
+                Single corner radial. Calmest.
+              </p>
+            </LiveSurface>
+            <LiveSurface variant="tinted" toneA="accent" intensity={18}>
+              <div className="text-sm font-semibold text-fg">Accent wash</div>
+              <p className="mt-1 text-xs text-fg-muted">
+                intensity=18 — stronger tint.
+              </p>
+            </LiveSurface>
+            <LiveSurface variant="tinted" toneA="success" intensity={10}>
+              <div className="text-sm font-semibold text-fg">Success wash</div>
+              <p className="mt-1 text-xs text-fg-muted">
+                intensity=10 — barely there.
+              </p>
+            </LiveSurface>
+          </div>
+        </Row>
+        <Row label="aurora (animated)">
+          <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2">
+            <LiveSurface variant="aurora" toneA="primary" toneB="accent">
+              <div className="text-sm font-semibold text-fg">
+                Primary × Accent
+              </div>
+              <p className="mt-1 text-xs text-fg-muted">
+                Two soft blobs drift slowly. Default pairing.
+              </p>
+            </LiveSurface>
+            <LiveSurface variant="aurora" toneA="warning" toneB="danger">
+              <div className="text-sm font-semibold text-fg">
+                Warning × Danger
+              </div>
+              <p className="mt-1 text-xs text-fg-muted">
+                Tonal mixing isn&apos;t restricted — but use sparingly.
+              </p>
+            </LiveSurface>
+          </div>
+        </Row>
+        <Row label="mesh (animated, premium)">
+          <LiveSurface variant="mesh" toneA="primary" toneB="accent" className="w-full">
+            <div className="text-sm font-semibold text-fg">
+              Multi-stop radial mesh
+            </div>
+            <p className="mt-1 text-xs text-fg-muted">
+              Two layers in opposite drift. The richest variant — save it
+              for hero surfaces, premium cards, the one wow moment.
+            </p>
+          </LiveSurface>
+        </Row>
+        <Row label="glass (frosted, static)">
+          {/* Glass is best seen against a busy background. Stack it on a
+              tinted surface so the blur has something to chew on. */}
+          <div className="relative w-full">
+            <LiveSurface variant="mesh" toneA="primary" toneB="accent" className="h-40">
+              <span aria-hidden />
+            </LiveSurface>
+            <div className="pointer-events-none absolute inset-0 grid place-items-center p-4">
+              <LiveSurface
+                variant="glass"
+                className="pointer-events-auto w-full max-w-xs"
+              >
+                <div className="text-sm font-semibold text-fg">
+                  Frosted glass
+                </div>
+                <p className="mt-1 text-xs text-fg-muted">
+                  Translucent fill + backdrop-blur + hairline top edge.
+                  Best for chrome floating over rich backgrounds.
+                </p>
+              </LiveSurface>
+            </div>
+          </div>
+        </Row>
+      </Stack>
+    </Section>
+  );
+}
+
+function SectionForm() {
+  return (
+    <Section
+      title="Form atoms"
+      subtitle="Field (label + hint + error + required/optional). Form (RHF + Zod + scroll-to-first-error). FormSection. FormFooter. FormSubmitButton."
+    >
+      <Stack gap={4}>
+        <Row label="field — variants">
+          <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
+            <Field label="Email" hint="We'll never share it.">
+              <TextField type="email" placeholder="you@kalaanba.gh" />
+            </Field>
+            <Field label="Display name" required>
+              <TextField placeholder="Kwame Mensah" />
+            </Field>
+            <Field label="Nickname" optional>
+              <TextField placeholder="The Maestro" />
+            </Field>
+            <Field
+              label="Password"
+              error="Must be at least 8 characters."
+            >
+              <PasswordField placeholder="••••••••" />
+            </Field>
+            <Field label="City" size="sm" hint="Compact density.">
+              <TextField placeholder="Accra" />
+            </Field>
+            <Field label="Disabled" disabled hint="Cannot edit right now.">
+              <TextField placeholder="—" disabled />
+            </Field>
+          </div>
+        </Row>
+
+        <Row label="form — sign in">
+          <SignInFormDemo />
+        </Row>
+
+        <Row label="form — sectioned">
+          <SectionedFormDemo />
+        </Row>
+      </Stack>
+    </Section>
+  );
+}
+
+function SignInFormDemo() {
+  const schema = z.object({
+    email: z.string().email("Enter a valid email."),
+    password: z.string().min(8, "At least 8 characters."),
+  });
+  type Values = { email: string; password: string };
+  const [submittedAt, setSubmittedAt] = useState<string | null>(null);
+
+  return (
+    <div className="w-full max-w-md">
+      <Form<Values>
+        schema={schema}
+        defaultValues={{ email: "", password: "" }}
+        onSubmit={async (values) => {
+          await new Promise((r) => setTimeout(r, 700));
+          setSubmittedAt(new Date().toLocaleTimeString());
+          // eslint-disable-next-line no-console
+          console.log("submitted", values);
+        }}
+      >
+        {(form) => {
+          const errors = form.formState.errors;
+          return (
+            <>
+              <Field label="Email" required error={errors.email?.message}>
+                <TextField
+                  type="email"
+                  autoComplete="email"
+                  placeholder="you@kalaanba.gh"
+                  {...form.register("email")}
+                />
+              </Field>
+              <Field
+                label="Password"
+                required
+                error={errors.password?.message}
+              >
+                <PasswordField
+                  autoComplete="current-password"
+                  placeholder="••••••••"
+                  {...form.register("password")}
+                />
+              </Field>
+              <FormFooter sticky={false}>
+                <FormSubmitButton>Sign in</FormSubmitButton>
+              </FormFooter>
+              {submittedAt ? (
+                <p className="text-xs text-fg-muted">
+                  Submitted at {submittedAt}. Check console.
+                </p>
+              ) : null}
+            </>
+          );
+        }}
+      </Form>
+    </div>
+  );
+}
+
+function SectionedFormDemo() {
+  const schema = z.object({
+    fullName: z.string().min(2, "Too short."),
+    phone: z.string().min(6, "Too short."),
+    bio: z.string().max(140, "Keep it under 140 characters."),
+  });
+  type Values = { fullName: string; phone: string; bio: string };
+
+  return (
+    <div className="w-full max-w-2xl">
+      <Form<Values>
+        schema={schema}
+        defaultValues={{ fullName: "", phone: "", bio: "" }}
+        onSubmit={async (values) => {
+          await new Promise((r) => setTimeout(r, 500));
+          // eslint-disable-next-line no-console
+          console.log("profile", values);
+        }}
+      >
+        {(form) => {
+          const errors = form.formState.errors;
+          return (
+            <>
+              <FormSection
+                title="Identity"
+                description="Public to your club staff."
+              >
+                <Field
+                  label="Full name"
+                  required
+                  error={errors.fullName?.message}
+                >
+                  <TextField
+                    placeholder="Ama Darko"
+                    {...form.register("fullName")}
+                  />
+                </Field>
+                <Field
+                  label="Phone"
+                  required
+                  hint="Used for OTP."
+                  error={errors.phone?.message}
+                >
+                  <TextField
+                    inputMode="tel"
+                    placeholder="+233 24 ..."
+                    {...form.register("phone")}
+                  />
+                </Field>
+              </FormSection>
+
+              <FormSection
+                title="About"
+                description="Optional. Shows on your profile."
+                collapsible
+                defaultOpen={false}
+              >
+                <Field
+                  label="Bio"
+                  optional
+                  hint="Max 140 characters."
+                  error={errors.bio?.message}
+                >
+                  <Textarea
+                    rows={3}
+                    placeholder="What do you bring to the pitch?"
+                    {...form.register("bio")}
+                  />
+                </Field>
+              </FormSection>
+
+              <FormFooter sticky={false}>
+                <FormSubmitButton>Save profile</FormSubmitButton>
+              </FormFooter>
+            </>
+          );
+        }}
+      </Form>
+    </div>
+  );
+}
+
+function SectionList() {
+  const [selectedTeam, setSelectedTeam] = useState("kotoko");
+  const teams = [
+    { id: "kotoko", name: "Asante Kotoko", desc: "Premier · Kumasi", initials: "AK" },
+    { id: "hearts", name: "Accra Hearts of Oak", desc: "Premier · Accra", initials: "HO" },
+    { id: "aduana", name: "Aduana Stars", desc: "Premier · Dormaa", initials: "AS" },
+    { id: "medeama", name: "Medeama SC", desc: "Premier · Tarkwa", initials: "MS" },
+  ];
+
+  return (
+    <Section
+      title="List & ListItem"
+      subtitle="Vertical record collection. ListItem auto-composes the pressable recipe when interactive (button or anchor). Three variants: plain, separated, surface."
+    >
+      <Stack gap={5}>
+        <Row label="surface · interactive">
+          <List variant="surface" aria-label="Select your team" className="w-full max-w-md">
+            {teams.map((t) => (
+              <ListItem
+                key={t.id}
+                leading={<Avatar size="sm" name={t.name} initials={t.initials} />}
+                title={t.name}
+                description={t.desc}
+                selected={selectedTeam === t.id}
+                onClick={() => setSelectedTeam(t.id)}
+              />
+            ))}
+          </List>
+        </Row>
+
+        <Row label="separated · trailing">
+          <List variant="separated" className="w-full max-w-md">
+            <ListItem
+              leading={<Icon><path d="M12 2v20M2 12h20" /></Icon>}
+              title="Notifications"
+              description="Push, email, and SMS preferences."
+              trailing={<Badge intent="primary">3</Badge>}
+              onClick={() => undefined}
+            />
+            <ListItem
+              leading={<Icon><path d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6" /></Icon>}
+              title="Appearance"
+              description="Light, dark, or system."
+              trailing={<span className="text-sm text-fg-muted">System</span>}
+              onClick={() => undefined}
+            />
+            <ListItem
+              leading={<Icon><path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0Z" /><path d="M12 7v5l3 3" /></Icon>}
+              title="Match reminders"
+              description="Get notified 30 minutes before kick-off."
+              onClick={() => undefined}
+            />
+          </List>
+        </Row>
+
+        <Row label="plain · presentational">
+          <List variant="plain" className="w-full max-w-md">
+            <ListItem
+              meta="Match 12"
+              title="Hearts of Oak vs Kotoko"
+              description="Sat · 4:00 PM · Accra Sports Stadium"
+              trailing={<Badge intent="success">Verified</Badge>}
+            />
+            <ListItem
+              meta="Match 13"
+              title="Aduana Stars vs Medeama"
+              description="Sun · 3:30 PM · Dormaa Park"
+              trailing={<Badge intent="warning">Pending</Badge>}
+            />
+            <ListItem
+              meta="Match 14"
+              title="King Faisal vs Berekum Chelsea"
+              description="Sun · 6:00 PM · Baba Yara Stadium"
+              trailing={<Badge intent="neutral">TBD</Badge>}
+            />
+          </List>
+        </Row>
+
+        <Row label="as anchor">
+          <List variant="surface" className="w-full max-w-md">
+            <ListItem
+              as="a"
+              href="#profile"
+              leading={<Avatar size="sm" name="Kwame Mensah" />}
+              title="Kwame Mensah"
+              description="Profile · Settings · Account"
+            />
+            <ListItem
+              as="a"
+              href="#help"
+              leading={<Icon><path d="M9 12a3 3 0 1 1 5.5 1.65L12 16M12 19v.01" /></Icon>}
+              title="Help & support"
+              description="Documentation, FAQs, contact."
+            />
+          </List>
+        </Row>
+      </Stack>
+    </Section>
+  );
+}
+
+function SectionStates() {
+  const [retryCount, setRetryCount] = useState(0);
+  const fakeRetry = () =>
+    new Promise<void>((resolve) =>
+      setTimeout(() => {
+        setRetryCount((n) => n + 1);
+        resolve();
+      }, 900),
+    );
+
+  return (
+    <Section
+      title="EmptyState & ErrorState"
+      subtitle="Fallback surfaces for empty lists and failed fetches. Never silent — every list slot gets one."
+    >
+      <Stack gap={5}>
+        <Row label="empty · md">
+          <div className="w-full rounded-card border border-border bg-surface">
+            <EmptyState
+              title="No matches scheduled yet"
+              description="When your club adds a fixture, it'll appear here with kick-off time and venue."
+              action={
+                <Button intent="primary" leadingIcon={<IconPlus />}>
+                  Schedule match
+                </Button>
+              }
+              secondaryAction={
+                <Button intent="ghost">Browse templates</Button>
+              }
+            />
+          </div>
+        </Row>
+
+        <Row label="empty · sm">
+          <div className="w-full max-w-md rounded-card border border-border bg-surface">
+            <EmptyState
+              size="sm"
+              title="No notifications"
+              description="You're all caught up."
+            />
+          </div>
+        </Row>
+
+        <Row label="error · with retry">
+          <div className="w-full rounded-card border border-border bg-surface">
+            <ErrorState
+              description="We couldn't reach the fixtures service. Check your connection and try again."
+              onRetry={fakeRetry}
+              secondaryAction={<Button intent="ghost">Contact support</Button>}
+            />
+            {retryCount > 0 ? (
+              <p className="pb-6 text-center text-xs text-fg-muted">
+                Retried {retryCount}× — still failing in this demo.
+              </p>
+            ) : null}
+          </div>
+        </Row>
+
+        <Row label="error · with details">
+          <div className="w-full rounded-card border border-border bg-surface">
+            <ErrorState
+              size="sm"
+              title="Couldn't load standings"
+              description="The competition service returned an unexpected response."
+              onRetry={fakeRetry}
+              details={`TypeError: Cannot read properties of undefined (reading 'rows')
+    at parseStandings (standings.ts:42:18)
+    at Object.fetchStandings (api.ts:118:12)
+    at async Page (page.tsx:21:20)`}
+            />
+          </div>
+        </Row>
+      </Stack>
+    </Section>
+  );
+}
+
+function SectionAppShell() {
+  return (
+    <Section
+      title="AppShell & SiteHeader"
+      subtitle="Page layout chassis. Sticky header + main content + optional mobile BottomNav. SiteHeader is the pre-composed default; AppShell takes any header node."
+    >
+      <Stack gap={4}>
+        <Row label="default">
+          <div className="w-full overflow-hidden rounded-card border border-border">
+            <AppShell
+              header={
+                <SiteHeader
+                  nav={
+                    <HStack gap={1}>
+                      <LinkButton href="#" intent="ghost" size="sm">
+                        Home
+                      </LinkButton>
+                      <LinkButton href="#" intent="ghost" size="sm">
+                        Fixtures
+                      </LinkButton>
+                      <LinkButton href="#" intent="ghost" size="sm">
+                        Clubs
+                      </LinkButton>
+                      <LinkButton href="#" intent="ghost" size="sm">
+                        Standings
+                      </LinkButton>
+                    </HStack>
+                  }
+                />
+              }
+              className="min-h-70 rounded-card"
+            >
+              <Stack gap={2}>
+                <h3 className="font-display text-lg font-semibold">
+                  Page content
+                </h3>
+                <p className="text-sm text-fg-muted">
+                  Everything below the sticky header renders here. On mobile,
+                  the optional BottomNav slot floats above this area with a
+                  safe-area-aware bottom inset.
+                </p>
+              </Stack>
+            </AppShell>
+          </div>
+        </Row>
+
+        <Row label="header-only">
+          <div className="w-full overflow-hidden rounded-card border border-border">
+            <SiteHeader />
+          </div>
+        </Row>
+      </Stack>
+    </Section>
+  );
+}
+
+function SectionScrollTo() {
+  return (
+    <Section
+      title="ScrollTo & ScrollControls"
+      subtitle="Floating utility buttons that smooth-scroll to top, middle, or bottom. Auto-show/hide based on scroll distance. A live cluster is already attached to this page — scroll to see it appear at the bottom-right."
+    >
+      <Stack gap={4}>
+        <Row label="api">
+          <div className="space-y-2 text-sm text-fg-muted">
+            <p>
+              <code className="rounded bg-surface-2 px-1.5 py-0.5 text-xs">
+                {"<ScrollTo to=\"top|middle|bottom|<number>\" />"}
+              </code>
+              {" "}— single floating button.
+            </p>
+            <p>
+              <code className="rounded bg-surface-2 px-1.5 py-0.5 text-xs">
+                {"<ScrollControls targets={[\"top\", \"bottom\"]} position=\"bottom-right\" />"}
+              </code>
+              {" "}— stacked cluster.
+            </p>
+            <p>
+              Both use native{" "}
+              <code className="rounded bg-surface-2 px-1.5 py-0.5 text-xs">
+                window.scrollTo({"{behavior: \"smooth\"}"})
+              </code>{" "}
+              which respects <code>prefers-reduced-motion</code>.
+            </p>
+          </div>
+        </Row>
+
+        <Row label="live">
+          <p className="text-sm text-fg-muted">
+            ✨ A <code className="rounded bg-surface-2 px-1.5 py-0.5 text-xs">{"<ScrollControls targets={[\"top\", \"middle\", \"bottom\"]} />"}</code>
+            {" "}is currently mounted on this showcase page. Try scrolling — buttons
+            fade in with a soft pop when you're away from the target.
+          </p>
+        </Row>
+      </Stack>
+    </Section>
   );
 }
 

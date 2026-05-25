@@ -85,9 +85,17 @@ export function Checkbox({
         )}
       >
         {isMixed ? (
-          <Minus size={12} weight="bold" className="text-on-primary" />
+          <Minus
+            size={12}
+            weight="bold"
+            className="text-on-primary motion-safe:animate-[kx-pop-in_180ms_var(--ease-entrance)]"
+          />
         ) : isOn ? (
-          <Check size={12} weight="bold" className="text-on-primary" />
+          <Check
+            size={12}
+            weight="bold"
+            className="text-on-primary motion-safe:animate-[kx-pop-in_180ms_var(--ease-entrance)]"
+          />
         ) : null}
       </button>
 

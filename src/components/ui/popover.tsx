@@ -92,6 +92,11 @@ export const Popover = forwardRef<HTMLDivElement, PopoverProps>(
           "rounded-card border border-border bg-surface-elev shadow-lg",
           className,
         )}
+        style={{
+          // Soft entrance — opacity + a 4px lift. Spatial: the panel
+          // arrives from somewhere relative to its anchor.
+          animation: "kx-pop-in 180ms var(--ease-entrance)",
+        }}
       >
         {children}
       </div>
