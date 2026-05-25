@@ -38,6 +38,9 @@ import {
   Stack,
   Tabs,
   Progress,
+  Toast,
+  ToastProvider,
+  useToast,
   Textarea,
   TextField,
   ThemeToggle,
@@ -129,6 +132,7 @@ export function ShowcaseClient() {
           <SectionImageUploader />
           <SectionTabs />
           <SectionProgress />
+          <SectionToast />
           <SectionBadge />
           <SectionAvatar />
           <SectionNotificationBell />
@@ -1537,6 +1541,99 @@ function SectionProgress() {
         </Row>
       </Stack>
     </Section>
+  );
+}
+
+function SectionToast() {
+  return (
+    <Section
+      title="Toast"
+      subtitle="Notification card. Five tones, auto-dismiss with a thin progress bar, hover or focus to pause. Entrance is opacity-only — no translate motion."
+    >
+      <Stack gap={4}>
+        <Row label="static — tones">
+          <Stack gap={2} className="w-full max-w-sm">
+            <Toast
+              tone="primary"
+              title="Match saved"
+              description="Lineups locked and synced to all participants."
+            />
+            <Toast
+              tone="blue"
+              title="Tournament posted"
+              description="Eastern Belt Round 3 brackets are live."
+            />
+            <Toast
+              tone="success"
+              title="Result confirmed"
+              description="Both clubs have verified the scoresheet."
+            />
+            <Toast
+              tone="warning"
+              title="Lineup conflict"
+              description="Two players are listed for both squads."
+            />
+            <Toast
+              tone="danger"
+              title="Stake forfeited"
+              description="No-show penalty applied — 250 RP locked."
+            />
+          </Stack>
+        </Row>
+        <Row label="queue (live)">
+          <ToastProvider>
+            <ToastQueueDemo />
+          </ToastProvider>
+        </Row>
+      </Stack>
+    </Section>
+  );
+}
+
+function ToastQueueDemo() {
+  const { push } = useToast();
+  return (
+    <HStack gap={2}>
+      <Button
+        size="sm"
+        intent="primary"
+        onClick={() =>
+          push({
+            tone: "primary",
+            title: "Match saved",
+            description: "Lineups locked.",
+          })
+        }
+      >
+        Primary
+      </Button>
+      <Button
+        size="sm"
+        intent="success"
+        onClick={() =>
+          push({
+            tone: "success",
+            title: "Result confirmed",
+            description: "Both clubs verified.",
+          })
+        }
+      >
+        Success
+      </Button>
+      <Button
+        size="sm"
+        intent="danger"
+        onClick={() =>
+          push({
+            tone: "danger",
+            title: "Stake forfeited",
+            description: "250 RP locked.",
+          })
+        }
+      >
+        Danger
+      </Button>
+    </HStack>
   );
 }
 

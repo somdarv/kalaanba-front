@@ -44,7 +44,7 @@ Each batch lands together in one round-trip with the user, then we move on.
 - [x] New file `src/components/ui/password-field.tsx`.
 - [x] Wraps `TextField`; trailing slot = eye / eye-slash icon toggle.
 - [x] Default `autoComplete="current-password"`, `inputMode="text"`, `enterKeyHint="done"`.
-- [ ] Unit test: toggle flips `type` between `password` and `text`.  *(deferred — landing alongside Batch 4 batch of tests)*
+- [ ] Unit test: toggle flips `type` between `password` and `text`. _(deferred — landing alongside Batch 4 batch of tests)_
 - [x] Showcase entry.
 
 ### Batch 3 — Textarea

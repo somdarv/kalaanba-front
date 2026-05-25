@@ -85,4 +85,6 @@ export { Tabs } from "./tabs";
 export type { TabsProps, TabsItem } from "./tabs";
 export { Progress } from "./progress";
 export type { ProgressProps, ProgressSize } from "./progress";
+export { Toast, ToastProvider, useToast } from "./toast";
+export type { ToastProps, ToastDescriptor, ToastTone } from "./toast";
 export { VisuallyHidden } from "./visually-hidden";
