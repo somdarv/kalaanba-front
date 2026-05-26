@@ -53,12 +53,21 @@ paths:
                     type: array
                     items:
                       type: object
-                      required: [key, scope, value, version, approval_level, effective_from]
+                      required:
+                        [
+                          key,
+                          scope,
+                          value,
+                          version,
+                          approval_level,
+                          effective_from,
+                        ]
                       properties:
                         key: { type: string }
                         scope:
                           type: string
-                          enum: [platform, region, zone, club, season, competition]
+                          enum:
+                            [platform, region, zone, club, season, competition]
                         scope_id: { type: ["string", "null"] }
                         value:
                           description: |
@@ -70,7 +79,8 @@ paths:
                           enum: [low, medium, high, critical]
                         change_reason: { type: ["string", "null"] }
                         effective_from: { type: string, format: date-time }
-                        effective_until: { type: ["string", "null"], format: date-time }
+                        effective_until:
+                          { type: ["string", "null"], format: date-time }
                         created_at: { type: string, format: date-time }
                         updated_at: { type: string, format: date-time }
                   meta:

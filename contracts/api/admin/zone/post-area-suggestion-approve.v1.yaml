@@ -68,7 +68,8 @@ paths:
                     properties:
                       id: { type: string, format: uuid }
                       status: { type: string, enum: [approved] }
-                      resulting_area_id: { type: ["string", "null"], format: uuid }
+                      resulting_area_id:
+                        { type: ["string", "null"], format: uuid }
                       reviewed_by_user_id: { type: string }
                       reviewed_at: { type: string, format: date-time }
                       review_note: { type: ["string", "null"] }
