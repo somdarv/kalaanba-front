@@ -1,0 +1,38 @@
+event_name: zone.area_suggested
+schema_version: 1
+engine: zone
+description: |
+  Emitted when a user submits a new Area suggestion for a City Hub. The
+  suggestion enters the `pending` workflow until an admin reviews it via
+  the native admin panel. Consumed by Notification (route to reviewer
+  inbox) and Analytics. Engine doc: docs/engines/zone/.
+required:
+  - suggestion_id
+  - city_hub_id
+  - proposed_name
+  - submitted_by_user_id
+  - submitted_at
+payload:
+  suggestion_id:
+    type: uuid
+    description: Stable id of the `area_suggestions` row.
+  city_hub_id:
+    type: uuid
+    description: City Hub the user is suggesting an Area for.
+  proposed_zone_id:
+    type: uuid
+    nullable: true
+    description: Optional hint of which Zone the area should fall under.
+  proposed_name:
+    type: string
+    description: User-entered area name (trimmed, length bounded by config).
+  submitted_by_user_id:
+    type: uuid
+    description: User who submitted the suggestion.
+  submitted_at:
+    type: string
+    format: date-time
+idempotency: |
+  event_id == suggestion_id (UUID generated at submission time). Re-submitting
+  the same record will not double-emit because the outbox unique key is the
+  event_id (Constitution §1.14).

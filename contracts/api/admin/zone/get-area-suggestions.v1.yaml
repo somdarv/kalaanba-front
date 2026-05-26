@@ -1,0 +1,105 @@
+openapi: 3.1.0
+info:
+  title: "Admin — List Zone Area Suggestions"
+  version: "1.0.0"
+  description: |
+    Returns the Zone-engine area-suggestion review queue, newest-first.
+    Super Admin only — denial returns `auth.super_admin_only` (403).
+
+    Suggestions are submitted by club admins for proposed areas inside an
+    existing zone. This queue is the moderator surface used by Super Admins
+    to approve (creating a verified `areas` row) or reject (preserving the
+    history). Constitution Law 1 (engine boundaries), Law 13 (archive don't
+    delete), Law 14 (idempotency).
+
+paths:
+  /api/v1/admin/zone/area-suggestions:
+    get:
+      summary: List Zone area suggestions
+      operationId: listAdminZoneAreaSuggestions
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: header
+          name: X-Request-Id
+          required: false
+          schema: { type: string, format: uuid }
+        - in: query
+          name: status
+          required: false
+          schema: { type: string, enum: [pending, approved, rejected] }
+        - in: query
+          name: limit
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+      responses:
+        "200":
+          description: Suggestion rows
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: "#/components/schemas/AreaSuggestion" }
+                  meta:
+                    type: object
+                    required: [limit, count]
+                    properties:
+                      limit: { type: integer }
+                      count: { type: integer }
+                      status_filter: { type: ["string", "null"] }
+                      request_id: { type: string }
+                      api_version: { type: string, enum: [v1] }
+        "401": { description: Unauthenticated }
+        "403":
+          description: Not Super Admin (`auth.super_admin_only`).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: sanctum
+  schemas:
+    AreaSuggestion:
+      type: object
+      required:
+        - id
+        - city_hub_id
+        - proposed_name
+        - submitted_by_user_id
+        - status
+        - submitted_at
+      properties:
+        id: { type: string, format: uuid }
+        city_hub_id: { type: string, format: uuid }
+        proposed_zone_id: { type: ["string", "null"], format: uuid }
+        proposed_name: { type: string }
+        note: { type: ["string", "null"] }
+        submitted_by_user_id: { type: string }
+        status:
+          type: string
+          enum: [pending, approved, rejected]
+        reviewed_by_user_id: { type: ["string", "null"] }
+        review_note: { type: ["string", "null"] }
+        resulting_area_id: { type: ["string", "null"], format: uuid }
+        submitted_at: { type: string, format: date-time }
+        reviewed_at: { type: ["string", "null"], format: date-time }
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details: { type: object }
+            request_id: { type: string }

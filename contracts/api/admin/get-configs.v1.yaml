@@ -1,0 +1,111 @@
+openapi: 3.1.0
+info:
+  title: "Admin — List Admin Configuration"
+  version: "1.0.0"
+  description: |
+    Read-only list of `admin_config` rows. Super Admin only — denial returns
+    `auth.super_admin_only` (403). Filter by engine prefix (`engine=zone` →
+    keys starting with `zone.`) and/or approval level. The mutation surface
+    (create / propose / approve config changes) is **out of scope** for this
+    contract; see the Admin Configuration & Governance engine docs.
+
+    Constitution Law 1.2 (configurability over constants), Law 1.5 (audited
+    via `AdminAuditMiddleware` on writes).
+
+paths:
+  /api/v1/admin/configs:
+    get:
+      summary: List admin configuration rows
+      operationId: listAdminConfigs
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: header
+          name: X-Request-Id
+          required: false
+          schema: { type: string, format: uuid }
+        - in: query
+          name: engine
+          required: false
+          description: |
+            Restrict to keys whose prefix matches the engine slug — eg.
+            `engine=zone` matches `zone.area_suggestion_enabled`. Empty /
+            omitted returns all engines.
+          schema: { type: string, pattern: "^[a-z][a-z0-9_]*$" }
+        - in: query
+          name: approval_level
+          required: false
+          schema: { type: string, enum: [low, medium, high, critical] }
+        - in: query
+          name: limit
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+      responses:
+        "200":
+          description: Configuration rows
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      required: [key, scope, value, version, approval_level, effective_from]
+                      properties:
+                        key: { type: string }
+                        scope:
+                          type: string
+                          enum: [platform, region, zone, club, season, competition]
+                        scope_id: { type: ["string", "null"] }
+                        value:
+                          description: |
+                            JSON-encoded config value. Callers MUST treat as
+                            opaque; per-key shape is owned by the engine.
+                        version: { type: integer, minimum: 1 }
+                        approval_level:
+                          type: string
+                          enum: [low, medium, high, critical]
+                        change_reason: { type: ["string", "null"] }
+                        effective_from: { type: string, format: date-time }
+                        effective_until: { type: ["string", "null"], format: date-time }
+                        created_at: { type: string, format: date-time }
+                        updated_at: { type: string, format: date-time }
+                  meta:
+                    type: object
+                    required: [limit, count]
+                    properties:
+                      limit: { type: integer }
+                      count: { type: integer }
+                      request_id: { type: string }
+                      api_version: { type: string, enum: [v1] }
+        "401":
+          description: Unauthenticated
+        "403":
+          description: |
+            Caller is not Super Admin. Error code: `auth.super_admin_only`.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: sanctum
+  schemas:
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details: { type: object }
+            request_id: { type: string }

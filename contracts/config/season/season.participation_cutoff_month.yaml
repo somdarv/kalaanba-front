@@ -1,0 +1,10 @@
+key: season.participation_cutoff_month
+engine: season
+scope: platform
+value_type: integer
+default: "7"
+approval_level: high
+description: |
+  Calendar month of the mid-season participation cutoff (default = July).
+  After participation_cutoff_at, new player affiliations to a club may be
+  restricted (consumed by Player & Affiliation engine via `season.cutoff_passed`).

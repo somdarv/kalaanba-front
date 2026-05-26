@@ -1,0 +1,10 @@
+key: season.archive_window_end_day
+engine: season
+scope: platform
+value_type: integer
+default: "31"
+approval_level: high
+description: |
+  Day in March on which the archive window terminates and the season is
+  fully sealed. Default = 31 (Mar 31). After this, the next season's
+  `preseason` window has already begun. Engine doc §2 + §9.

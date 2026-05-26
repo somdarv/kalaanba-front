@@ -1,0 +1,10 @@
+key: season.start_month
+engine: season
+scope: platform
+value_type: integer
+default: "4"
+approval_level: critical
+description: |
+  Calendar month (1-12) on which a new Kalaanba season begins. Default = 4
+  (April). Engine doc: docs/engines/season/Season_Engine_UPDATED.md §2 + §12.
+  Changing this re-shapes the whole platform calendar — critical-tier.

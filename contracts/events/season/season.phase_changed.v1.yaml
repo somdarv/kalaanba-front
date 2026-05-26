@@ -1,0 +1,34 @@
+event_name: season.phase_changed
+schema_version: 1
+engine: season
+description: |
+  Emitted by the Season engine when a season transitions between phases
+  (preseason → active → peak → run_in → closing → archived). Consumed by
+  Challenge, RP Economy, Awards, Analytics, Notification.
+required:
+  - season_id
+  - season_code
+  - from_phase
+  - to_phase
+  - occurred_at
+payload:
+  season_id:
+    type: uuid
+    description: Season record id.
+  season_code:
+    type: string
+    pattern: "^\\d{4}/\\d{4}$"
+    description: Human season code e.g. `2026/2027`.
+  from_phase:
+    type: string
+    enum: [preseason, active, peak, run_in, closing, archived]
+  to_phase:
+    type: string
+    enum: [preseason, active, peak, run_in, closing, archived]
+  occurred_at:
+    type: string
+    format: date-time
+    description: ISO-8601 UTC instant at which the boundary was crossed.
+idempotency: |
+  event_id is a deterministic UUIDv5 of `phase:{season_id}:{to_phase}` so a
+  given transition can only be emitted once (Constitution §1.14).

@@ -1,0 +1,22 @@
+event_name: zone.area_rejected
+schema_version: 1
+engine: zone
+description: |
+  Emitted when an admin rejects an Area suggestion. The suggestion row is
+  preserved with terminal status `rejected` (Constitution §1.13 archive
+  don't delete). Consumed by Notification + Analytics.
+required:
+  - suggestion_id
+  - reviewed_by_user_id
+  - reviewed_at
+payload:
+  suggestion_id:
+    type: uuid
+  reviewed_by_user_id:
+    type: uuid
+  reviewed_at:
+    type: string
+    format: date-time
+idempotency: |
+  event_id is a deterministic UUIDv5 of `rejected:{suggestion_id}`. The
+  application service short-circuits if the suggestion is already terminal.

@@ -1,0 +1,10 @@
+key: season.ranked_acceptance_cutoff_day
+engine: season
+scope: platform
+value_type: integer
+default: "14"
+approval_level: high
+description: |
+  Day-of-month for the ranked-acceptance cutoff (default = 14 → Feb 14).
+  Engine doc §9. Emitted as `season.cutoff_passed` with
+  cutoff_key=`ranked_acceptance_cutoff_at`.

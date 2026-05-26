@@ -1,0 +1,10 @@
+key: season.new_ranked_challenge_cutoff_day
+engine: season
+scope: platform
+value_type: integer
+default: "7"
+approval_level: high
+description: |
+  Day-of-month for the new-ranked-challenge cutoff (default = 7 → Feb 7).
+  Engine doc §9. Emitted as `season.cutoff_passed` with
+  cutoff_key=`new_ranked_challenge_cutoff_at`.

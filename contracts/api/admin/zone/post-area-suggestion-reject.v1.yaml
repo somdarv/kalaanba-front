@@ -1,0 +1,92 @@
+openapi: 3.1.0
+info:
+  title: "Admin — Reject Zone Area Suggestion"
+  version: "1.0.0"
+  description: |
+    Rejects a pending Zone area-suggestion. The suggestion row is preserved
+    (Constitution Law 13 — archive, don't delete), `status` flips to
+    `rejected`, and a `zone.area_suggestion_rejected` event is emitted via
+    the outbox (Law 6). Idempotent on `Idempotency-Key`.
+    Super Admin only — denial returns `auth.super_admin_only` (403).
+
+paths:
+  /api/v1/admin/zone/area-suggestions/{id}/reject:
+    post:
+      summary: Reject a Zone area suggestion
+      operationId: rejectAdminZoneAreaSuggestion
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema: { type: string, minLength: 8, maxLength: 64 }
+        - in: header
+          name: X-Request-Id
+          required: false
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                review_note:
+                  type: string
+                  description: Optional moderator note (audited).
+      responses:
+        "200":
+          description: Rejected (or already-rejected idempotent reply)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: object
+                    required: [id, status, reviewed_at]
+                    properties:
+                      id: { type: string, format: uuid }
+                      status: { type: string, enum: [rejected] }
+                      reviewed_by_user_id: { type: string }
+                      reviewed_at: { type: string, format: date-time }
+                      review_note: { type: ["string", "null"] }
+        "400":
+          description: |
+            Missing `Idempotency-Key` header. Error code:
+            `auth.idempotency_key_required`.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "401": { description: Unauthenticated }
+        "403":
+          description: Not Super Admin (`auth.super_admin_only`).
+        "404":
+          description: |
+            Suggestion not found. Error code: `zone.suggestion_not_found`.
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: sanctum
+  schemas:
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details: { type: object }
+            request_id: { type: string }

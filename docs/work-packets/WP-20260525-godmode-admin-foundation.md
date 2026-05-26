@@ -3,16 +3,16 @@
 > **Work Packet** tracking sheet. Updated as each pipeline stage clears.
 > One source of truth for: scope, contracts, config keys, engines, owners, open questions, stage progress.
 
-| Field | Value |
-|---|---|
-| **ID** | `WP-20260525-godmode-admin-foundation` |
-| **Title** | God Mode developer admin portal — foundation slice (Filament v3) |
-| **Opened** | 2026-05-25 |
-| **Owner** | Sole developer / product owner |
-| **ADR** | [ADR-0002](../adr/0002-filament-godmode-admin-portal.md) — Filament v3 as the God Mode developer admin portal |
-| **Build Plan phase** | [Phase 0.7.5](../Architecture/Build_Plan.md) |
-| **Repo(s)** | `kalaanba-api` (primary), `kalaanba-front` (none in this WP) |
-| **Current stage** | **Stage 5 — Contract Design** ✅ → Stage 6 — Implementation |
+| Field                | Value                                                                                                         |
+| -------------------- | ------------------------------------------------------------------------------------------------------------- |
+| **ID**               | `WP-20260525-godmode-admin-foundation`                                                                        |
+| **Title**            | God Mode developer admin portal — foundation slice (Filament v3)                                              |
+| **Opened**           | 2026-05-25                                                                                                    |
+| **Owner**            | Sole developer / product owner                                                                                |
+| **ADR**              | [ADR-0002](../adr/0002-filament-godmode-admin-portal.md) — Filament v3 as the God Mode developer admin portal |
+| **Build Plan phase** | [Phase 0.7.5](../Architecture/Build_Plan.md)                                                                  |
+| **Repo(s)**          | `kalaanba-api` (primary), `kalaanba-front` (none in this WP)                                                  |
+| **Current stage**    | **Stage 5 — Contract Design** ✅ → Stage 6 — Implementation                                                   |
 
 ---
 
@@ -54,12 +54,12 @@ Ship a working Filament v3 admin panel at `kalaanba-api`'s `/admin` route that:
 
 ### Risks
 
-| Risk | Mitigation |
-|---|---|
-| Filament's UI confuses developer when looking at Kalaanba design surfaces | Mounted at `/admin` only, never linked from product navigation. Brand theming makes intent visually clear. |
-| SuperAdmin compromise = total platform compromise | Acknowledged, time-boxed to pre-alpha + alpha. Phase 9 adds 2FA + IP allowlist before public beta. |
-| Filament resources become a parallel domain-logic path | Constitution Law: resources call into module Application services only. PR review enforces. |
-| Adding Filament's dependencies bloats `composer.lock` | One-time ~30 MB increase; all dependencies are mainstream Laravel ecosystem (Livewire, Alpine). Acceptable. |
+| Risk                                                                      | Mitigation                                                                                                  |
+| ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Filament's UI confuses developer when looking at Kalaanba design surfaces | Mounted at `/admin` only, never linked from product navigation. Brand theming makes intent visually clear.  |
+| SuperAdmin compromise = total platform compromise                         | Acknowledged, time-boxed to pre-alpha + alpha. Phase 9 adds 2FA + IP allowlist before public beta.          |
+| Filament resources become a parallel domain-logic path                    | Constitution Law: resources call into module Application services only. PR review enforces.                 |
+| Adding Filament's dependencies bloats `composer.lock`                     | One-time ~30 MB increase; all dependencies are mainstream Laravel ecosystem (Livewire, Alpine). Acceptable. |
 
 ### Definition of Done
 
@@ -90,23 +90,23 @@ Ship a working Filament v3 admin panel at `kalaanba-api`'s `/admin` route that:
 
 **New code (all in `kalaanba-api`)**:
 
-| Path | Purpose | LOC budget |
-|---|---|---|
-| `app/Providers/Filament/AdminPanelProvider.php` | Panel registration: brand, theme, middleware, auto-discovery paths | ~120 |
-| `app/Filament/Resources/UserResource.php` (+ Pages/) | User auto-CRUD + impersonation trigger | ~250 |
-| `app/Filament/Resources/OutboxEventResource.php` (+ Pages/) | Outbox CRUD + re-emit action | ~200 |
-| `app/Filament/Resources/AdminAuditLogResource.php` (+ Pages/) | Read-only audit viewer | ~150 |
-| `app/Filament/Resources/AdminConfigResource.php` (+ Pages/) | Effective-dated CRUD | ~220 |
-| `app/Filament/Resources/AnalyticsEventResource.php` (+ Pages/) | Read-only analytics viewer | ~150 |
-| `app/Filament/Resources/PersonalAccessTokenResource.php` (+ Pages/) | Token revocation | ~120 |
-| `app/Filament/Resources/EventDedupeResource.php` (+ Pages/) | Read-only dedupe viewer | ~100 |
-| `app/Filament/Pages/UserInspector.php` (+ view) | Tabbed user deep-dive | ~250 |
-| `app/Filament/Pages/EventReplayer.php` (+ view) | Pick + re-emit outbox row | ~150 |
-| `app/Filament/Pages/DataInjector.php` (+ view) | One-click mock data | ~200 |
-| `app/Filament/Themes/KalaanbaTheme.php` (or CSS file) | Brand palette + Inter font + logo | ~80 + CSS |
-| `app/Models/User.php` | Add `FilamentUser` interface implementation → `canAccessPanel()` returns `Role::SUPER_ADMIN` check only | +15 |
-| `tests/Feature/Filament/*.php` | Auth gate, audit-log verification, mobile responsiveness | ~400 |
-| `composer.json` | Add `filament/filament: ^3.2`, `stechstudio/filament-impersonate: ^4.0` | 2 lines |
+| Path                                                                | Purpose                                                                                                 | LOC budget |
+| ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- | ---------- |
+| `app/Providers/Filament/AdminPanelProvider.php`                     | Panel registration: brand, theme, middleware, auto-discovery paths                                      | ~120       |
+| `app/Filament/Resources/UserResource.php` (+ Pages/)                | User auto-CRUD + impersonation trigger                                                                  | ~250       |
+| `app/Filament/Resources/OutboxEventResource.php` (+ Pages/)         | Outbox CRUD + re-emit action                                                                            | ~200       |
+| `app/Filament/Resources/AdminAuditLogResource.php` (+ Pages/)       | Read-only audit viewer                                                                                  | ~150       |
+| `app/Filament/Resources/AdminConfigResource.php` (+ Pages/)         | Effective-dated CRUD                                                                                    | ~220       |
+| `app/Filament/Resources/AnalyticsEventResource.php` (+ Pages/)      | Read-only analytics viewer                                                                              | ~150       |
+| `app/Filament/Resources/PersonalAccessTokenResource.php` (+ Pages/) | Token revocation                                                                                        | ~120       |
+| `app/Filament/Resources/EventDedupeResource.php` (+ Pages/)         | Read-only dedupe viewer                                                                                 | ~100       |
+| `app/Filament/Pages/UserInspector.php` (+ view)                     | Tabbed user deep-dive                                                                                   | ~250       |
+| `app/Filament/Pages/EventReplayer.php` (+ view)                     | Pick + re-emit outbox row                                                                               | ~150       |
+| `app/Filament/Pages/DataInjector.php` (+ view)                      | One-click mock data                                                                                     | ~200       |
+| `app/Filament/Themes/KalaanbaTheme.php` (or CSS file)               | Brand palette + Inter font + logo                                                                       | ~80 + CSS  |
+| `app/Models/User.php`                                               | Add `FilamentUser` interface implementation → `canAccessPanel()` returns `Role::SUPER_ADMIN` check only | +15        |
+| `tests/Feature/Filament/*.php`                                      | Auth gate, audit-log verification, mobile responsiveness                                                | ~400       |
+| `composer.json`                                                     | Add `filament/filament: ^3.2`, `stechstudio/filament-impersonate: ^4.0`                                 | 2 lines    |
 
 **Total estimated LOC**: ~2400 (test + production), all in `kalaanba-api`. Every file under the 400 LOC cap.
 
@@ -162,13 +162,13 @@ Both via `Config::get('admin.godmode_*')` — defaulted in `admin_config` seeder
 
 ### Risk register (updated from Stage 1)
 
-| Risk | Likelihood | Impact | Mitigation |
-|---|---|---|---|
-| Composer dep conflict with Laravel 11 / Sanctum 4 | Low | Medium | Filament v3.2+ explicitly supports Laravel 11. Local CI catches before merge. |
-| Livewire 3 + Sanctum session conflict on `/admin` | Low | Medium | Filament panels use `web` guard with session; Sanctum's stateless API tokens are unaffected. Verified by Filament v3 docs. |
-| Audit log volume explosion if developer browses heavily | Low | Low | `AdminAuditMiddleware` only fires on **mutating** methods (POST/PUT/PATCH/DELETE). Read-heavy browsing won't bloat the log. |
-| Mobile Filament panel UX poor at 375px | Medium | Low | Filament v3 is responsive by spec; explicit QA criterion at stage 8. If poor, add custom mobile-pinned navigation. |
-| Brand theme drifts from `globals.css` tokens | Low | Low | Theme CSS reads from a small set of duplicated Kalaanba colour values (manually synced once). Acceptable — Filament theme isn't a brand surface. |
+| Risk                                                    | Likelihood | Impact | Mitigation                                                                                                                                       |
+| ------------------------------------------------------- | ---------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Composer dep conflict with Laravel 11 / Sanctum 4       | Low        | Medium | Filament v3.2+ explicitly supports Laravel 11. Local CI catches before merge.                                                                    |
+| Livewire 3 + Sanctum session conflict on `/admin`       | Low        | Medium | Filament panels use `web` guard with session; Sanctum's stateless API tokens are unaffected. Verified by Filament v3 docs.                       |
+| Audit log volume explosion if developer browses heavily | Low        | Low    | `AdminAuditMiddleware` only fires on **mutating** methods (POST/PUT/PATCH/DELETE). Read-heavy browsing won't bloat the log.                      |
+| Mobile Filament panel UX poor at 375px                  | Medium     | Low    | Filament v3 is responsive by spec; explicit QA criterion at stage 8. If poor, add custom mobile-pinned navigation.                               |
+| Brand theme drifts from `globals.css` tokens            | Low        | Low    | Theme CSS reads from a small set of duplicated Kalaanba colour values (manually synced once). Acceptable — Filament theme isn't a brand surface. |
 
 ---
 
@@ -178,34 +178,34 @@ This WP is cross-cutting (Support layer + future Admin Governance engine). No si
 
 ### Constitution check
 
-| Law | Applies? | How this WP respects it |
-|---|---|---|
-| **L1 — Engine boundaries sacred** | ✅ | Filament resources are read/write surfaces on existing Eloquent models. They call into module Application services for any non-trivial action; never reach into another engine's schema. Cross-engine effects (e.g. Event Replayer re-emitting an outbox event) flow through the existing outbox + relay path, not via direct cross-schema writes. |
-| **L2 — Configurability over constants** | ✅ | Two new config keys (`admin.godmode_impersonation_enabled`, `admin.godmode_data_injector_enabled`) registered in `admin_config`. No magic numbers in resource files. Per-resource pagination defaults loaded from `Config::get('admin.godmode_page_size', 25)`. |
-| **L3 — Backend owns truth** | ✅ | N/A in a hostile sense — Filament IS the backend. No frontend computation. |
-| **L4 — Stable internal keys, configurable labels** | ✅ | Filament tables filter by enum keys (`Role::SUPER_ADMIN->value`), not display strings. Resource navigation labels are i18n-ready via Filament's built-in translation system. |
-| **L5 — Every meaningful action audited** | ✅ | `AdminAuditMiddleware` (already wired globally) fires on every POST/PUT/PATCH/DELETE through `/admin/*`. Verified via Stage 8 feature test. |
-| **L6 — Event-first** | ✅ | Event Replayer page emits via the existing `OutboxEvent` + relay path, not in-process. Data Injector creates rows via module Application services that fire their own domain events. |
-| **L7 — Trust gates downstream effects** | ✅ | N/A — no RP/standings/awards UI in this WP. |
-| **L8 — Buzz drives visibility, Results drive respect** | ✅ | N/A. |
-| **L9 — Recognition uses verified records only** | ✅ | N/A. |
-| **L10 — Public vs private respected** | ✅ | Entire panel is SuperAdmin-only. Phone numbers shown unmasked **only** in God Mode (acknowledged dev-grade trade-off; user explicitly accepted). Production-bound config flags can disable Data Injector + Impersonation. |
-| **L11 — RP mutated only via ledger** | ✅ | When `rp_ledger` ships (Stage 3 Phase 3.x), its Filament resource will be **read-only** + a "compensating entry" action that calls into `RpEconomy\Application\Commands\PostCompensatingEntry`. Captured as a forward rule in the engine WP definition-of-done. |
-| **L12 — Money is integer minor units** | ✅ | N/A in this slice (no money models exist yet). When booking commission ships, its Filament resource will display minor units only, with a derived "display" computed column. |
-| **L13 — Archive, don't delete** | ⚠️ **Note** | Filament's default `DeleteAction` does a hard `DELETE`. **Override**: replace `DeleteAction` with a custom `ArchiveAction` on `UserResource`, `ClubResource` (future), etc., that sets `archived_at = now()` instead of deleting. Hard-delete reserved for genuinely transient rows (`event_dedupe`, expired `personal_access_tokens`). Captured in Stage 6 implementation notes. |
-| **L14 — Every user-triggered write idempotent** | ✅ | Filament's Livewire actions are CSRF-protected and single-fire. Custom actions (Event Replayer) generate a fresh `event_id` per replay (re-emit ≠ duplicate); Data Injector mock creators use `Str::uuid()` for `idempotency_key` derivation. |
+| Law                                                    | Applies?    | How this WP respects it                                                                                                                                                                                                                                                                                                                                                           |
+| ------------------------------------------------------ | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **L1 — Engine boundaries sacred**                      | ✅          | Filament resources are read/write surfaces on existing Eloquent models. They call into module Application services for any non-trivial action; never reach into another engine's schema. Cross-engine effects (e.g. Event Replayer re-emitting an outbox event) flow through the existing outbox + relay path, not via direct cross-schema writes.                                |
+| **L2 — Configurability over constants**                | ✅          | Two new config keys (`admin.godmode_impersonation_enabled`, `admin.godmode_data_injector_enabled`) registered in `admin_config`. No magic numbers in resource files. Per-resource pagination defaults loaded from `Config::get('admin.godmode_page_size', 25)`.                                                                                                                   |
+| **L3 — Backend owns truth**                            | ✅          | N/A in a hostile sense — Filament IS the backend. No frontend computation.                                                                                                                                                                                                                                                                                                        |
+| **L4 — Stable internal keys, configurable labels**     | ✅          | Filament tables filter by enum keys (`Role::SUPER_ADMIN->value`), not display strings. Resource navigation labels are i18n-ready via Filament's built-in translation system.                                                                                                                                                                                                      |
+| **L5 — Every meaningful action audited**               | ✅          | `AdminAuditMiddleware` (already wired globally) fires on every POST/PUT/PATCH/DELETE through `/admin/*`. Verified via Stage 8 feature test.                                                                                                                                                                                                                                       |
+| **L6 — Event-first**                                   | ✅          | Event Replayer page emits via the existing `OutboxEvent` + relay path, not in-process. Data Injector creates rows via module Application services that fire their own domain events.                                                                                                                                                                                              |
+| **L7 — Trust gates downstream effects**                | ✅          | N/A — no RP/standings/awards UI in this WP.                                                                                                                                                                                                                                                                                                                                       |
+| **L8 — Buzz drives visibility, Results drive respect** | ✅          | N/A.                                                                                                                                                                                                                                                                                                                                                                              |
+| **L9 — Recognition uses verified records only**        | ✅          | N/A.                                                                                                                                                                                                                                                                                                                                                                              |
+| **L10 — Public vs private respected**                  | ✅          | Entire panel is SuperAdmin-only. Phone numbers shown unmasked **only** in God Mode (acknowledged dev-grade trade-off; user explicitly accepted). Production-bound config flags can disable Data Injector + Impersonation.                                                                                                                                                         |
+| **L11 — RP mutated only via ledger**                   | ✅          | When `rp_ledger` ships (Stage 3 Phase 3.x), its Filament resource will be **read-only** + a "compensating entry" action that calls into `RpEconomy\Application\Commands\PostCompensatingEntry`. Captured as a forward rule in the engine WP definition-of-done.                                                                                                                   |
+| **L12 — Money is integer minor units**                 | ✅          | N/A in this slice (no money models exist yet). When booking commission ships, its Filament resource will display minor units only, with a derived "display" computed column.                                                                                                                                                                                                      |
+| **L13 — Archive, don't delete**                        | ⚠️ **Note** | Filament's default `DeleteAction` does a hard `DELETE`. **Override**: replace `DeleteAction` with a custom `ArchiveAction` on `UserResource`, `ClubResource` (future), etc., that sets `archived_at = now()` instead of deleting. Hard-delete reserved for genuinely transient rows (`event_dedupe`, expired `personal_access_tokens`). Captured in Stage 6 implementation notes. |
+| **L14 — Every user-triggered write idempotent**        | ✅          | Filament's Livewire actions are CSRF-protected and single-fire. Custom actions (Event Replayer) generate a fresh `event_id` per replay (re-emit ≠ duplicate); Data Injector mock creators use `Str::uuid()` for `idempotency_key` derivation.                                                                                                                                     |
 
 ### Engineering Standards check
 
-| Standard | Compliance |
-|---|---|
-| **File size ≤ 400 LOC** | All planned files within budget per Stage 2 estimates. Largest is `UserResource.php` at ~250. |
-| **Naming**: snake_case migrations, PascalCase classes, kebab-case routes | All Filament conventions match (PascalCase resources, kebab-case auto-generated route slugs). |
-| **Layering**: Http → Application → Domain → Infrastructure | Filament resources sit at the **Http** layer. They call into existing module Application services. They DO NOT import from `Domain` directly except for shared value objects + enums. **Pest architecture test added in Stage 8** to enforce. |
-| **DB indexing** | No new tables, no new indexes. |
-| **API versioning** | N/A (no API contracts). |
-| **Error handling at boundaries** | Filament's `Notification` system surfaces exceptions to the user with structured messages. No silent swallows. |
-| **Observability** | Filament's Livewire requests show up in Sentry once Phase 0.8 ships. No special instrumentation needed. |
+| Standard                                                                 | Compliance                                                                                                                                                                                                                                    |
+| ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **File size ≤ 400 LOC**                                                  | All planned files within budget per Stage 2 estimates. Largest is `UserResource.php` at ~250.                                                                                                                                                 |
+| **Naming**: snake_case migrations, PascalCase classes, kebab-case routes | All Filament conventions match (PascalCase resources, kebab-case auto-generated route slugs).                                                                                                                                                 |
+| **Layering**: Http → Application → Domain → Infrastructure               | Filament resources sit at the **Http** layer. They call into existing module Application services. They DO NOT import from `Domain` directly except for shared value objects + enums. **Pest architecture test added in Stage 8** to enforce. |
+| **DB indexing**                                                          | No new tables, no new indexes.                                                                                                                                                                                                                |
+| **API versioning**                                                       | N/A (no API contracts).                                                                                                                                                                                                                       |
+| **Error handling at boundaries**                                         | Filament's `Notification` system surfaces exceptions to the user with structured messages. No silent swallows.                                                                                                                                |
+| **Observability**                                                        | Filament's Livewire requests show up in Sentry once Phase 0.8 ships. No special instrumentation needed.                                                                                                                                       |
 
 ### Outcome
 
@@ -216,22 +216,24 @@ This WP is cross-cutting (Support layer + future Admin Governance engine). No si
 ## Stage 4 — Architecture Check ✅
 
 ### Decision reference
+
 [ADR-0002 — Filament v3 as the God Mode developer admin portal](../adr/0002-filament-godmode-admin-portal.md), accepted 2026-05-25.
 
 ### Architecture invariants confirmed
 
-| Invariant (from ADR-0001 + ADR-0002) | This WP respects it? |
-|---|---|
-| Modular monolith, one schema per engine | ✅ Filament reads existing schemas via Eloquent; never cross-joins. |
-| Outbox + relay for cross-engine effects | ✅ Event Replayer uses existing outbox. Data Injector's mock creators go through module Application commands that emit via outbox. |
-| Append-only audit log | ✅ `AdminAuditLogResource` is **read-only**; no UPDATE/DELETE actions available. |
-| Two-admin mental model | ✅ This panel is the God Mode dev tool; explicitly **not** the future Public Admin Portal. |
-| No domain logic in Filament resources | ✅ Resources call into module services; Stage 8 includes a Pest architecture test pinning `App\Filament\*` cannot directly use `Illuminate\Database\Eloquent\Model::*` mutation methods outside of an Application command. |
-| Filament resource per engine ships with engine WP | ✅ Build Plan updated, rule added to Stage 0.7.5 doc, ADR-0002 captures it. |
+| Invariant (from ADR-0001 + ADR-0002)              | This WP respects it?                                                                                                                                                                                                       |
+| ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Modular monolith, one schema per engine           | ✅ Filament reads existing schemas via Eloquent; never cross-joins.                                                                                                                                                        |
+| Outbox + relay for cross-engine effects           | ✅ Event Replayer uses existing outbox. Data Injector's mock creators go through module Application commands that emit via outbox.                                                                                         |
+| Append-only audit log                             | ✅ `AdminAuditLogResource` is **read-only**; no UPDATE/DELETE actions available.                                                                                                                                           |
+| Two-admin mental model                            | ✅ This panel is the God Mode dev tool; explicitly **not** the future Public Admin Portal.                                                                                                                                 |
+| No domain logic in Filament resources             | ✅ Resources call into module services; Stage 8 includes a Pest architecture test pinning `App\Filament\*` cannot directly use `Illuminate\Database\Eloquent\Model::*` mutation methods outside of an Application command. |
+| Filament resource per engine ships with engine WP | ✅ Build Plan updated, rule added to Stage 0.7.5 doc, ADR-0002 captures it.                                                                                                                                                |
 
 ### Open architectural questions
 
 **None.** All open questions from Stage 1 were resolved by user direction. The two implementation notes carried forward are:
+
 1. **`ArchiveAction` override** for L13 compliance (Stage 6).
 2. **Pest architecture test** for "no domain mutation in resources" (Stage 8).
 
@@ -244,9 +246,11 @@ This WP is cross-cutting (Support layer + future Admin Governance engine). No si
 ## Stage 5 — Contract Design ✅
 
 ### API contracts
+
 **None.** Filament panels are Livewire/internal surfaces. No new external HTTP endpoints.
 
 ### Event contracts
+
 **None.** Event Replayer re-emits existing event names; no new event schemas.
 
 ### Config contracts shipped
@@ -259,6 +263,7 @@ Two new YAML descriptors under [`contracts/config/admin/`](../../contracts/confi
 Both flags follow the **principle of least privilege**: even with a SuperAdmin session compromised, a separate audit-logged config flip is required before destructive dev-only features become available in production.
 
 ### Database contracts
+
 No schema changes. No new migrations.
 
 ### Outcome

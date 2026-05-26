@@ -1,0 +1,11 @@
+key: season.end_day
+engine: season
+scope: platform
+value_type: integer
+default: "31"
+approval_level: critical
+description: |
+  Ceiling day for the end of the active competitive window. SeasonCalendar
+  clamps this to the last valid day of `end_month`, so Feb 29 is honoured
+  automatically on leap years and Feb 28 otherwise. Engine doc §2 explicitly
+  notes the "Feb 28/29" rule; leap-year handling is computed, not configured.

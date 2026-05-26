@@ -1,0 +1,9 @@
+key: season.ranked_acceptance_cutoff_month
+engine: season
+scope: platform
+value_type: integer
+default: "2"
+approval_level: high
+description: |
+  Calendar month after which NO already-issued ranked challenges may be
+  ACCEPTED for the current season. Default = 2 (February). Engine doc §9.

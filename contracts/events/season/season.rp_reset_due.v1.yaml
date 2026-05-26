@@ -1,0 +1,27 @@
+event_name: season.rp_reset_due
+schema_version: 1
+engine: season
+description: |
+  Emitted once when a season enters the `archived` phase. The RP Economy
+  engine consumes this event to write the compensating ledger entries that
+  zero each player's Season RP balance (Constitution §1.11 — RP mutated
+  only via the ledger). Season NEVER touches RP directly.
+required:
+  - season_id
+  - season_code
+  - next_season_code
+  - occurred_at
+payload:
+  season_id:
+    type: uuid
+  season_code:
+    type: string
+    pattern: "^\\d{4}/\\d{4}$"
+  next_season_code:
+    type: string
+    pattern: "^\\d{4}/\\d{4}$"
+  occurred_at:
+    type: string
+    format: date-time
+idempotency: |
+  event_id is a deterministic UUIDv5 of `rp_reset:{season_id}`.

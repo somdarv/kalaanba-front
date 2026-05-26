@@ -1,0 +1,10 @@
+key: season.closing_window_end_day
+engine: season
+scope: platform
+value_type: integer
+default: "14"
+approval_level: high
+description: |
+  Day in March on which the post-season `closing` window ends and `archived`
+  begins. Default = 14 (Mar 14). During the closing window disputes can
+  still be resolved against the just-finished season. Engine doc §2 + §9.

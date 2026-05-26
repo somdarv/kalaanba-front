@@ -1,0 +1,9 @@
+key: zone.area_suggestion_min_name_length
+engine: zone
+scope: platform
+value_type: integer
+default: "3"
+approval_level: low
+description: |
+  Minimum length (after trimming) of `proposed_name` accepted on
+  `zone.area_suggested`. Validation happens at the API boundary.

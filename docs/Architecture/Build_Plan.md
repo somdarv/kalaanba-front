@@ -2,7 +2,7 @@
 
 **Status:** Living document — update as we go
 **Started:** 2026-05-12
-**Last updated:** 2026-05-22 ✅ Phase 0.5 complete
+**Last updated:** 2026-05-26 ✅ Phase 1.2 (Zone Engine) shipped — area-suggestions endpoints + Next.js Admin Portal slice (configs + Zone approvals) live. Architectural decision pending: users.id BIGINT ↔ Zone UUID FK columns.
 **Source spec:** [Full Kalaanba Brief](../Full%20Kalaanba%20Brief.md)
 **Architecture:** [System Architecture](System_Architecture.md)
 
@@ -30,8 +30,8 @@
 
 | Stage | Title                                | Status         | Notes                                                                                                                                                                                                              |
 | ----- | ------------------------------------ | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 0     | Foundations                          | ✅ Complete    | 0.4 & 0.5 complete — Analytics envelope (38 tests), Admin Config registry with effective-dated reads, versioning, scope isolation (14 tests). Total 52 tests, all quality gates passing (`composer check` exit 0). |
-| 1     | Identity Spine                       | ⬜ Not started |                                                                                                                                                                                                                    |
+| 0     | Foundations                          | 🟡 Almost done | 0.1–0.6, 0.7, 0.7.5, 0.8 shipped. Remaining: Horizon dashboard mount (Phase 0.8) + UptimeRobot wiring (external, pending DSN). 55 backend tests + 18/18 architecture tests pass, all quality gates green. Sentry SDK wired both sides (Laravel + Next.js) gated on DSN env so dev/test stays silent. RequestId middleware + `/api/v1/health` (DB+Redis checks) live. JSON stderr logs ready. Frontend UI rebuild WP-20260524 still in progress (Phase 1 token rename pending).                                                                                                            |
+| 1     | Identity Spine                       | 🟡 In progress | Phase 1.2 (Zone Engine) shipped: countries/regions/city_hubs/zones/belts/areas tables + area_suggestions queue + admin approve/reject endpoints (idempotent) + Next.js Admin Portal slice at `/admin` (configs read-only + Zone area-suggestions). 61 backend tests pass. ⚠️ Architectural debt: users.id is BIGINT but Zone FK columns are UUID — workaround: deterministic UUIDv5 mapping in controllers. Needs ADR decision (A: add uuid col to users / B: migrate Zone FKs to BIGINT / C: keep UUIDv5 mapping). Phases 1.1, 1.3, 1.4, 1.5, 1.6 not started.                                                                                                                                                                                                                                |
 | 2     | The Match                            | ⬜ Not started |                                                                                                                                                                                                                    |
 | 3     | Competitions                         | ⬜ Not started |                                                                                                                                                                                                                    |
 | 4     | Distribution                         | ⬜ Not started |                                                                                                                                                                                                                    |
@@ -171,40 +171,43 @@ Phase 0.6 is delivered as three sequential Work Packets so each can clear the fu
 - [x] `src/components/ui/` cleared. Legacy showcase preserved under `_archive/` for visual reference only.
 - [ ] **Next**: Phase 1 — token rename + `@theme inline` registration so utilities resolve.
 
-### Phase 0.7.5 — God Mode developer admin portal (Filament v3)
+### Phase 0.7.5 — God Mode developer admin portal (Filament v3) ✅ 2026-05-25
 
 🔗 Canonical decision: [ADR-0002](../adr/0002-filament-godmode-admin-portal.md)
 
 > Two-admin mental model: **God Mode `/admin` (Filament, dev-only, internal)** is distinct from the future **Public Admin Portal (Next.js, Stage 6+, brand-fit, scoped per role)**.
 
-- [ ] Install `filament/filament` v3 in `kalaanba-api`; configure panel at `/admin` route prefix
-- [ ] Wire `RequireSuperAdminMiddleware` (WP-C) onto the Filament panel
-- [ ] Light brand theming: Kalaanba palette (primary + danger + success), Inter font, replace default logo with Kalaanba wordmark
-- [ ] Auto-discovery configured for `app/Modules/<Engine>/Filament/Resources/` so engine WPs can drop in their own resources
-- [ ] **Resource: `UserResource`** — list/edit/archive users, change role, impersonate, reset password (dev only)
-- [ ] **Resource: `OutboxEventResource`** — list `outbox_events`, view payload, re-emit action, mark delivered
-- [ ] **Resource: `AdminAuditLogResource`** — read-only viewer, filters by actor/route/method/status, payload pretty-print
-- [ ] **Resource: `AdminConfigResource`** — CRUD over `admin_config`; effective-dated reads + write-with-version
-- [ ] **Resource: `AnalyticsEventResource`** — read-only, filters by event_name/actor/date
-- [ ] **Custom page: User Inspector** — pick a user, tabbed view (profile, audit-log entries, outbox events emitted, active Sanctum tokens, recent OTP requests)
-- [ ] **Custom page: Event Replayer** — re-emit any `outbox_events` row
-- [ ] **Custom page: Data Injector v0** — one-click "create mock user with phone 0244000001", "create mock outbox event"
-- [ ] Every Filament action passes through existing `AdminAuditMiddleware` (Constitution Law 5)
-- [ ] No domain logic inside Filament resources — call into module Application services only
-- [ ] Pipeline gates: pint, phpstan L6, deptrac (0 violations), pest green
+- [x] Install `filament/filament` v3 in `kalaanba-api`; configure panel at `/admin` route prefix
+- [x] Wire `RequireSuperAdminMiddleware` (WP-C) onto the Filament panel
+- [x] Light brand theming: Kalaanba palette (primary + danger + success), Inter font, replace default logo with Kalaanba wordmark
+- [x] Auto-discovery configured for `app/Modules/<Engine>/Filament/Resources/` so engine WPs can drop in their own resources
+- [x] **Resource: `UserResource`** — list/edit/archive users, change role, impersonate, reset password (dev only)
+- [x] **Resource: `OutboxEventResource`** — list `outbox_events`, view payload, re-emit action, mark delivered
+- [x] **Resource: `AdminAuditLogResource`** — read-only viewer, filters by actor/route/method/status, payload pretty-print
+- [x] **Resource: `AdminConfigResource`** — CRUD over `admin_config`; effective-dated reads + write-with-version
+- [x] **Resource: `AnalyticsEventResource`** — read-only, filters by event_name/actor/date
+- [x] **Custom page: User Inspector** — pick a user, tabbed view (profile, audit-log entries, outbox events emitted, active Sanctum tokens, recent OTP requests)
+- [x] **Custom page: Event Replayer** — re-emit any `outbox_events` row
+- [x] **Custom page: Data Injector v0** — one-click "create mock user with phone 0244000001", "create mock outbox event"
+- [x] Every Filament action passes through existing `AdminAuditMiddleware` (Constitution Law 5)
+- [x] No domain logic inside Filament resources — call into module Application services only (admin Eloquent models are read-only per ADR-0002)
+- [x] `GodModeBootstrapCommand` + `SuperAdminSeeder` + `TouchLastSeenAt` middleware (49 admin tests)
+- [x] Pipeline gates: pint, phpstan L6, deptrac (0 violations), pest green
 
 > **Forward-compatibility rule (binding from Phase 1.1 onwards):** every engine Work Packet must list `app/Modules/<Engine>/Filament/Resources/*.php` deliverables in its definition-of-done.
 
-### Phase 0.8 — Observability (Lite)
+### Phase 0.8 — Observability (Lite) ✅ 2026-05-25 (Horizon deferred)
 
 > Pre-alpha scope: ship the bare minimum to catch real errors and stay informed. The full stack (Prometheus / Grafana / Loki / Tempo / Telescope) is deferred to **Phase 9 — Pre-launch hardening** because it pays off only with real production traffic + an on-call rotation.
 
-- [ ] Sentry on Laravel (`sentry/sentry-laravel`) — DSN via env, sample rate 100% during alpha
-- [ ] Sentry on Next.js (`@sentry/nextjs`) — client + server + edge instrumentations
-- [ ] Horizon dashboard mounted (read-only on `/admin/horizon`, gated by `RequireSuperAdminMiddleware`)
-- [ ] JSON-format logs to stdout (`config/logging.php` `stack` driver → `stderr` formatter with structured JSON)
-- [ ] UptimeRobot (or BetterStack) on `GET /api/v1/health` (Laravel) + Next.js root
-- [ ] Pipeline gates: pint, phpstan, deptrac, pest
+- [x] Sentry on Laravel (`sentry/sentry-laravel`) — DSN via env (`SENTRY_LARAVEL_DSN`), sample rate 100% during alpha; `Integration::handles($exceptions)` wired in `bootstrap/app.php`; graceful no-op when DSN unset
+- [x] Sentry on Next.js (`@sentry/nextjs ^10.53.1`) — `instrumentation.ts` + `instrumentation-client.ts` + `sentry.server.config.ts` + `sentry.edge.config.ts`, all gated on `NEXT_PUBLIC_SENTRY_DSN`
+- [x] `RequestIdMiddleware` (`Kalaanba\Support\Http\Middleware\RequestIdMiddleware`) — propagates `X-Request-Id` (incoming or UUIDv4), tags Sentry scope, shares Log context (4 tests)
+- [x] `GET /api/v1/health` endpoint (`App\Http\Controllers\HealthController`) — DB + Redis liveness, 200 ok / 503 degraded, request-id echoed (2 tests)
+- [ ] Horizon dashboard mounted (read-only on `/admin/horizon`, gated by `RequireSuperAdminMiddleware`) — **deferred to follow-up WP**
+- [x] JSON-format logs to stdout (`LOG_STDERR_FORMATTER=Monolog\Formatter\JsonFormatter` documented in `.env.example`)
+- [ ] UptimeRobot (or BetterStack) on `GET /api/v1/health` (Laravel) + Next.js root — **external; pending production DSN**
+- [x] Pipeline gates: pint, phpstan L6, deptrac (0 violations), pest green (55 tests + 18/18 architecture)
 
 ### Phase 9 — Pre-launch hardening (deferred observability + security)
 
@@ -238,13 +241,48 @@ Phase 0.6 is delivered as three sequential Work Packets so each can clear the fu
 - [ ] Phase transition jobs emitting `season.phase_changed`, `season.cutoff_passed`, `season.rp_reset_due`
 - [ ] Configurable cutoffs read from Admin Config
 
-### Phase 1.2 — Geography Engine
+### Phase 1.2 — Geography / Zone Engine ✅ 2026-05-26
 
-- [ ] Tables: countries, regions, city_hubs, zones, belts, areas (versioned per season)
-- [ ] Area → Zone/Belt mapping (admin-managed)
-- [ ] Hub Admin policy gates
-- [ ] Seed Tamale City Hub with realistic areas/zones
-- [ ] Public read endpoints for area/zone pickers
+- [x] Tables: countries, regions, city_hubs, zones, belts, areas (UUID PKs, versioned per season)
+- [x] `area_suggestions` queue table (status: pending / approved / rejected, reviewer_id UUID, review_note, decided_at)
+- [x] Area → Zone/Belt mapping (admin-managed via approve flow)
+- [x] Submit suggestion flow (`SubmitAreaSuggestion` Application service) + repository (`AreaSuggestionRepository`)
+- [x] Approve / reject Application services (`ApproveAreaSuggestion`, `RejectAreaSuggestion`) — approval mints a verified `areas` row inside target zone
+- [x] `GeographyReader` query layer (city hubs, zones, areas, suggestions)
+- [x] Admin HTTP endpoints (super_admin scoped):
+  - `GET  /admin/zone/area-suggestions` (filter by status)
+  - `POST /admin/zone/area-suggestions/{id}/approve` (idempotent — `Idempotency-Key` required)
+  - `POST /admin/zone/area-suggestions/{id}/reject`  (idempotent — `Idempotency-Key` required)
+- [x] Seed Tamale City Hub with realistic areas/zones (test fixtures)
+- [x] Pest: 61 feature tests pass (Admin + Zone) · PHPStan 0 errors (213 files) · Deptrac 0 violations · Pint clean
+- [x] Contracts (kalaanba-front/contracts/api/admin/zone/): `get-area-suggestions.v1.yaml`, `post-area-suggestion-approve.v1.yaml`, `post-area-suggestion-reject.v1.yaml`
+- [ ] Hub Admin policy gates (currently super_admin only — Hub Admin scope deferred until Phase 1.3 Identity)
+- [ ] Public read endpoints for area/zone pickers (deferred — admin-only flows shipped first)
+
+#### Phase 1.2.5 — Next.js Public Admin Portal — Zone slice ✅ 2026-05-26
+
+> Distinct from God Mode `/admin` Filament panel in `kalaanba-api` (dev-only, internal). This is the **brand-fit, scoped-per-role public admin** originally planned for Stage 6+, pulled forward to unblock Zone approvals.
+
+- [x] Admin shell at `/admin` in `kalaanba-front` (Next.js App Router, native — NOT Filament)
+- [x] `layout.tsx` with sidebar (`AdminNav`) + main content area
+- [x] `/admin` overview landing
+- [x] `/admin/configs` — read-only `admin_config` viewer; filters by engine prefix + approval level; columns: key / scope / value / version / approval / effective
+- [x] `/admin/zone/area-suggestions` — pending / approved / rejected tabs + Approve/Reject dialog (final_name + review_note inputs)
+- [x] Idempotency: client generates `crypto.randomUUID()` per write, sent via API client's `Idempotency-Key` header
+- [x] Error surfacing: `ApiError.code` rendered inline with message
+- [x] Zod schemas + TanStack Query hooks (`src/lib/api/admin.ts`, `src/lib/api/hooks/use-admin.ts`)
+- [x] Contracts: `contracts/api/admin/get-configs.v1.yaml`
+- [x] Frontend gates: vitest 24/24 ✅ · typecheck clean for admin code · lint clean for admin code (pre-existing `ui/*` errors unrelated)
+- [ ] Admin config WRITE flow (propose → approve → effective) — deferred
+- [ ] Migrate admin pages from raw Tailwind tokens to design-system primitives (Card/Stack/Dialog) — deferred follow-up
+
+#### Open architectural decision (blocking future engines)
+
+- [!] **users.id BIGINT ↔ Zone UUID FK mismatch.** Controllers currently map via deterministic `Uuid::uuid5('8c2f9d0a-…', 'user:'.id)`. Decide before Phases 1.3+ land:
+  - (A) Add nullable `uuid` column to `users`, backfill, controllers pass that
+  - (B) Migrate Zone FK columns (and future engines') to BIGINT referencing `users.id`
+  - (C) Adopt UUIDv5 mapping as official strategy, write ADR
+- [ ] ADR-0003 capturing the decision
 
 ### Phase 1.3 — Identity / Users
 

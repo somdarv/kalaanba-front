@@ -1,0 +1,11 @@
+key: season.peak_months
+engine: season
+scope: platform
+value_type: json
+default: "[12,1]"
+approval_level: high
+description: |
+  JSON array of month integers (1-12) that count as the high-activity peak
+  inside the active season. Default = [12, 1] (December + January). Used
+  by SeasonCalendar.phaseAt() to decide between `active` and `peak` phases.
+  Engine doc §2.

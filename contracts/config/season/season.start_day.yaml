@@ -1,0 +1,9 @@
+key: season.start_day
+engine: season
+scope: platform
+value_type: integer
+default: "1"
+approval_level: critical
+description: |
+  Day-of-month (1-31) on which a new season begins, combined with start_month.
+  Default = 1 (April 1). Engine doc §2 + §12.

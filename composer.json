@@ -1,6 +1,5 @@
 {
     "require": {
-        "laravel/sanctum": "^4.3",
-        "sentry/sentry-laravel": "^4.25"
+        "laravel/sanctum": "^4.3"
     }
 }

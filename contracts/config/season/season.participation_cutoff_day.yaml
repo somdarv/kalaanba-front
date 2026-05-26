@@ -1,0 +1,9 @@
+key: season.participation_cutoff_day
+engine: season
+scope: platform
+value_type: integer
+default: "31"
+approval_level: high
+description: |
+  Day-of-month for the participation cutoff (default = 31 → July 31).
+  Combined with participation_cutoff_month. Engine doc §9.

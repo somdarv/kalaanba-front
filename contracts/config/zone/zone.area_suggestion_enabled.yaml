@@ -1,0 +1,10 @@
+key: zone.area_suggestion_enabled
+engine: zone
+scope: platform
+value_type: boolean
+default: "true"
+approval_level: medium
+description: |
+  Whether users may submit new Area suggestions. When false, the public
+  submission endpoint refuses with a configurable copy line. Engine doc
+  §5; Constitution §1.10 (admin-controlled hierarchy).

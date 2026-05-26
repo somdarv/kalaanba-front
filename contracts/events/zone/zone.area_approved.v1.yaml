@@ -1,0 +1,34 @@
+event_name: zone.area_approved
+schema_version: 1
+engine: zone
+description: |
+  Emitted when an admin approves an Area suggestion and the suggestion is
+  promoted into the `areas` table under a chosen Zone. Consumed by
+  Notification (inform submitter), Analytics, and any downstream engine
+  that caches the hierarchy. Engine doc: docs/engines/zone/.
+required:
+  - suggestion_id
+  - area_id
+  - zone_id
+  - name
+  - reviewed_by_user_id
+  - reviewed_at
+payload:
+  suggestion_id:
+    type: uuid
+  area_id:
+    type: uuid
+    description: Newly-created `areas.id`.
+  zone_id:
+    type: uuid
+  name:
+    type: string
+  reviewed_by_user_id:
+    type: uuid
+  reviewed_at:
+    type: string
+    format: date-time
+idempotency: |
+  event_id is a deterministic UUIDv5 of `approved:{suggestion_id}` so the
+  approval is a no-op on retry (Constitution §1.14). The application service
+  also short-circuits if status is already terminal.

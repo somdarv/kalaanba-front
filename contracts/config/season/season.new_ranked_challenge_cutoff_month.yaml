@@ -1,0 +1,10 @@
+key: season.new_ranked_challenge_cutoff_month
+engine: season
+scope: platform
+value_type: integer
+default: "2"
+approval_level: high
+description: |
+  Calendar month after which NO new ranked challenges may be ISSUED for
+  the current season. Default = 2 (February). Combined with
+  new_ranked_challenge_cutoff_day. Engine doc §9.

@@ -1,0 +1,11 @@
+key: season.end_month
+engine: season
+scope: platform
+value_type: integer
+default: "2"
+approval_level: critical
+description: |
+  Calendar month on which a season's competitive window ends. Default = 2
+  (February). The active competitive window therefore spans 11 months from
+  start_month/start_day to end_month/end_day of the following year.
+  Engine doc §2 + §12.
