@@ -1,0 +1,42 @@
+event_name: identity.user_registered
+schema_version: 1
+engine: identity
+description: |
+  Emitted after a successful self-signup via POST /api/v1/auth/registration.
+  Channel-tagged so consumers can distinguish phone-OTP signups (which
+  arrive in CLAIMED state directly) from email signups (which arrive in
+  PENDING_CLAIM and will later emit `identity.user_claimed`).
+  Engine doc: docs/engines/identity/Identity_Engine_System_Document.md §7.1, §11.
+required:
+  - user_id
+  - registered_via
+  - registered_channel
+  - area_id
+  - registered_at
+payload:
+  user_id:
+    type: uuid
+  registered_via:
+    type: string
+    enum: [self, invite]
+    description: |
+      `self` for public self-signup. `invite` reserved for the admin-invite
+      flow shipped in WP-20260531.
+  registered_channel:
+    type: string
+    enum: [phone, email]
+  area_id:
+    type: uuid
+    description: Opaque reference to Zone Engine's `areas.id`.
+  name:
+    type: string
+    description: Display name (no PII beyond what the user gave).
+  registered_at:
+    type: string
+    format: date-time
+idempotency: |
+  event_id is a deterministic UUIDv5 of `registered:{user_id}` so retried
+  publishes are no-ops (Constitution §1.14).
+consumers:
+  - analytics
+  - notification (welcome message — wiring deferred to follow-up WP)

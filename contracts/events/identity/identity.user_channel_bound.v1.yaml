@@ -1,0 +1,28 @@
+event_name: identity.user_channel_bound
+schema_version: 1
+engine: identity
+description: |
+  Emitted when an authenticated user adds a SECOND channel to their account
+  (phone-only user adds an email, or email-only user adds a phone). Distinct
+  from `identity.user_claimed` because the user was already CLAIMED before
+  this transition — only a new contact channel was attached.
+  Engine doc: docs/engines/identity/Identity_Engine_System_Document.md §8, §11.
+required:
+  - user_id
+  - channel
+  - bound_at
+payload:
+  user_id:
+    type: uuid
+  channel:
+    type: string
+    enum: [phone, email]
+  bound_at:
+    type: string
+    format: date-time
+idempotency: |
+  event_id is a deterministic UUIDv5 of `channel_bound:{user_id}:{channel}`
+  so retried publishes are no-ops (Constitution §1.14).
+consumers:
+  - analytics
+  - notification (confirmation message — wiring deferred)

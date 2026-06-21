@@ -1,0 +1,70 @@
+openapi: 3.1.0
+info:
+  title: "Identity — Public user projection"
+  version: "1.0.0"
+
+paths:
+  /api/v1/users/{id}:
+    get:
+      summary: Return the public projection of a user by id
+      description: |
+        Privacy contract (Identity engine doc §12). Returned shape NEVER
+        includes: phone_e164_hash, phone_e164_last4, email, email_verified_at,
+        archived_at, last_seen_at, role (raw), area_id (raw UUID).
+
+        Returns 404 when the user is archived or does not exist — existence
+        is not leaked (engineering-standards §11).
+
+        Anonymous throttle: users.public_profile.throttle.anonymous_per_minute
+        (default 60). Authenticated callers are throttled per-user instead.
+      operationId: getPublicUser
+      security: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+        - in: header
+          name: X-Request-Id
+          required: false
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Public projection
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/PublicUserView"
+                  meta: { type: object }
+        "404":
+          description: Not found or archived
+        "429":
+          description: Throttled
+
+components:
+  schemas:
+    PublicUserView:
+      type: object
+      required: [id, name, area_name, avatar_url, badges]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        area_name:
+          type: [string, "null"]
+          description: |
+            Human name of the user's chosen area, resolved server-side via the
+            Zone engine. May be null if the user has not chosen an area.
+        avatar_url:
+          type: [string, "null"]
+          format: uri
+        badges:
+          type: array
+          description: |
+            Stable snake_case badge keys derived from role. Possible values:
+            "referee", "facility_manager", "admin". Empty array when the role
+            confers no public badge.
+          items: { type: string }

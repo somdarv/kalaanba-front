@@ -1,0 +1,201 @@
+openapi: 3.1.0
+info:
+  title: "Auth — Self-Signup Registration"
+  version: "1.0.0"
+  description: |
+    Creates a new user account via one of two channels:
+
+    - **Phone path**: `phone_e164` + `otp` (previously obtained via
+      POST /api/v1/auth/otp/request). User row is created with
+      `role=user`, `claimed_at=now()` (state: CLAIMED). A Sanctum bearer
+      token is issued in the response.
+    - **Email path**: `email` + `password`. User row is created with
+      `role=user`, `claimed_at=NULL` (state: PENDING_CLAIM). An email
+      verification token is dispatched via the Notification engine
+      (alpha+) and also returned in the response body when the active
+      Notification driver is `log` (dev). No bearer token is issued
+      until the user completes POST /api/v1/auth/email/verify.
+
+    Exactly one of `phone_e164` / `email` must be present. The other
+    channel can be added later via POST /api/v1/users/me/channels/*.
+
+    Engine doc: docs/engines/identity/Identity_Engine_System_Document.md §6, §7.1.
+
+paths:
+  /api/v1/auth/registration:
+    post:
+      summary: Create a new user account (phone-OTP or email-password)
+      operationId: registerUser
+      security: []
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema: { type: string, minLength: 1, maxLength: 128 }
+        - in: header
+          name: X-Request-Id
+          required: false
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/PhoneRegistration"
+                - $ref: "#/components/schemas/EmailRegistration"
+      responses:
+        "201":
+          description: |
+            Account created.
+
+            - Phone path → response body matches the session shape (token issued).
+            - Email path → response body returns a verification handle
+              (no token; user must verify first).
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/SessionResponse"
+                  - $ref: "#/components/schemas/EmailVerificationStartedResponse"
+        "403":
+          description: |
+            Registration disabled via config `auth.registration.open=false`.
+            Error code `auth.registration_closed`.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "409":
+          description: |
+            Phone or email is already in use by an active account.
+            Error codes:
+              - auth.phone_in_use
+              - auth.email_in_use
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "422":
+          description: |
+            Validation failure. Error codes include:
+              - auth.otp_invalid / auth.otp_expired / auth.otp_attempts_exhausted / auth.otp_not_found
+              - auth.password.too_short / .require_mixed_case / .require_number / .require_symbol
+              - profile.name_too_short / .name_too_long
+              - profile.area_not_found
+              - auth.channel_missing
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "429": { $ref: "#/components/schemas/ErrorResponse" }
+
+components:
+  schemas:
+    PhoneRegistration:
+      type: object
+      required: [phone_e164, otp, name, area_id]
+      additionalProperties: false
+      properties:
+        phone_e164:
+          type: string
+          pattern: "^\\+[1-9]\\d{6,14}$"
+          maxLength: 16
+        otp:
+          type: string
+          pattern: "^[0-9]{4,10}$"
+          maxLength: 10
+        name:
+          type: string
+          minLength: 2
+          maxLength: 80
+        area_id:
+          type: string
+          format: uuid
+        device_name:
+          type: string
+          maxLength: 64
+          nullable: true
+
+    EmailRegistration:
+      type: object
+      required: [email, password, name, area_id]
+      additionalProperties: false
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 255
+        password:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: |
+            Plaintext password; strength validated server-side per
+            `auth.password.*` config keys.
+        name:
+          type: string
+          minLength: 2
+          maxLength: 80
+        area_id:
+          type: string
+          format: uuid
+
+    SessionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [token, token_type, expires_at, user]
+          properties:
+            token: { type: string }
+            token_type: { type: string, enum: [Bearer] }
+            expires_at: { type: string, format: date-time }
+            user:
+              type: object
+              required: [id, name, role]
+              properties:
+                id: { type: string, format: uuid }
+                name: { type: string }
+                email:
+                  type: string
+                  format: email
+                  nullable: true
+                role:
+                  type: string
+                  enum: [user, referee, facility_manager, hub_admin, kalaanba_admin, super_admin]
+        meta:
+          type: object
+          properties:
+            request_id: { type: string }
+            api_version: { type: string, enum: [v1] }
+            idempotent_replay: { type: boolean }
+
+    EmailVerificationStartedResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [user_id, expires_at]
+          properties:
+            user_id: { type: string, format: uuid }
+            expires_at: { type: string, format: date-time }
+            verification_token:
+              type: string
+              nullable: true
+              description: |
+                Present only when the active Notification driver is `log`
+                (dev/test). In production this field is omitted; the user
+                receives the token via their email inbox.
+
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details: { type: object }
+            request_id: { type: string }

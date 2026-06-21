@@ -1,0 +1,86 @@
+openapi: 3.1.0
+info:
+  title: "Identity — Upload my avatar"
+  version: "1.0.0"
+
+paths:
+  /api/v1/users/me/avatar:
+    post:
+      summary: Upload an avatar image and receive its resolvable URL
+      description: |
+        Two-step on purpose — upload returns a URL; the caller then PATCHes
+        /users/me with `avatar_url` to record it on the user row. This keeps
+        upload idempotent (Idempotency-Key) and isolated from the profile patch.
+
+        MIME allow-list and max size come from admin config:
+          users.avatar.allowed_mime  (default: image/jpeg, image/png, image/webp)
+          users.avatar.max_bytes     (default: 2 MiB)
+
+        Per-user throttle: users.avatar.throttle.per_minute (default 10).
+      operationId: uploadMyAvatar
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema: { type: string, minLength: 8, maxLength: 128 }
+        - in: header
+          name: X-Request-Id
+          required: false
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Image file. Server re-sniffs MIME via finfo.
+      responses:
+        "201":
+          description: Avatar stored. Returns the URL to set on the user row.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: object
+                    required: [avatar_url]
+                    properties:
+                      avatar_url: { type: string, format: uri }
+                  meta: { type: object }
+        "401":
+          description: Missing or invalid bearer token
+        "422":
+          description: |
+            Validation errors. Stable error keys:
+              identity.avatar.file_missing
+              identity.avatar.mime_disallowed
+              identity.avatar.too_large
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  errors:
+                    type: object
+                    additionalProperties:
+                      type: array
+                      items: { type: string }
+        "429":
+          description: Per-user upload rate limit exceeded
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: SanctumPersonalAccessToken

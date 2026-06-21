@@ -1,4 +1,7 @@
+"use client";
+
 import { THEME_STORAGE_KEY } from "@/lib/theme";
+import { useEffect } from "react";
 
 /**
  * Inline pre-paint script that resolves the user's theme choice from
@@ -9,20 +12,21 @@ import { THEME_STORAGE_KEY } from "@/lib/theme";
  * Must be rendered inside `<head>` (or at the very top of `<body>`).
  */
 export function ThemeScript() {
-  const code = `(() => {
-  try {
-    var key = ${JSON.stringify(THEME_STORAGE_KEY)};
-    var stored = null;
-    try { stored = window.localStorage.getItem(key); } catch (_) {}
-    var choice = stored === "light" || stored === "dark" || stored === "auto" ? stored : "auto";
-    var resolved = choice;
-    if (resolved === "auto") {
-      resolved = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
-    }
-    var root = document.documentElement;
-    root.setAttribute("data-theme", resolved);
-    root.dataset.themeChoice = choice;
-  } catch (_) {}
-})();`;
-  return <script dangerouslySetInnerHTML={{ __html: code }} />;
+  useEffect(() => {
+    try {
+      const key = THEME_STORAGE_KEY;
+      let stored = null;
+      try { stored = window.localStorage.getItem(key); } catch (_) {}
+      const choice = stored === "light" || stored === "dark" || stored === "auto" ? stored : "auto";
+      let resolved = choice;
+      if (resolved === "auto") {
+        resolved = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+      }
+      const root = document.documentElement;
+      root.setAttribute("data-theme", resolved);
+      root.dataset.themeChoice = choice;
+    } catch (_) {}
+  }, []);
+
+  return null;
 }

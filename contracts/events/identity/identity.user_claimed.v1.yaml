@@ -1,0 +1,34 @@
+event_name: identity.user_claimed
+schema_version: 1
+engine: identity
+description: |
+  Emitted on PENDING_CLAIM → CLAIMED transition. In WP-20260530 this fires
+  only on email-verify confirmation (POST /api/v1/auth/email/verify). Phone
+  self-signups never enter PENDING_CLAIM in V1 self-signup, so they do NOT
+  emit this event — only `identity.user_registered`. The admin-invite flow
+  (WP-20260531) will be the other emitter.
+  Engine doc: docs/engines/identity/Identity_Engine_System_Document.md §6, §11.
+required:
+  - user_id
+  - claimed_via
+  - claimed_channel
+  - claimed_at
+payload:
+  user_id:
+    type: uuid
+  claimed_via:
+    type: string
+    enum: [self, invite]
+  claimed_channel:
+    type: string
+    enum: [phone, email]
+  claimed_at:
+    type: string
+    format: date-time
+idempotency: |
+  event_id is a deterministic UUIDv5 of `claimed:{user_id}` so retried
+  publishes are no-ops (Constitution §1.14).
+consumers:
+  - analytics
+  - notification (welcome message — wiring deferred)
+  - club (activate pending memberships — relevant once admin-invite ships)

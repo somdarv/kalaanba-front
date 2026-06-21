@@ -1,0 +1,81 @@
+openapi: 3.1.0
+info:
+  title: "Identity — Update my profile"
+  version: "1.0.0"
+
+paths:
+  /api/v1/users/me:
+    patch:
+      summary: Update the authenticated user's profile (partial — name / area_id / avatar_url)
+      operationId: updateMyProfile
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema: { type: string, minLength: 8, maxLength: 128 }
+        - in: header
+          name: X-Request-Id
+          required: false
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                name:
+                  type: string
+                  description: |
+                    Length bounds come from admin config (users.profile.name_min /
+                    users.profile.name_max). Any other body keys are silently
+                    dropped by the FormRequest.
+                area_id:
+                  type: [string, "null"]
+                  format: uuid
+                  description: |
+                    Must reference an existing area in the Zone engine. Resolved
+                    synchronously; unknown UUIDs return 422 identity.profile.area_unknown.
+                avatar_url:
+                  type: [string, "null"]
+                  format: uri
+                  maxLength: 2048
+      responses:
+        "200":
+          description: Updated self projection (same shape as GET /users/me)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data: { $ref: "./get-users-me.v1.yaml#/components/schemas/MeView" }
+                  meta: { type: object }
+        "401":
+          description: Missing or invalid bearer token
+        "422":
+          description: |
+            Validation errors. Stable error keys:
+              identity.profile.name_invalid
+              identity.profile.area_unknown
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  errors:
+                    type: object
+                    additionalProperties:
+                      type: array
+                      items: { type: string }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: SanctumPersonalAccessToken

@@ -1,0 +1,73 @@
+openapi: 3.1.0
+info:
+  title: "Identity — Get my profile"
+  version: "1.0.0"
+
+paths:
+  /api/v1/users/me:
+    get:
+      summary: Return the authenticated user's own profile (self projection)
+      operationId: getMyProfile
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: header
+          name: X-Request-Id
+          required: false
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: |
+            Self projection — includes email, phone_e164_last4, role key,
+            area_id (raw UUID), avatar_url, archived_at, last_seen_at.
+            Never includes phone_e164_hash or password.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/MeView"
+                  meta:
+                    type: object
+        "401":
+          description: Missing or invalid bearer token
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: SanctumPersonalAccessToken
+  schemas:
+    MeView:
+      type: object
+      required: [id, name, role, area_id, avatar_url, email, email_verified_at, phone_e164_last4, archived_at, last_seen_at]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        role:
+          type: string
+          description: Stable snake_case role key (e.g. fan, player, referee, super_admin)
+        area_id:
+          type: [string, "null"]
+          format: uuid
+        avatar_url:
+          type: [string, "null"]
+          format: uri
+        email:
+          type: string
+          format: email
+        email_verified_at:
+          type: [string, "null"]
+          format: date-time
+        phone_e164_last4:
+          type: [string, "null"]
+          description: Last 4 digits of the verified E.164 phone, for UI hint only
+        archived_at:
+          type: [string, "null"]
+          format: date-time
+        last_seen_at:
+          type: [string, "null"]
+          format: date-time

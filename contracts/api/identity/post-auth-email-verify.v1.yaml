@@ -1,0 +1,125 @@
+openapi: 3.1.0
+info:
+  title: "Auth — Confirm Email Verification"
+  version: "1.0.0"
+  description: |
+    Confirms an email verification token issued by POST /api/v1/auth/registration
+    (email path) or POST /api/v1/users/me/channels/email (binding flow on a
+    phone-only account).
+
+    Successful confirmation:
+      - sets `email_verified_at = now()`
+      - sets `claimed_at = now()` (transitions PENDING_CLAIM → CLAIMED) on registration
+      - sets `email` on the bound user when invoked through channel-binding
+      - issues a Sanctum bearer token (registration path only)
+      - emits `identity.user_claimed` (registration path) or
+        `identity.user_channel_bound` (binding path)
+
+    Engine doc: docs/engines/identity/Identity_Engine_System_Document.md §6, §7.1, §8.4.
+
+paths:
+  /api/v1/auth/email/verify:
+    post:
+      summary: Confirm an email verification token
+      operationId: confirmEmailVerification
+      security: []
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema: { type: string, minLength: 1, maxLength: 128 }
+        - in: header
+          name: X-Request-Id
+          required: false
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token]
+              additionalProperties: false
+              properties:
+                token:
+                  type: string
+                  minLength: 32
+                  maxLength: 128
+                device_name:
+                  type: string
+                  maxLength: 64
+                  nullable: true
+      responses:
+        "200":
+          description: |
+            Token consumed. For registration-flow tokens this returns a
+            session (token + user). For channel-binding tokens (already
+            authenticated context) this returns only the updated user
+            projection — no token.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/SessionResponse"
+                  - $ref: "#/components/schemas/MeResponse"
+        "422":
+          description: |
+            Error codes:
+              - auth.email_verify.token_unknown
+              - auth.email_verify.token_expired
+              - auth.email_verify.token_consumed
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "429": { $ref: "#/components/schemas/ErrorResponse" }
+
+components:
+  schemas:
+    SessionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [token, token_type, expires_at, user]
+          properties:
+            token: { type: string }
+            token_type: { type: string, enum: [Bearer] }
+            expires_at: { type: string, format: date-time }
+            user:
+              type: object
+              required: [id, name, role]
+              properties:
+                id: { type: string, format: uuid }
+                name: { type: string }
+                email: { type: string, format: email }
+                role: { type: string }
+
+    MeResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [id, name, role, email_verified, phone_bound]
+          properties:
+            id: { type: string, format: uuid }
+            name: { type: string }
+            email: { type: string, format: email, nullable: true }
+            phone_e164_last4: { type: string, nullable: true, minLength: 4, maxLength: 4 }
+            role: { type: string }
+            email_verified: { type: boolean }
+            phone_bound: { type: boolean }
+
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details: { type: object }
+            request_id: { type: string }

@@ -1,0 +1,97 @@
+openapi: 3.1.0
+info:
+  title: "Identity — Bind Email to Account"
+  version: "1.0.0"
+  description: |
+    Adds an email channel to an already-authenticated user (typically a
+    phone-only signup). Two-step flow:
+
+      1. POST /api/v1/users/me/channels/email → issues a verification token
+      2. POST /api/v1/auth/email/verify with the token (binding mode)
+
+    Both endpoints require auth:sanctum for step 1; step 2 verifies the
+    token alone. The token is single-use; consumption atomically writes
+    `email`, `email_verified_at`, and emits
+    `identity.user_channel_bound` (channel=email).
+
+    Engine doc: docs/engines/identity/Identity_Engine_System_Document.md §8.
+
+paths:
+  /api/v1/users/me/channels/email:
+    post:
+      summary: Start binding an email to the current user
+      operationId: startEmailBinding
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema: { type: string, minLength: 1, maxLength: 128 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              additionalProperties: false
+              properties:
+                email:
+                  type: string
+                  format: email
+                  maxLength: 255
+      responses:
+        "202":
+          description: |
+            Verification token dispatched (and returned in body when the
+            active Notification driver is `log`).
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: object
+                    required: [expires_at]
+                    properties:
+                      expires_at: { type: string, format: date-time }
+                      verification_token:
+                        type: string
+                        nullable: true
+        "409":
+          description: |
+            The current user already has an email bound. Error code
+            `identity.channel.email_already_bound`.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "422":
+          description: |
+            Error codes:
+              - auth.email_in_use
+              - identity.channel.email_invalid
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "429": { $ref: "#/components/schemas/ErrorResponse" }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details: { type: object }
+            request_id: { type: string }
