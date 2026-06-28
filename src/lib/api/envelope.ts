@@ -21,14 +21,10 @@ export type ApiErrorEnvelope = z.infer<typeof ApiErrorEnvelopeSchema>;
  */
 export const ApiSuccessEnvelopeSchema = z.object({
   data: z.unknown(),
-  meta: z
-    .object({
-      request_id: z.string().optional(),
-      api_version: z.string().optional(),
-      next_cursor: z.string().nullable().optional(),
-      limit: z.number().optional(),
-    })
-    .optional(),
+  // `meta` is opaque to the client (we only return `data`). Keep it lenient:
+  // some endpoints serialise it as an object, others as an empty array
+  // (`meta: []` from PHP) — neither should ever break response parsing.
+  meta: z.unknown().optional(),
 });
 
 export type ApiSuccessEnvelope<T> = { data: T; meta?: Record<string, unknown> };

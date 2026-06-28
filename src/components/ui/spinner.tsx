@@ -34,7 +34,7 @@ export function Spinner({
         height={px}
         viewBox="0 0 24 24"
         fill="none"
-        className="animate-spin motion-reduce:animate-none"
+        className="kx-spinner animate-spin"
         aria-hidden
       >
         <circle

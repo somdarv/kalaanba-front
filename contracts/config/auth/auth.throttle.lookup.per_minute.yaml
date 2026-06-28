@@ -1,0 +1,13 @@
+key: auth.throttle.lookup.per_minute
+engine: admin-governance
+scope: platform
+value_type: integer
+default: "5"
+approval_level: medium
+description: |
+  Per-minute rate limit for the identifier-first account lookup endpoint
+  (POST /api/v1/auth/lookup), keyed by both submitted identifier and client
+  IP. The lookup endpoint is an account-existence oracle (ADR-0004 §3); this
+  strict limit bounds enumeration abuse. Medium approval because lowering it
+  too far breaks the entry-screen UX, while raising it widens the enumeration
+  surface.

@@ -283,11 +283,14 @@ Phase 0.6 is delivered as three sequential Work Packets so each can clear the fu
 
 ### Phase 1.3 — Identity / Users
 
-- [ ] Full OTP registration flow (mock provider)
-- [ ] User profile (name, phone hash, area, optional avatar in R2)
-- [ ] Role assignment + admin promotion flow
+- [x] Full OTP registration flow (mock provider) — _WP-20260530: phone+OTP signup, email+password signup, email-verify, channel binding. All gates green (pest 260, phpstan L6 0, deptrac 0, pint clean)._
+- [x] User profile (name, phone hash, area, optional avatar in R2) — _WP-20260529: `GET/PATCH /users/me`, avatar driver (local + Cloudinary), public `GET /users/{id}`._
+- [ ] Role assignment + admin promotion flow — _deferred to WP-20260531 (third Identity backend WP). `user` is now the universal default role (Role enum + engine doc §9)._
+- [x] Admin Users section (pre-alpha tester support) — _WP-20260624-admin-users (ADR-0005): `/api/v1/admin/users` list + actions (resend OTP, set password, force-verify, edit phone/email, enable/disable, clear lockout); `disabled_at` + `admin_access_codes` (seeded `023050`, hashed) schema; destructive actions gated by the access code; auto-audited + redacted; real wired `/admin/governance/users` UI. 8 feature + 28 arch tests green; front 35 green. Deferred: one-time login link, temp single-use code, dependency-checked delete._
 - [ ] Scope middleware applied to protected routes
-- [ ] Frontend: signup, login, profile screens
+- [~] Frontend: signup, login, profile screens — _auth UI (`/auth/login`, `/auth/signup`), dashboard/protected stubs, `src/lib/api/auth.ts` + `use-auth.ts` shipped (front commit `a069795`). Post-signup area onboarding shipped (WP-20260625, below); full profile/avatar screen still pending._
+- [x] Post-signup area onboarding — _WP-20260625-onboarding-area: skippable City Hub → Area picker after signup (`/onboarding/area`), suggest-a-missing-area, persists via `PATCH /users/me`. Contract-first: 3 Zone read OAS (`get-hubs`, `get-areas`, `post-area-suggestions`). Backend shipped in **WP-20260625a-zone-public-read** (`GET /zone/hubs`, `GET /zone/areas`, `POST /zone/area-suggestions` + fix for the unauthenticated-API 500 → 401 JSON). Live-verified end-to-end. Front: lint + new-file typecheck + 4 onboarding tests green; back: Pint + PHPStan + Deptrac + 9 feature tests green._
+- [x] Identifier-first progressive auth — _WP-20260624 (ADR-0004): single neutral entry, `POST /auth/lookup` branch signal (read-only, throttled, no PII), `<AuthFlow>` orchestrator + spec copy/error/resend/back-paths; `/auth/signup` redirects to the unified entry. Backend: 9 feature tests + phpstan + 28 architecture tests green; front: 6 flow tests + client tests green. Fixed the api-client envelope-unwrap mismatch in `auth.ts`/`use-auth.ts` (schemas now describe inner `data`)._
 
 ### Phase 1.4 — Club Engine
 

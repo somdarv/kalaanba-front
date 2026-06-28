@@ -7,7 +7,7 @@ import {
   useState,
   type ChangeEvent,
 } from "react";
-import { CaretDown, MagnifyingGlass, Phone } from "@phosphor-icons/react";
+import { CaretDown, MagnifyingGlass } from "@phosphor-icons/react";
 import { cn } from "@/lib/cn";
 import { COUNTRIES, findCountry, type Country } from "@/lib/countries";
 import { Popover } from "./popover";
@@ -115,15 +115,18 @@ export function PhoneInput({
         data-error={hasError || undefined}
         data-disabled={disabled || undefined}
         className={cn(
-          "group relative flex h-12 w-full items-center gap-1 rounded-full bg-surface-2 pl-1.5 pr-4",
+          // Single pill — identical recipe to TextField (§2.3 radius-pill, §2.4 flat).
+          "group relative flex h-12 w-full items-center rounded-full bg-surface-2",
           "border-[0.5px] border-border-strong",
           "transition-[box-shadow,border-color,background-color] duration-quick ease-out",
-          "hover:shadow-sm",
+          "hover:shadow-sm hover:border-border-strong",
           "focus-within:border-primary focus-within:ring-1 focus-within:ring-primary",
           "data-error:border-danger data-error:focus-within:ring-danger",
           "data-disabled:cursor-not-allowed data-disabled:opacity-50",
         )}
       >
+        {/* Country segment — borderless, fused into the pill, full-height
+            hit area (48px, clears DESIGN_LANGUAGE §9.1's 44px floor). */}
         <button
           ref={chipRef}
           type="button"
@@ -133,11 +136,11 @@ export function PhoneInput({
           disabled={disabled}
           onClick={() => setOpen((o) => !o)}
           className={cn(
-            "flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-surface-elev px-3 text-sm font-medium text-fg",
-            "border-[0.5px] border-border",
-            "transition-[background-color,border-color] duration-quick ease-out",
-            "hover:border-border-strong",
-            "focus-visible:outline-none focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary",
+            "flex h-full shrink-0 items-center gap-1.5 rounded-l-full pl-5 pr-3 text-sm font-medium text-fg",
+            "transition-colors duration-quick ease-out",
+            // Tap/hover feedback via the shared overlay token (§3.5).
+            "hover:bg-(--hover-overlay) active:bg-(--hover-overlay)",
+            "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary focus-visible:ring-inset",
             "disabled:cursor-not-allowed",
           )}
         >
@@ -155,12 +158,8 @@ export function PhoneInput({
           />
         </button>
 
-        <span
-          aria-hidden
-          className="text-fg-subtle"
-        >
-          <Phone size={16} weight="bold" className="ml-1" />
-        </span>
+        {/* Hairline divider between dial code and the number (§2 --divider). */}
+        <span aria-hidden className="h-6 w-px shrink-0 bg-divider" />
 
         <input
           id={fieldId}
@@ -176,7 +175,7 @@ export function PhoneInput({
           aria-describedby={msgId}
           aria-label={label ? undefined : ariaLabel}
           className={cn(
-            "min-w-0 flex-1 bg-transparent pl-2 text-input tabular-nums text-fg outline-none",
+            "min-w-0 flex-1 bg-transparent pl-3 pr-5 text-input tabular-nums text-fg outline-none",
             "placeholder:text-fg-subtle",
             "disabled:cursor-not-allowed",
           )}

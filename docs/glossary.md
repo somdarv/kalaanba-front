@@ -4,7 +4,9 @@ Living dictionary of project-specific terms. Add a new entry when a new term is 
 
 | Term              | Definition                                                                                                                                      |
 | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Account lookup    | Read-only `POST /auth/lookup` returning `{ exists, channel }` for an identifier — the identifier-first branch signal. No PII, strictly throttled (ADR-0004).                |
 | Agent OS          | The pipeline of chat modes + prompts + contracts + instructions that constrains how Copilot contributes to this repo.                           |
+| Identifier-first auth | Entry model where the person enters one identifier (phone/email) and the system detects returning-vs-new via Account lookup — no explicit login/signup choice (ADR-0004). |
 | Build Plan        | `docs/Architecture/Build_Plan.md` — the 9-stage execution tracker. Distinct from the per-change pipeline.                                       |
 | City Hub          | A city-scoped administrative tier in the Geography Engine (e.g. Tamale City Hub).                                                               |
 | Decision Trace    | Structured JSON attached to every Trust clearance recording rule inputs and verdict.                                                            |

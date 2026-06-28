@@ -1,0 +1,120 @@
+openapi: 3.1.0
+info:
+  title: "Auth — Account Lookup (identifier-first branch signal)"
+  version: "1.0.0"
+  description: |
+    Resolves whether a single identifier (phone E.164 **or** email) maps to
+    an existing **active** (non-archived) user account, so the identifier-first
+    entry screen can branch copy and flow (returning vs. new) **before**
+    committing to a channel-specific action.
+
+    This endpoint is **read-only**:
+      - It never mutates state, never issues an OTP, never sends an email.
+      - Because it is not a user-triggered write, it does **not** require an
+        `Idempotency-Key` (cf. Constitution Law 14, which scopes idempotency
+        to writes).
+
+    Privacy & enumeration (ADR-0004 §3, Identity doc §12):
+      - The response carries **no PII** — only `exists` (boolean) and the
+        inferred `channel`. No masked phone, name, avatar, or role.
+      - `exists` is computed against non-archived users only; an archived
+        account reads as `exists=false`.
+      - The endpoint is strictly rate-limited (`throttle:lookup`, config
+        `auth.throttle.lookup.per_minute`, default 5) keyed by IP **and**
+        identifier, and always returns `200` with the same shape regardless
+        of existence (no 404 oracle).
+
+    Engine doc: docs/engines/identity/Identity_Engine_System_Document.md §4, §12.
+    ADR: docs/adr/0004-identifier-first-progressive-auth.md.
+
+paths:
+  /api/v1/auth/lookup:
+    post:
+      summary: Resolve whether an identifier has an existing active account
+      operationId: lookupAccount
+      security: []
+      parameters:
+        - in: header
+          name: X-Request-Id
+          required: false
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/LookupRequest" }
+      responses:
+        "200":
+          description: |
+            Lookup resolved. Same shape whether or not the account exists.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LookupResponse" }
+        "422":
+          description: |
+            The identifier is neither a valid E.164 phone nor a valid email.
+            Error code `auth.identifier_invalid`.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "429":
+          description: |
+            Rate limit exceeded (`throttle:lookup`). Error code
+            `auth.too_many_requests`.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+components:
+  schemas:
+    LookupRequest:
+      type: object
+      required: [identifier]
+      additionalProperties: false
+      properties:
+        identifier:
+          type: string
+          minLength: 3
+          maxLength: 255
+          description: |
+            A phone number in E.164 form (`^\+[1-9]\d{6,14}$`) or an email
+            address. The server infers the channel from the shape: a value
+            matching the E.164 pattern is treated as a phone; otherwise it is
+            validated as an email.
+
+    LookupResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [exists, channel]
+          additionalProperties: false
+          properties:
+            exists:
+              type: boolean
+              description: |
+                True iff a non-archived user owns this identifier on the
+                inferred channel.
+            channel:
+              type: string
+              enum: [phone, email]
+              description: Channel inferred from the identifier shape.
+        meta:
+          type: object
+          properties:
+            request_id: { type: string }
+            api_version: { type: string, enum: [v1] }
+
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details: { type: object }
+            request_id: { type: string }

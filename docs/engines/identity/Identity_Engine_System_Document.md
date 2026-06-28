@@ -49,7 +49,9 @@ A user is **never deleted**. Accounts are archived (`archived_at` set) and remai
 
 ## 4. Authentication Model
 
-V1 supports **two authentication channels** — the user chooses at signup (TikTok-style):
+> **Entry model — identifier-first ([ADR-0004](../../adr/0004-identifier-first-progressive-auth.md)).** The user-facing flow no longer asks the person to choose "log in vs sign up" or a channel up front. There is **one neutral entry**: the person enters a single identifier (phone or email); `POST /api/v1/auth/lookup` resolves whether it maps to an existing active account; the UI branches returning-vs-new copy and steps. The underlying account model (§2, §6, §7, §12) is unchanged — `lookup` is a read-only branch signal that returns only `{ exists, channel }` (no PII), is strictly rate-limited (`auth.throttle.lookup.per_minute`, default 5, keyed by identifier + IP), and is **not** a write (no `Idempotency-Key`). See ADR-0004 §3 for the enumeration mitigations. The two channels below remain the authoritative verification mechanisms behind that entry.
+
+V1 supports **two authentication channels** — surfaced behind the single identifier-first entry above:
 
 ### 4.1 Phone + OTP
 

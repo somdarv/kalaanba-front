@@ -14,9 +14,10 @@ import { cn } from "@/lib/cn";
  * boxes. Auto-advance on input, backspace returns to the previous
  * box, paste fills boxes left to right, arrow keys navigate.
  *
- * Visual recipe matches the rest of the input suite: pill (rounded-full)
- * boxes on `bg-surface-2`, hairline border, brand ring on focus, danger
- * border + ring on error.
+ * Visual recipe matches the rest of the input suite: tall rounded-rectangle
+ * boxes on `bg-surface-2` that flex to fill the row (so the group is the same
+ * width as a full-width button beneath it), hairline border, brand ring on
+ * focus, danger border + ring on error, and a faint placeholder per empty box.
  *
  * Logic-only: emits the joined string on every change. Consumer drives
  * the value (controlled).
@@ -35,6 +36,8 @@ export type OtpInputProps = {
   inputMode?: "numeric" | "text";
   /** Pattern of allowed characters. Defaults to digits. */
   pattern?: RegExp;
+  /** Faint placeholder shown in each empty box. */
+  placeholder?: string;
   autoFocus?: boolean;
   name?: string;
   "aria-label"?: string;
@@ -50,6 +53,7 @@ export function OtpInput({
   disabled,
   inputMode = "numeric",
   pattern = /[0-9]/,
+  placeholder = "•",
   autoFocus,
   name,
   "aria-label": ariaLabel,
@@ -160,6 +164,7 @@ export function OtpInput({
               disabled={disabled}
               maxLength={1}
               value={char}
+              placeholder={placeholder}
               onChange={handleChange(index)}
               onKeyDown={handleKeyDown(index)}
               onPaste={handlePaste(index)}
@@ -167,10 +172,13 @@ export function OtpInput({
               name={name ? `${name}-${index}` : undefined}
               data-error={hasError || undefined}
               className={cn(
-                "size-12 rounded-full bg-surface-2 text-center text-input font-semibold tabular-nums text-fg",
+                // Tall rounded rectangle that flexes to fill the row, so the
+                // group spans the same width as a full-width button below it.
+                "h-14 min-w-0 flex-1 rounded-xl bg-surface-2 text-center text-lg font-semibold tabular-nums text-fg",
                 "border-[0.5px] border-border-strong",
                 "transition-[box-shadow,border-color,background-color] duration-quick ease-out",
                 "hover:shadow-sm",
+                "placeholder:font-normal placeholder:text-fg-subtle",
                 "focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary",
                 "data-error:border-danger data-error:focus:ring-danger",
                 "disabled:cursor-not-allowed disabled:opacity-50",

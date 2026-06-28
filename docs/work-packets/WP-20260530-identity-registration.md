@@ -12,7 +12,7 @@
 | **Canonical doc**    | [Identity Engine System Document](../engines/identity/Identity_Engine_System_Document.md) — §4 (auth channels), §6 (lifecycle), §7.1 (self-signup), §8 (profile surface — channel binding) |
 | **Build Plan phase** | Phase 1.3 — Identity Engine (Backend WP 2 of 3)                                                                                  |
 | **Repo(s)**          | `kalaanba-api` (primary), `kalaanba-front` (OAS contracts only)                                                                  |
-| **Status**           | 🟡 **Stage 1 (Intake) — drafting**                                                                                               |
+| **Status**           | 🟢 **Stage 8 (QA) green — all gates pass; Docs + Release packet remain**                                                          |
 
 ---
 
@@ -23,12 +23,9 @@
 - [x] Stage 3 — Rules Review
 - [x] Stage 4 — Architecture Check
 - [x] Stage 5 — Contract Design
-- [ ] Stage 3 — Rules Review
-- [ ] Stage 4 — Architecture Check
-- [ ] Stage 5 — Contract Design
-- [ ] Stage 6 — Implementation
+- [x] Stage 6 — Implementation
 - [x] Stage 7 — Security Review
-- [ ] Stage 8 — QA Plan + Tests
+- [x] Stage 8 — QA Plan + Tests
 - [ ] Stage 9 — Docs Update
 - [ ] Stage 10 — Release Packet
 
@@ -449,7 +446,24 @@ Primary attacker objectives considered: (a) account takeover, (b) channel-bind h
 
 
 
-## Stage 8 — QA Plan + Tests _(pending)_
+## Stage 8 — QA Plan + Tests _(complete — 2026-06-21)_
+
+All five pipeline gates green on a fresh-migrated Postgres test database:
+
+| Gate | Result |
+| --- | --- |
+| `vendor/bin/pint` | clean (line-ending fixes applied) |
+| `phpstan analyse` (level 6) | 0 errors |
+| `vendor/bin/deptrac` | 0 violations |
+| `vendor/bin/pest` | **260 passed (697 assertions)** |
+
+### Defects found and fixed during QA
+
+1. **`Role` enum lacked the `user` case.** `RegisterUserHandler` forces `role=user` (Identity engine doc §9 — universal default), but `Kalaanba\Support\Auth\Role` (authored in Phase 0.6 WP-A, before the 2026-05-26 default-role decision) had no `User` case and `default()` still returned `Fan`. `Role::from('user')` threw in `EloquentUserRegistrationRepository`. **Fix:** added `Role::User = 'user'` as the account-level floor, repointed `Role::default()` to it, updated `RoleTest`, and added migration `2026_05_30_000003_extend_users_role_check_with_user` so already-migrated databases pick up the widened `users_role_check` (fresh migrates already derive it from `Role::cases()`).
+2. **`ConfirmEmailBindTest` fixtures created channel-less users.** Three cases built a phone-only owner via `User::factory()->create(['email' => null])` without a phone, tripping the (correct) `users_channel_present_check`. **Fix:** added `->withPhone(...)` to each owner.
+3. **`ConfirmEmailRegistrationTest` unknown-token case used an 18-char token.** It was rejected by the FormRequest `min:32` rule instead of reaching the handler's `auth.email_verify.token_unknown` branch. **Fix:** use a well-formed 64-hex-char unissued token.
+
+✅ Stage 8 PASSED. Proceed to Stage 9 (Docs Update).
 
 ## Stage 9 — Docs Update _(pending)_
 

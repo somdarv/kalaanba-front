@@ -1,0 +1,234 @@
+openapi: 3.1.0
+info:
+  title: "Admin — Users section (pre-alpha tester support)"
+  version: "1.0.0"
+  description: |
+    Super-admin tooling to support early testers stuck on auth. Gated by
+    `auth:sanctum` + `super_admin`. Destructive actions (set-password,
+    force-verify) additionally require the admin access code (ADR-0005),
+    supplied via the `X-Admin-Access-Code` header or an `access_code` body
+    field. Every mutation is audited (AdminAuditMiddleware) with secrets
+    redacted.
+
+    Hard rules: no response ever contains a password, password hash, OTP, or
+    the full phone number (only the masked last-4). Identity doc §12.
+
+    Engine docs: identity §4/§12, admin-governance (audit).
+
+paths:
+  /api/v1/admin/users:
+    get:
+      summary: List registered users (search / filter / sort / paginate)
+      operationId: adminListUsers
+      parameters:
+        - { in: query, name: search, schema: { type: string }, description: "name, email, or phone last-4" }
+        - { in: query, name: status, schema: { type: string, enum: [active, unverified, disabled, archived] } }
+        - { in: query, name: auth_method, schema: { type: string, enum: [phone, email, both] } }
+        - { in: query, name: sort, schema: { type: string, enum: [created_at, last_seen_at] } }
+        - { in: query, name: per_page, schema: { type: integer, minimum: 1, maximum: 100, default: 25 } }
+      responses:
+        "200":
+          description: A page of admin-safe user rows.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: "#/components/schemas/AdminUser" }
+                  meta: { $ref: "#/components/schemas/PageMeta" }
+
+  /api/v1/admin/users/{id}:
+    get:
+      summary: One user's admin-safe detail
+      operationId: adminShowUser
+      parameters: [{ $ref: "#/components/parameters/UserId" }]
+      responses:
+        "200": { $ref: "#/components/responses/SingleUser" }
+        "404": { $ref: "#/components/responses/Error" }
+
+  /api/v1/admin/users/{id}/password:
+    post:
+      summary: Set a new password (hashed on save). DESTRUCTIVE — access code required.
+      operationId: adminSetUserPassword
+      parameters: [{ $ref: "#/components/parameters/UserId" }, { $ref: "#/components/parameters/Idem" }, { $ref: "#/components/parameters/AccessCodeHeader" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [password]
+              properties:
+                password: { type: string, minLength: 10, maxLength: 255 }
+                access_code: { type: string, description: "Required if not sent as a header." }
+      responses:
+        "200": { $ref: "#/components/responses/SingleUser" }
+        "403": { $ref: "#/components/responses/Error", description: "Missing/invalid access code (admin.access_code_invalid)." }
+
+  /api/v1/admin/users/{id}/force-verify:
+    post:
+      summary: Force-verify a channel. DESTRUCTIVE — access code required.
+      operationId: adminForceVerify
+      parameters: [{ $ref: "#/components/parameters/UserId" }, { $ref: "#/components/parameters/Idem" }, { $ref: "#/components/parameters/AccessCodeHeader" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [channel]
+              properties:
+                channel: { type: string, enum: [phone, email] }
+                access_code: { type: string }
+      responses:
+        "200": { $ref: "#/components/responses/SingleUser" }
+        "403": { $ref: "#/components/responses/Error" }
+
+  /api/v1/admin/users/{id}/phone:
+    patch:
+      summary: Replace the phone number (marks re-verify needed)
+      operationId: adminUpdatePhone
+      parameters: [{ $ref: "#/components/parameters/UserId" }, { $ref: "#/components/parameters/Idem" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phone_e164]
+              properties:
+                phone_e164: { type: string, pattern: "^\\+[1-9]\\d{6,14}$" }
+      responses:
+        "200": { $ref: "#/components/responses/SingleUser" }
+
+  /api/v1/admin/users/{id}/email:
+    patch:
+      summary: Replace the email and clear its verified flag
+      operationId: adminUpdateEmail
+      parameters: [{ $ref: "#/components/parameters/UserId" }, { $ref: "#/components/parameters/Idem" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email: { type: string, format: email }
+      responses:
+        "200": { $ref: "#/components/responses/SingleUser" }
+
+  /api/v1/admin/users/{id}/disable:
+    post:
+      summary: Soft-disable (reversible). Blocks login.
+      operationId: adminDisableUser
+      parameters: [{ $ref: "#/components/parameters/UserId" }, { $ref: "#/components/parameters/Idem" }]
+      responses:
+        "200": { $ref: "#/components/responses/SingleUser" }
+
+  /api/v1/admin/users/{id}/enable:
+    post:
+      summary: Re-enable a disabled account
+      operationId: adminEnableUser
+      parameters: [{ $ref: "#/components/parameters/UserId" }, { $ref: "#/components/parameters/Idem" }]
+      responses:
+        "200": { $ref: "#/components/responses/SingleUser" }
+
+  /api/v1/admin/users/{id}/resend-otp:
+    post:
+      summary: Re-issue an OTP. Admin supplies the number (verified against the stored hash).
+      operationId: adminResendOtp
+      parameters: [{ $ref: "#/components/parameters/UserId" }, { $ref: "#/components/parameters/Idem" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phone_e164]
+              properties:
+                phone_e164: { type: string, pattern: "^\\+[1-9]\\d{6,14}$" }
+      responses:
+        "200": { $ref: "#/components/responses/SingleUser" }
+        "422": { $ref: "#/components/responses/Error", description: "Number does not match (admin.users.phone_mismatch)." }
+
+  /api/v1/admin/users/{id}/clear-lockout:
+    post:
+      summary: Clear an OTP lockout (forgets the pending code / attempt counter)
+      operationId: adminClearLockout
+      parameters: [{ $ref: "#/components/parameters/UserId" }, { $ref: "#/components/parameters/Idem" }]
+      responses:
+        "200": { $ref: "#/components/responses/SingleUser" }
+
+components:
+  parameters:
+    UserId:
+      in: path
+      name: id
+      required: true
+      schema: { type: string, format: uuid }
+    Idem:
+      in: header
+      name: Idempotency-Key
+      required: true
+      schema: { type: string, minLength: 1, maxLength: 128 }
+    AccessCodeHeader:
+      in: header
+      name: X-Admin-Access-Code
+      required: false
+      schema: { type: string }
+      description: "The admin access code (ADR-0005). May be sent here or as an `access_code` body field."
+
+  responses:
+    SingleUser:
+      description: The refreshed admin-safe user projection.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data: { $ref: "#/components/schemas/AdminUser" }
+    Error:
+      description: Error envelope.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: object
+                required: [code, message]
+                properties:
+                  code: { type: string }
+                  message: { type: string }
+
+  schemas:
+    AdminUser:
+      type: object
+      required: [id, name, auth_method, status]
+      additionalProperties: false
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        email: { type: string, nullable: true }
+        phone_masked:
+          type: string
+          nullable: true
+          description: "Masked phone, last-4 only (e.g. '••• ••• 3456'). Full number is never returned."
+        auth_method: { type: string, enum: [phone, email, both] }
+        status: { type: string, enum: [active, unverified, disabled, archived] }
+        phone_verified: { type: boolean }
+        email_verified: { type: boolean }
+        role: { type: string }
+        created_at: { type: string, format: date-time, nullable: true }
+        last_seen_at: { type: string, format: date-time, nullable: true }
+
+    PageMeta:
+      type: object
+      properties:
+        page: { type: integer }
+        per_page: { type: integer }
+        total: { type: integer }
+        last_page: { type: integer }

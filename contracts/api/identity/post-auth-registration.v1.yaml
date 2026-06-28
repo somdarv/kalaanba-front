@@ -91,9 +91,12 @@ components:
   schemas:
     PhoneRegistration:
       type: object
-      required: [phone_e164, otp, name, area_id]
+      required: [channel, phone_e164, otp, name]
       additionalProperties: false
       properties:
+        channel:
+          type: string
+          enum: [phone]
         phone_e164:
           type: string
           pattern: "^\\+[1-9]\\d{6,14}$"
@@ -109,6 +112,10 @@ components:
         area_id:
           type: string
           format: uuid
+          nullable: true
+          description: |
+            Optional at self-signup. Users set their area later on the profile
+            screen. Validated against Zone only when present.
         device_name:
           type: string
           maxLength: 64
@@ -116,9 +123,12 @@ components:
 
     EmailRegistration:
       type: object
-      required: [email, password, name, area_id]
+      required: [channel, email, password, name]
       additionalProperties: false
       properties:
+        channel:
+          type: string
+          enum: [email]
         email:
           type: string
           format: email
@@ -137,6 +147,8 @@ components:
         area_id:
           type: string
           format: uuid
+          nullable: true
+          description: Optional at self-signup; set later on the profile screen.
 
     SessionResponse:
       type: object

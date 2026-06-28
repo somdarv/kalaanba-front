@@ -469,3 +469,14 @@ button:disabled,
 .kx-alive {
   animation-play-state: running !important;
 }
+
+/* Loaders are status, not decoration — a frozen spinner reads as "broken".
+   Keep them rotating even under reduced motion (DESIGN_LANGUAGE §3.5:
+   rotation is the one motion exception, the universal "we're working" signal).
+   `svg.kx-spinner` outranks the `*:not(.kx-alive)` blanket above. */
+@media (prefers-reduced-motion: reduce) {
+  svg.kx-spinner {
+    animation-duration: 0.7s !important;
+    animation-iteration-count: infinite !important;
+  }
+}

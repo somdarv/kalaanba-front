@@ -1,0 +1,87 @@
+openapi: 3.1.0
+info:
+  title: "Zone — List Areas in a City Hub"
+  version: "1.0.0"
+  description: |
+    Returns the verified Areas (localities, suburbs, quarters) inside one City
+    Hub. Public reference data. Consumed by the area-onboarding picker after a
+    Hub is chosen (Zone §5).
+
+    Filtered by `city_hub_id` (required); optional `q` does a case-insensitive
+    name prefix/substring search so the list stays usable for hubs with many
+    areas. Zone/Belt mapping is intentionally omitted — it is admin-derived and
+    not part of the user's choice (Zone §2, §11).
+
+    Implemented by kalaanba-api WP-20260625a-zone-public-read.
+
+paths:
+  /api/v1/zone/areas:
+    get:
+      summary: List areas in a City Hub
+      operationId: listZoneAreas
+      security: []
+      parameters:
+        - in: header
+          name: X-Request-Id
+          required: false
+          schema: { type: string, format: uuid }
+        - in: query
+          name: city_hub_id
+          required: true
+          schema: { type: string, format: uuid }
+        - in: query
+          name: q
+          required: false
+          description: Case-insensitive area-name search.
+          schema: { type: string, maxLength: 80 }
+        - in: query
+          name: limit
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 200, default: 100 }
+      responses:
+        "200":
+          description: Areas in the hub
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: "#/components/schemas/Area" }
+                  meta:
+                    type: object
+                    properties:
+                      count: { type: integer }
+                      city_hub_id: { type: string, format: uuid }
+                      request_id: { type: string }
+                      api_version: { type: string, enum: [v1] }
+        "422":
+          description: Missing or invalid `city_hub_id`.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "429": { $ref: "#/components/schemas/Error" }
+
+components:
+  schemas:
+    Area:
+      type: object
+      required: [id, name, city_hub_id]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string, description: "Locality name, e.g. Taha, Kukuo, Sakasaka" }
+        city_hub_id: { type: string, format: uuid }
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details: { type: object }
+            request_id: { type: string }

@@ -1,0 +1,67 @@
+openapi: 3.1.0
+info:
+  title: "Zone — List City Hubs"
+  version: "1.0.0"
+  description: |
+    Returns the active City Hubs a user can belong to. Public reference data
+    (Zone engine §2 hierarchy). Consumed by the post-signup area-onboarding
+    picker (Zone §5: "Choose City Hub" then "Choose Area").
+
+    Zone/Belt levels are admin-derived and are NOT exposed here — users pick a
+    Hub and an Area only (Zone §2, §5). Backend owns the area→zone mapping
+    (Constitution Law 3).
+
+    Implemented by kalaanba-api WP-20260625a-zone-public-read.
+
+paths:
+  /api/v1/zone/hubs:
+    get:
+      summary: List active City Hubs
+      operationId: listZoneHubs
+      security: []
+      parameters:
+        - in: header
+          name: X-Request-Id
+          required: false
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Active City Hubs
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: "#/components/schemas/CityHub" }
+                  meta:
+                    type: object
+                    properties:
+                      count: { type: integer }
+                      request_id: { type: string }
+                      api_version: { type: string, enum: [v1] }
+        "429": { $ref: "#/components/schemas/Error" }
+
+components:
+  schemas:
+    CityHub:
+      type: object
+      required: [id, name]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string, description: "Display name, e.g. Tamale City Hub" }
+        region: { type: ["string", "null"], description: "Broad geographic context, e.g. Northern Region" }
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details: { type: object }
+            request_id: { type: string }
