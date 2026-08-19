@@ -16,9 +16,6 @@ import { cn } from "@/lib/cn";
  */
 export const AUTH_HERO_SRC: string | null = "/images/auth/hero.png";
 
-/** Landscape cut of the same art, used blurred behind the desktop panel. */
-export const AUTH_BACKDROP_SRC = "/images/auth/hero-landscape.png";
-
 /**
  * The three things the record actually gives you. This is the honest local
  * answer to the reference layout's "partner logos" strip: Kalaanba has no

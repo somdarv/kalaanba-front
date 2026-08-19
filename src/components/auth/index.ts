@@ -1,4 +1,4 @@
-export { AuthHero, AUTH_HERO_SRC, AUTH_BACKDROP_SRC } from "./auth-hero";
+export { AuthHero, AUTH_HERO_SRC } from "./auth-hero";
 export type { AuthHeroProps, AuthProofPoint } from "./auth-hero";
 export { AuthShell } from "./auth-shell";
 export type { AuthShellProps } from "./auth-shell";
