@@ -2,7 +2,7 @@
 
 import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from "react";
 import { cn } from "@/lib/cn";
-import { pressableBase } from "./pressable";
+import { pressableBase, tapExpand } from "./pressable";
 import { Spinner } from "./spinner";
 
 export type ButtonIntent =
@@ -17,24 +17,31 @@ export type ButtonSize = "sm" | "md" | "lg";
 
 /**
  * Intent recipes — pure state changes, no positional motion.
- *   default → hover (color shift) → active (deeper bg + inset shadow "press")
+ *   default → hover (lighter fill) → active (deeper fill + inset "press")
  * Per DESIGN_LANGUAGE §3.1 the button never moves; it changes state.
+ *
+ * Hover and press are dedicated tokens that move OKLCH lightness only
+ * (+0.030 / −0.050) with hue and chroma held. v2 mixed toward white, which
+ * desaturated the brand into chalk on hover and — because the mix landed at
+ * L 0.72 — dropped the white label to 3.8:1. Every state below clears AA:
+ * primary 5.23 / 4.61 / 6.50, accent 5.23 / 4.61 / 6.50, success 5.18 /
+ * 4.57 / 6.42, danger 5.25 / 4.62 / 6.52.
  */
 const INTENT: Record<ButtonIntent, string> = {
   primary: cn(
     "bg-primary text-on-primary shadow-[var(--shadow-sm)]",
-    "hover:bg-[color-mix(in_oklab,var(--primary)_86%,white_14%)] hover:shadow-[var(--shadow-md)]",
+    "hover:bg-primary-hover",
     "active:bg-primary-pressed active:shadow-[var(--shadow-pressed)]",
   ),
   secondary: cn(
-    "bg-surface-2 text-fg border border-border",
+    "bg-surface-elev text-fg border border-border",
     "hover:border-border-strong hover:bg-[var(--secondary-hover)]",
     "active:bg-[var(--secondary-active)] active:shadow-[var(--shadow-pressed)]",
   ),
   accent: cn(
     "bg-accent text-on-accent shadow-[var(--shadow-sm)]",
-    "hover:bg-[color-mix(in_oklab,var(--accent)_86%,white_14%)] hover:shadow-[var(--shadow-md)]",
-    "active:bg-[color-mix(in_oklab,var(--accent)_88%,black_12%)] active:shadow-[var(--shadow-pressed)]",
+    "hover:bg-accent-hover",
+    "active:bg-accent-pressed active:shadow-[var(--shadow-pressed)]",
   ),
   ghost: cn(
     "bg-transparent text-fg",
@@ -43,20 +50,27 @@ const INTENT: Record<ButtonIntent, string> = {
   ),
   danger: cn(
     "bg-danger text-on-danger shadow-[var(--shadow-sm)]",
-    "hover:bg-[color-mix(in_oklab,var(--danger)_86%,white_14%)] hover:shadow-[var(--shadow-md)]",
-    "active:bg-[color-mix(in_oklab,var(--danger)_88%,black_12%)] active:shadow-[var(--shadow-pressed)]",
+    "hover:bg-danger-hover",
+    "active:bg-danger-pressed active:shadow-[var(--shadow-pressed)]",
   ),
   success: cn(
     "bg-success text-on-success shadow-[var(--shadow-sm)]",
-    "hover:bg-[color-mix(in_oklab,var(--success)_86%,white_14%)] hover:shadow-[var(--shadow-md)]",
-    "active:bg-[color-mix(in_oklab,var(--success)_88%,black_12%)] active:shadow-[var(--shadow-pressed)]",
+    "hover:bg-success-hover",
+    "active:bg-success-pressed active:shadow-[var(--shadow-pressed)]",
   ),
 };
 
 const SIZE: Record<ButtonSize, string> = {
-  sm: "h-9 min-h-9 px-4 text-sm rounded-full gap-1.5", // sm relaxes 44px floor for inline contexts; IconButton keeps 44.
-  md: "h-11 px-5 text-[0.95rem] rounded-full gap-2",
-  lg: "h-12 px-6 text-base rounded-full gap-2.5",
+  // `sm` stays visually compact for inline contexts but keeps a 44px target
+  // via `tapExpand` — DESIGN_LANGUAGE §9.1 allows the smaller box, not the
+  // smaller hit area. v2 shipped 36px targets on Accept/Decline actions.
+  sm: cn("h-9 min-h-9 px-4 text-sm rounded-pill gap-1.5", tapExpand),
+  md: "h-11 px-5 text-[0.95rem] rounded-pill gap-2",
+  // `lg` is the single-purpose form CTA (auth, checkout, OTP). COMPONENT_INVENTORY
+  // §1.1 specs it at `h-14`; the code shipped `h-12`. The doc wins
+  // (design-system-mandatory) and 56px is the thumb-zone size a login screen
+  // wants — DESIGN_LANGUAGE §9.1 ("48 x 48 preferred for primary actions").
+  lg: "h-14 min-h-14 px-7 text-base rounded-pill gap-2.5",
 };
 
 export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -140,14 +154,16 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
             {leadingIcon}
             {children}
             {trailingIcon ? (
+              /* Nudge on hover. Was an inline 550ms + raw cubic-bezier —
+                 both outside the token set (DESIGN_LANGUAGE §2.5). Now rides
+                 --dur-graceful / --ease-out like every other transition. */
               <span
                 aria-hidden
-                style={{
-                  transitionProperty: "transform",
-                  transitionDuration: "550ms",
-                  transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
-                }}
-                className="inline-flex motion-reduce:transition-none group-hover:translate-x-[5px]"
+                className={cn(
+                  "inline-flex transition-transform duration-graceful ease-out",
+                  "motion-reduce:transition-none",
+                  "group-hover:translate-x-1.25",
+                )}
               >
                 {trailingIcon}
               </span>

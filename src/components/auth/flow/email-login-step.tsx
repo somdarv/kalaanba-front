@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 
 import { Button, PasswordField } from "@/components/ui";
 import { ApiError } from "@/lib/api";
 import { useLogin } from "@/lib/api/hooks/use-auth";
 import { SubmitError } from "../auth-feedback";
+import { AuthLink, AuthRouteLink } from "../auth-link";
+import { AuthStep } from "../auth-step";
 
 /**
  * EmailLoginStep — returning email user (ADR-0004).
@@ -55,17 +56,29 @@ export function EmailLoginStep({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-      <header className="space-y-1.5">
-        <h1 className="font-display text-2xl font-bold tracking-tight text-fg lg:text-3xl">
-          Welcome back
-        </h1>
-        <p className="text-sm text-fg-muted">
+    <AuthStep
+      onSubmit={handleSubmit}
+      title="Welcome back"
+      subtitle={
+        <>
           Pick up where you left off as{" "}
-          <span className="font-medium text-fg">{email}</span>.
-        </p>
-      </header>
-
+          <span className="font-semibold text-fg">{email}</span>.
+        </>
+      }
+      action={
+        <Button type="submit" size="lg" fullWidth loading={login.isPending}>
+          Log in
+        </Button>
+      }
+      footer={
+        <div className="flex flex-col items-center gap-1">
+          <AuthRouteLink href="/auth/forgot-password">
+            Forgot password?
+          </AuthRouteLink>
+          <AuthLink onClick={onChangeEmail}>Use a different email</AuthLink>
+        </div>
+      }
+    >
       <PasswordField
         label="Password"
         autoComplete="current-password"
@@ -76,26 +89,6 @@ export function EmailLoginStep({
       />
 
       <SubmitError message={null} />
-
-      <Button type="submit" fullWidth loading={login.isPending}>
-        Log in
-      </Button>
-
-      <div className="flex flex-col items-center gap-2 text-sm">
-        <Link
-          href="/auth/forgot-password"
-          className="font-medium text-primary underline-offset-2 hover:underline"
-        >
-          Forgot password?
-        </Link>
-        <button
-          type="button"
-          onClick={onChangeEmail}
-          className="text-fg-muted underline-offset-2 hover:text-fg hover:underline"
-        >
-          Use a different email
-        </button>
-      </div>
-    </form>
+    </AuthStep>
   );
 }

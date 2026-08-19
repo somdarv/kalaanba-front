@@ -1,6 +1,12 @@
 import Image from "next/image";
-import { SoccerBall } from "@phosphor-icons/react/dist/ssr";
+import {
+  ShieldCheck,
+  SoccerBall,
+  Trophy,
+  UsersThree,
+} from "@phosphor-icons/react/dist/ssr";
 
+import { Eyebrow } from "@/components/ui/eyebrow";
 import { cn } from "@/lib/cn";
 
 /**
@@ -10,12 +16,41 @@ import { cn } from "@/lib/cn";
  */
 export const AUTH_HERO_SRC: string | null = "/images/auth/hero.png";
 
+/** Landscape cut of the same art, used blurred behind the desktop panel. */
+export const AUTH_BACKDROP_SRC = "/images/auth/hero-landscape.png";
+
+/**
+ * The three things the record actually gives you. This is the honest local
+ * answer to the reference layout's "partner logos" strip: Kalaanba has no
+ * partners to show yet, and inventing them on the login screen would be a
+ * fabricated claim. Product promises are not domain truth (Constitution
+ * Law 3), so they are safe to render statically — but they stay props so
+ * copy can move without touching layout.
+ */
+export type AuthProofPoint = { icon: "verified" | "ranked" | "squads"; label: string };
+
+const PROOF_ICONS = {
+  verified: ShieldCheck,
+  ranked: Trophy,
+  squads: UsersThree,
+} as const;
+
+const DEFAULT_PROOF_POINTS: readonly AuthProofPoint[] = [
+  { icon: "verified", label: "Verified results" },
+  { icon: "ranked", label: "Ranked clubs" },
+  { icon: "squads", label: "Real squads" },
+];
+
 export type AuthHeroProps = {
   /** Photographic hero art. Falls back to the animated brand mesh when null. */
   imageSrc?: string | null;
   imageAlt?: string;
   /** Short line under the wordmark — the emotional hook. */
   tagline?: string;
+  /** Eyebrow above the proof strip. */
+  proofLabel?: string;
+  /** Desktop-only proof strip at the foot of the art. */
+  proofPoints?: readonly AuthProofPoint[];
   className?: string;
 };
 
@@ -27,17 +62,23 @@ export type AuthHeroProps = {
  * The drifting blobs carry `kx-alive`, the explicit opt-out of the global
  * reduced-motion blanket (§3.6), because the ambient brand drift IS the brand.
  * Motion is on decorative `aria-hidden` spans only — never on content (§3.4).
+ *
+ * Layout follows the reference split-screen: wordmark centred at the head of
+ * the art, tagline + proof strip anchored at its foot. Both ends are scrimmed
+ * because photography cannot be relied on for contrast (§6).
  */
 export function AuthHero({
   imageSrc = AUTH_HERO_SRC,
   imageAlt = "Street football at golden hour",
   tagline = "Your game, on the record.",
+  proofLabel = "What the record gives you",
+  proofPoints = DEFAULT_PROOF_POINTS,
   className,
 }: AuthHeroProps) {
   return (
     <div
       className={cn(
-        "relative isolate size-full overflow-hidden bg-primary text-on-primary select-none",
+        "kx-chrome relative isolate size-full overflow-hidden bg-primary text-on-primary",
         className,
       )}
     >
@@ -46,7 +87,12 @@ export function AuthHero({
           src={imageSrc}
           alt={imageAlt}
           fill
-          priority
+          // Next 16 deprecated `priority` in favour of `preload`, but the docs
+          // steer away from `preload` when the LCP candidate changes by
+          // viewport — here it is this art on a phone and the panel on a desk.
+          // `eager` + high fetchPriority is the documented alternative.
+          loading="eager"
+          fetchPriority="high"
           sizes="(min-width: 1024px) 50vw, 100vw"
           className="object-cover object-center"
         />
@@ -54,14 +100,15 @@ export function AuthHero({
         <BrandMesh />
       )}
 
-      {/* Legibility scrim — darkens the top (wordmark) and the seam edge. */}
+      {/* Legibility scrim. Black rather than a token on purpose: this darkens a
+          photograph, and a photograph does not change with the theme. */}
       <div
         aria-hidden
-        className="absolute inset-0 bg-linear-to-b from-black/25 via-transparent to-black/15 lg:bg-linear-to-l"
+        className="absolute inset-0 bg-linear-to-b from-black/45 via-black/10 to-black/55"
       />
 
-      {/* Brand wordmark — floats top-left, thumb-safe away from system chrome. */}
-      <div className="absolute inset-x-0 top-0 z-10 flex items-center gap-2.5 px-6 pt-[max(1.25rem,env(safe-area-inset-top))]">
+      {/* Wordmark — centred at the head of the art, clear of system chrome. */}
+      <div className="absolute inset-x-0 top-0 z-10 flex items-center justify-center gap-2.5 px-6 pt-[max(1.25rem,env(safe-area-inset-top))] lg:pt-8">
         <span className="grid size-9 place-items-center rounded-full bg-on-primary/15 backdrop-blur-sm">
           <SoccerBall size={20} weight="fill" aria-hidden />
         </span>
@@ -70,11 +117,32 @@ export function AuthHero({
         </span>
       </div>
 
-      {/* Tagline anchored bottom-left on the hero (desktop only — on mobile the
-          form sheet carries the headline so the image stays clean). */}
-      <p className="absolute bottom-8 left-6 right-6 z-10 hidden font-display text-3xl font-bold leading-tight tracking-tight lg:block">
-        {tagline}
-      </p>
+      {/* Tagline + proof strip. Desktop only — on mobile the sheet covers this
+          edge of the art and the headline in the form carries the message. */}
+      <div className="absolute inset-x-0 bottom-0 z-10 hidden px-8 pb-8 lg:block">
+        <p className="font-display text-3xl leading-tight font-bold tracking-tight text-balance">
+          {tagline}
+        </p>
+
+        <div aria-hidden className="mt-6 h-px w-full bg-on-primary/25" />
+
+        <Eyebrow className="mt-5 block text-on-primary/70">{proofLabel}</Eyebrow>
+
+        <ul className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2">
+          {proofPoints.map((point) => {
+            const Icon = PROOF_ICONS[point.icon];
+            return (
+              <li
+                key={point.label}
+                className="inline-flex items-center gap-2 text-sm font-medium text-on-primary/90"
+              >
+                <Icon size={18} weight="bold" aria-hidden />
+                {point.label}
+              </li>
+            );
+          })}
+        </ul>
+      </div>
     </div>
   );
 }
