@@ -1,6 +1,6 @@
 # ADR-0008: SMSOnlineGH as the live OTP delivery provider
 
-- **Status:** Accepted
+- **Status:** Superseded by [ADR-0009](0009-bms-as-the-live-otp-provider.md) on 2026-08-19 — vendor choice only; every structural decision below still stands
 - **Date:** 2026-08-19
 - **Work Packet:** WP-20260819-otp-sms-provider
 - **Affected engines:** Identity (owns OTP auth), Admin Configuration & Governance (owns the config keys)
