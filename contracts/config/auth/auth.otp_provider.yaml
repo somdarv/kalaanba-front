@@ -6,7 +6,22 @@ default: "mock"
 approval_level: high
 description: |
   Selects which OTP delivery channel is used for live traffic. Allowed values:
-  - "mock"     : in-memory, captured by MockOtpProvider (dev/test only — never
-                 valid in production).
-  - "whatsapp" : WhatsApp Business Cloud API (introduced in Build Plan Phase 4).
+  - "mock"        : in-memory, captured by MockOtpProvider (dev/test only). The
+                    container REFUSES this value when APP_ENV=production — a mock
+                    in production generates a code and delivers it nowhere while
+                    every surface reports success, which is indistinguishable
+                    from an outage nobody is paged for.
+  - "smsonlinegh" : SMS via the SMSOnlineGH v5 gateway. The live driver as of
+                    ADR-0008. Requires SMSONLINEGH_API_KEY in the environment;
+                    selecting it without one fails fast at container-resolve
+                    time rather than per request.
+  - "whatsapp"    : WhatsApp Business Cloud API. Planned for Build Plan Phase 4,
+                    NOT yet implemented — selecting it today raises
+                    "Unsupported auth.otp_provider value".
+
   Changing this key requires Hub Admin approval and Trust+Security review.
+
+  NOTE: the Identity engine doc (§4.1 and its config table) still names "hubtel"
+  as the alpha+ production driver and uses the dotted key `auth.otp.provider`.
+  Both are superseded by ADR-0008 — Hubtel was never implemented, and the key
+  that code actually reads is the underscored `auth.otp_provider` defined here.
