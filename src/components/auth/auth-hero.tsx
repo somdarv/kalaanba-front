@@ -10,11 +10,19 @@ import { Eyebrow } from "@/components/ui/eyebrow";
 import { cn } from "@/lib/cn";
 
 /**
- * Street-football hero art (portrait ~2:3). Next/image optimises + serves
- * webp/avif from this source. Set to `null` to fall back to the animated
- * brand mesh.
+ * Hero art, portrait cut (941x1672) -- for the near-square desktop inset.
+ * Next/image optimises + serves webp/avif from this source. Set to `null` to
+ * fall back to the animated brand mesh.
  */
 export const AUTH_HERO_SRC: string | null = "/images/auth/hero.png";
+
+/**
+ * The same artwork, wide cut (1672x941) -- for the mobile band, which is a
+ * short full-width strip. Art direction, not a duplicate: a 0.56:1 portrait
+ * centre-cropped into a ~1.4:1 strip loses the composition, and a 1.78:1
+ * landscape cropped into the square desktop slot loses the outer players.
+ */
+export const AUTH_HERO_WIDE_SRC = "/images/auth/hero-landscape.png";
 
 /**
  * The three things the record actually gives you. This is the honest local
@@ -41,6 +49,8 @@ const DEFAULT_PROOF_POINTS: readonly AuthProofPoint[] = [
 export type AuthHeroProps = {
   /** Photographic hero art. Falls back to the animated brand mesh when null. */
   imageSrc?: string | null;
+  /** Wide cut, used for the mobile band. */
+  wideImageSrc?: string;
   imageAlt?: string;
   /** Short line under the wordmark — the emotional hook. */
   tagline?: string;
@@ -66,7 +76,8 @@ export type AuthHeroProps = {
  */
 export function AuthHero({
   imageSrc = AUTH_HERO_SRC,
-  imageAlt = "Street football at golden hour",
+  wideImageSrc = AUTH_HERO_WIDE_SRC,
+  imageAlt = "A club squad lined up for a team photo under floodlights",
   tagline = "Your game, on the record.",
   proofLabel = "What the record gives you",
   proofPoints = DEFAULT_PROOF_POINTS,
@@ -80,19 +91,29 @@ export function AuthHero({
       )}
     >
       {imageSrc ? (
-        <Image
-          src={imageSrc}
-          alt={imageAlt}
-          fill
-          // Next 16 deprecated `priority` in favour of `preload`, but the docs
-          // steer away from `preload` when the LCP candidate changes by
-          // viewport — here it is this art on a phone and the panel on a desk.
-          // `eager` + high fetchPriority is the documented alternative.
-          loading="eager"
-          fetchPriority="high"
-          sizes="(min-width: 1024px) 50vw, 100vw"
-          className="object-cover object-center"
-        />
+        <>
+          {/* Two cuts of the same artwork, one per slot shape. Both stay lazy
+              on purpose: a lazy image inside `display: none` is never fetched,
+              so each breakpoint downloads exactly one. Marking either `eager`
+              would pull both on every device (~2.3MB wasted on a phone), and
+              Next 16 deprecated `priority` anyway. */}
+          <Image
+            src={wideImageSrc}
+            alt={imageAlt}
+            fill
+            fetchPriority="high"
+            sizes="100vw"
+            className="object-cover object-center lg:hidden"
+          />
+          <Image
+            src={imageSrc}
+            alt={imageAlt}
+            fill
+            fetchPriority="high"
+            sizes="(min-width: 1024px) 58vw, 100vw"
+            className="hidden object-cover object-center lg:block"
+          />
+        </>
       ) : (
         <BrandMesh />
       )}
