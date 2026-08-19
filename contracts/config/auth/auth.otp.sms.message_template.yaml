@@ -1,0 +1,26 @@
+key: auth.otp.sms.message_template
+engine: admin-governance
+scope: platform
+value_type: string
+default: "Your Kalaanba code is {code}. It expires in 5 minutes."
+approval_level: medium
+description: |
+  Wording of the OTP text message. The literal token {code} is substituted with
+  the generated one-time code; every other character is sent verbatim. A
+  template with no {code} token will send a message containing no code — the
+  send still succeeds, so this is worth reading twice before saving.
+
+  Kept configurable per Constitution Law 2 (labels and nomenclature are never
+  hardcoded), and because the copy is the one part of the flow a non-engineer
+  will want to change — for tone, for localisation, or to satisfy a network
+  operator's content rules.
+
+  Two practical limits when editing:
+  - A single SMS segment is 160 GSM-7 characters. Longer messages still send but
+    are billed as multiple segments. The default is well inside one segment.
+  - Non-GSM characters (curly quotes, emoji, most accents) silently switch the
+    whole message to UCS-2, which cuts the per-segment limit to 70. Prefer plain
+    ASCII.
+
+  The expiry stated in the copy is NOT derived from auth.otp_ttl_seconds — if
+  that key changes, update this wording to match or the message will lie.

@@ -1,0 +1,26 @@
+key: auth.otp.sms.sender_id
+engine: admin-governance
+scope: platform
+value_type: string
+default: "Kalaanba"
+approval_level: high
+description: |
+  The alphanumeric sender name shown as the "from" on an OTP SMS. Applies only
+  when auth.otp_provider is a live SMS driver.
+
+  WARNING — THIS FAILS INVISIBLY. The SMSOnlineGH gateway validates nothing
+  about the sender at submit time: an unregistered sender is accepted and
+  answered with HSHK_OK and a batch reference exactly as an approved one is, and
+  the message is then simply never delivered. No response from the gateway, and
+  no value our code can return, will tell you the sender is wrong. Only the text
+  arriving on a handset confirms it.
+
+  Consequently: if OTPs are reported sent and nobody receives them, check this
+  key FIRST. It is admin config rather than an env var precisely so it can be
+  corrected without a deploy.
+
+  The value MUST be registered and approved with the SMS provider before it is
+  set here. Alphanumeric sender IDs cap at 11 characters; "Kalaanba" is 8.
+
+  approval_level is high because a wrong value silently breaks every phone
+  login on the platform while appearing healthy on every dashboard.
