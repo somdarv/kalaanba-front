@@ -11,17 +11,24 @@ description: |
                     in production generates a code and delivers it nowhere while
                     every surface reports success, which is indistinguishable
                     from an outage nobody is paged for.
-  - "smsonlinegh" : SMS via the SMSOnlineGH v5 gateway. The live driver as of
-                    ADR-0008. Requires SMSONLINEGH_API_KEY in the environment;
-                    selecting it without one fails fast at container-resolve
-                    time rather than per request.
+  - "bms"         : SMS via BMS / Bulk Messaging Solutions. THE LIVE DRIVER as
+                    of ADR-0009. Requires BMS_API_KEY. Note the API host is
+                    api.mnotify.com — BMS is the current brand of mNotify, and
+                    bms.africa does not serve the API.
+  - "smsonlinegh" : SMS via the SMSOnlineGH v5 gateway. Was the live driver under
+                    ADR-0008, superseded by ADR-0009. The driver is retained and
+                    working, so this is a one-key failover if BMS has an outage.
+                    Requires SMSONLINEGH_API_KEY.
   - "whatsapp"    : WhatsApp Business Cloud API. Planned for Build Plan Phase 4,
                     NOT yet implemented — selecting it today raises
                     "Unsupported auth.otp_provider value".
+
+  Selecting a gateway driver whose API key is empty fails fast at
+  container-resolve time rather than as a per-request delivery failure.
 
   Changing this key requires Hub Admin approval and Trust+Security review.
 
   NOTE: the Identity engine doc (§4.1 and its config table) still names "hubtel"
   as the alpha+ production driver and uses the dotted key `auth.otp.provider`.
-  Both are superseded by ADR-0008 — Hubtel was never implemented, and the key
-  that code actually reads is the underscored `auth.otp_provider` defined here.
+  Both are superseded — Hubtel was never implemented, and the key that code
+  actually reads is the underscored `auth.otp_provider` defined here.
