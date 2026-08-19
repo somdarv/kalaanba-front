@@ -129,7 +129,7 @@ export function Toast({
     >
       <div
         className={cn(
-          "grid h-9 w-9 shrink-0 place-items-center rounded-full",
+          "grid h-9 w-9 shrink-0 place-items-center rounded-pill",
           TONE_ACCENT[tone],
         )}
         aria-hidden
@@ -149,7 +149,7 @@ export function Toast({
           type="button"
           onClick={onClose}
           aria-label="Dismiss"
-          className="grid h-7 w-7 shrink-0 cursor-pointer place-items-center rounded-full text-fg-muted transition-colors hover:bg-surface-2 hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+          className="grid h-7 w-7 shrink-0 cursor-pointer place-items-center rounded-pill text-fg-muted transition-colors hover:bg-surface-elev hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
         >
           <X size={14} weight="bold" />
         </button>

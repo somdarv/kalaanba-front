@@ -151,8 +151,8 @@ function AvatarInner({
 const sharedClasses = (size: AvatarSize, ring: boolean) =>
   cn(
     "relative inline-flex items-center justify-center shrink-0 overflow-hidden",
-    "rounded-full",
-    "bg-surface-2 text-fg-muted",
+    "rounded-pill",
+    "bg-surface-elev text-fg-muted",
     ring && "ring-2 ring-border ring-offset-2 ring-offset-bg",
     SIZE_CLASS[size],
   );

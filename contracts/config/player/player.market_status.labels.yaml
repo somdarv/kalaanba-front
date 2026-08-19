@@ -1,0 +1,21 @@
+key: player.market_status.labels
+engine: player-affiliation
+scope: platform
+value_type: json
+default: '{"free_agent":"Free agent","affiliated":"Affiliated"}'
+approval_level: low
+description: |
+  Display labels for the football market-status keys (Player & Affiliation engine
+  doc §4). Claim status and market status are separate internally — a player can
+  be claimed and free agent at the same time — and only market status is surfaced
+  on the player card.
+
+  Cosmetic and translatable (Constitution Law 4). Served through
+  `GET /api/v1/players/meta` (ADR-0007) so the player card never compiles a status
+  string into the bundle.
+
+  Locale variants: a suffixed key (`<this key>.<language tag>`, e.g.
+  `player.positions.labels.fr`) overrides this map for that language.
+  Resolution narrows from the full tag to the bare language to this key —
+  `fr-FR` tries `.fr-fr`, then `.fr`, then this one — so a region needs its
+  own map only where it actually differs.

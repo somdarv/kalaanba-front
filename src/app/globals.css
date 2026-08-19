@@ -1,226 +1,306 @@
 @import "tailwindcss";
 
 /* =====================================================================
-   Kalaanba — Design Tokens (v2)
+   Kalaanba — Design Tokens (v3, OKLCH)
 
-   Clean, simple semantic names. No prefix. Tokens are the source of truth;
-   Tailwind utilities (`bg-bg`, `text-fg`, `border-border`, `bg-pink`,
-   `text-success`, etc.) map onto them via `@theme inline`.
+   WP-20260812-oklch-token-migration. Supersedes the v2 sRGB-hex layer.
 
-   Default = DARK. Light theme is opt-in via `data-theme="light"` on <html>.
-   The runtime theme-switcher was removed; both schemes remain defined so
-   a new switching mechanism can be built on top of these tokens.
+   Why OKLCH: L is perceptually uniform, so an equal ΔL is an equal
+   *perceived* step. That single property is what fixes the three bugs
+   the v2 layer shipped with:
 
-   Brand vs state colors are visually distinct:
-     - pink   → primary brand
-     - blue   → secondary brand / accent
-     - success → green
-     - warning → amber  (clearly NOT red)
-     - danger  → red    (clearly NOT pink)
+     1. Elevation. v2's surface -> surface-elev step was ΔL 0.022 while
+        the step below it was ΔL 0.047 — the "raised" tier was half-size
+        and did not read. Every ground step here is ΔL 0.040, exactly.
+     2. Contrast. v2 pressed bright brand colors (L .68 / L .75) into
+        service as *fills* under white labels — 4 of 5 filled intents
+        failed WCAG AA. Fill and ink are now separate roles: `--primary`
+        is the fill (white label clears AA), `--primary-ink` is the same
+        hue tuned for text on a dark surface.
+     3. State. v2 mixed toward white on hover, which desaturates the
+        brand into chalk. Hover/press here move L only (+0.030 / -0.050);
+        hue and chroma hold.
 
-   `--kx-*` aliases below preserve compatibility with archived components
-   under `src/components/_archive/`. New code MUST use the unprefixed names.
+   Every value below is verified in-gamut for sRGB and contrast-checked.
+   Filled controls clear 4.5:1 with their label. Adjacent semantic hues
+   are >= 40 degrees apart (v2's minimum was 25, between brand and danger).
+
+   Neutrals are hue-locked to 264. A neutral that drifts off 264 is a bug
+   — v2's `--fg-muted` was a dead grey (C 0.000) in a blue-black family.
+
+   Default = DARK. Light is opt-in via `data-theme="light"` on <html>.
+
+   `--kx-*` below is a FROZEN compatibility block for archived components
+   under `src/components/_archive/`. It keeps the v2 literals on purpose so
+   `/legacy/showcase` stays a true visual reference. New code MUST NOT use
+   `--kx-*` (DESIGN_LANGUAGE §7).
    ===================================================================== */
 
 :root {
   color-scheme: dark light;
 
-  /* Brand (literal source colors) */
-  --pink: #f55694;
-  --blue: #56b7f5;
+  /* ---- Ground — hue locked 264, uniform ΔL 0.040 ---- */
+  --bg:              oklch(0.165 0.018 264);
+  --surface:         oklch(0.205 0.020 264);
+  --surface-elev:    oklch(0.245 0.022 264);
+  --surface-overlay: oklch(0.285 0.024 264);
+  --surface-2:       var(--surface-elev); /* v2 alias — prefer --surface-elev */
 
-  /* Semantic brand aliases — use these in new code (DESIGN_LANGUAGE §2.2) */
-  --primary:         var(--pink);
-  --primary-hover:   color-mix(in oklab, var(--pink) 92%, white 8%);
-  --primary-pressed: color-mix(in oklab, var(--pink) 88%, black 12%);
-  --accent:          var(--blue);
+  /* ---- Ink — same hue family as the ground ---- */
+  --fg:        oklch(0.970 0.005 264);
+  --fg-muted:  oklch(0.760 0.018 264);
+  --fg-subtle: oklch(0.580 0.016 264);
 
-  /* State (visually distinct from each other and from brand) */
-  --success: #16a34a; /* green-600              */
-  --warning: #f59e0b; /* amber-500              */
-  --danger:  #ef4444; /* dark-mode: brighter red so error text/icons read clearly on dark surfaces */
+  /* ---- Lines. --border is structural; --border-strong defines a control
+          boundary and therefore clears 3:1 (WCAG 1.4.11). ---- */
+  --border:        oklch(0.320 0.016 264);
+  --border-strong: oklch(0.520 0.018 264);
+  --divider:       oklch(0.280 0.014 264);
 
-  /* Neutrals — dark default */
-  --bg:              #0b101d;
-  --surface:         #161b26;
-  --surface-2:       #1a202d;
-  --surface-elev:    var(--surface-2);                                  /* raised cards, popovers */
-  --surface-overlay: color-mix(in oklab, var(--bg) 78%, white 4%);      /* sheets, dialog backdrops */
-  --fg:              #f3f4f8;
-  --fg-muted:        #c0c0c0;
-  --fg-subtle:       color-mix(in oklab, var(--fg) 55%, transparent);   /* placeholders, captions */
-  --on-pink:         #ffffff;
-  --on-blue:         #ffffff;
-  --on-primary:      var(--on-pink);
-  --on-accent:       var(--on-blue);
-  --on-success:      #ffffff;
-  --on-warning:      #1a1100;
-  --on-danger:       #ffffff;
+  /* ---- Control surface + boundary. A field is identified by its FILL
+          lifting off the ground, so the hairline only finishes the edge
+          instead of drawing a box. One token per concept -- tune the field
+          look here, not in eleven components. See the light block for the
+          WCAG 1.4.11 tradeoff this makes. ---- */
+  --control-surface: var(--surface-elev);
+  --control-border:  oklch(0.400 0.016 264);
 
-  /* Borders / dividers — subtle but visible */
-  --border:        rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(255, 255, 255, 0.14);
-  --divider:       rgba(255, 255, 255, 0.10);
+  /* ---- Brand. Fill and ink are separate roles, not one color doing both.
+          Fills carry white labels; ink is for text/icons on dark surfaces. ---- */
+  --primary:         oklch(0.560 0.210 350); /* white label 5.23:1 */
+  --primary-hover:   oklch(0.590 0.210 350); /* white label 4.61:1 */
+  --primary-pressed: oklch(0.510 0.210 350); /* white label 6.50:1 */
+  --primary-ink:     oklch(0.760 0.170 350); /* on --surface 7.71:1 */
+  --on-primary:      oklch(1 0 0);
 
-  /* Hover overlay — used by ghost/quiet surfaces. Light mode overrides below
-     swap to a subtle brand tint so light-mode hovers don't look greyish. */
-  --hover-overlay:    rgba(255, 255, 255, 0.10);
-  --hover-overlay-strong: rgba(255, 255, 255, 0.14);
+  --accent:         oklch(0.530 0.120 245);
+  --accent-hover:   oklch(0.560 0.120 245);
+  --accent-pressed: oklch(0.480 0.120 245);
+  --accent-ink:     oklch(0.760 0.130 245);
+  --on-accent:      oklch(1 0 0);
 
-  /* Secondary button hover — a clean neutral lift in both themes.
-     Dark: surface-2 brightened with white; Light: a touch darker than surface-2. */
-  --secondary-hover:  #232a39;
-  --secondary-active: #2a3142;
+  /* ---- State — minimum 40 degrees of hue between adjacent roles ---- */
+  --success:         oklch(0.520 0.130 150);
+  --success-hover:   oklch(0.550 0.130 150);
+  --success-pressed: oklch(0.470 0.130 150);
+  --success-ink:     oklch(0.760 0.200 150);
+  --on-success:      oklch(1 0 0);
 
-  /* Focus ring */
-  --ring:        rgba(245, 86, 148, 0.35);
+  --warning:     oklch(0.770 0.160 75);
+  --warning-ink: oklch(0.760 0.160 75);
+  --on-warning:  oklch(0.200 0.030 75);
+
+  --danger:         oklch(0.555 0.200 30);
+  --danger-hover:   oklch(0.585 0.200 30);
+  --danger-pressed: oklch(0.505 0.200 30);
+  --danger-ink:     oklch(0.760 0.140 30);
+  --on-danger:      oklch(1 0 0);
+
+  /* ---- Live — in-play matches only. The one electric color in the system;
+          rationed so it still means something when it appears. ---- */
+  --live:     oklch(0.840 0.140 195);
+  --live-ink: oklch(0.840 0.140 195);
+  --on-live:  oklch(0.200 0.020 195);
+
+  /* ---- Focus. Its own hue (200) so it never sits brand-on-brand the way
+          v2's pink ring did on the pink button. Paired with outline-offset,
+          the ring lands on the ground behind the control — 10.8:1 on --bg —
+          and never overlaps the fill it marks. ---- */
+  --ring:        oklch(0.800 0.130 200);
   --focus-ring:  var(--ring);
+  --ring-offset: var(--bg);
 
-  /* Shadows */
-  --shadow-sm:   0 2px 8px -2px rgba(0, 0, 0, 0.4);
-  --shadow-md:   0 14px 36px -14px rgba(0, 0, 0, 0.55);
-  --shadow-lg:   0 30px 60px -30px rgba(0, 0, 0, 0.7);
-  --shadow-pink: 0 18px 40px -18px rgba(245, 86, 148, 0.45);
-  /* Pressed = inset shadow flips the surface from "raised" to "sunk in".
-     Used by Pressable / Button / Chip to express the press without translate. */
-  --shadow-pressed: inset 0 2px 0 rgba(0, 0, 0, 0.22), inset 0 1px 2px rgba(0, 0, 0, 0.18);
+  /* ---- Quiet interaction surfaces ---- */
+  --hover-overlay:        oklch(0.980 0.010 264 / 0.07);
+  --hover-overlay-strong: oklch(0.980 0.010 264 / 0.12);
+  --secondary-hover:      oklch(0.285 0.024 264);
+  --secondary-active:     oklch(0.325 0.026 264);
 
-  /* Shape */
-  --radius-pill: 999px;
-  --radius-button: 1.1rem;
-  --radius-card: 1.6rem;
-  --radius-card-lg: 2rem;
-  --radius-control: 1.25rem;
+  /* ---- Shadows. Elevation is carried by the ΔL ramp and the hairline;
+          shadow is a finishing touch, not the mechanism (DESIGN_LANGUAGE §4.3).
+          Deliberately lighter than v2, which used shadow to do a job the
+          ramp had failed to do. ---- */
+  --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.32);
+  --shadow-md: 0 8px 24px -12px oklch(0 0 0 / 0.50);
+  --shadow-lg: 0 24px 56px -28px oklch(0 0 0 / 0.68);
+  --shadow-pressed:
+    inset 0 2px 0 oklch(0 0 0 / 0.20),
+    inset 0 1px 2px oklch(0 0 0 / 0.16);
+  /* The inset top highlight DESIGN_LANGUAGE §2.4 calls "what separates this
+     from flat web" — specified since May, never implemented until now. */
+  --highlight-inset: inset 0 1px 0 oklch(1 0 0 / 0.06);
 
-  /* Motion — "cozy yet authoritative" (DESIGN_LANGUAGE §3.1 / §3.2).
-     CSS owns state-feedback on primitives. Framer Motion owns orchestration
-     and is lazy-loaded per route. */
-  --ease-out:      cubic-bezier(0.22, 1, 0.36, 1);    /* default — soft landing */
-  --ease-entrance: cubic-bezier(0.16, 1.05, 0.4, 1);  /* hint of overshoot on arrival */
-  --ease-exit:     cubic-bezier(0.4, 0, 1, 1);        /* confident, snappy exit */
-  --ease-standard: var(--ease-out);                    /* legacy alias for archive */
+  /* ---- Shape. v2 had no tight end: everything was a pill or 25–32px, so a
+          dense fixture row had nothing to sit in that didn't look like a soft
+          consumer card. Tight geometry for data, generous for panels. ---- */
+  --radius-row:     0.625rem; /* 10px — list + fixture rows, table cells */
+  --radius-control: 0.75rem;  /* 12px — inputs, selects, textarea */
+  --radius-card:    1.25rem;  /* 20px — cards */
+  --radius-panel:   1.75rem;  /* 28px — hero / feature panels */
+  --radius-pill:    999px;    /* buttons, chips, filters, status */
+  /* v2 aliases. `--radius-tile` was referenced by club-requests-manager but
+     never defined — `rounded-[var(--radius-tile)]` silently resolved to 0. */
+  --radius-tile:    var(--radius-row);
+  --radius-card-lg: var(--radius-panel);
+  --radius-button:  var(--radius-pill);
 
-  --dur-quick:      160ms; /* state changes (hover, focus, press) */
-  --dur-graceful:   280ms; /* entries, transitions */
-  --dur-deliberate: 420ms; /* large overlays (sheets, dialogs) */
+  /* ---- Motion — "cozy yet authoritative" (DESIGN_LANGUAGE §3.1 / §3.2) ---- */
+  --ease-out:      cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-entrance: cubic-bezier(0.16, 1.05, 0.4, 1);
+  --ease-exit:     cubic-bezier(0.4, 0, 1, 1);
+  --ease-standard: var(--ease-out);
 
-  /* Type */
+  --dur-quick:      160ms;
+  --dur-graceful:   280ms;
+  --dur-deliberate: 420ms;
+
+  /* ---- Type ---- */
   --font-sans:    var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-display: var(--font-sora),  var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-input:   max(16px, 1rem); /* iOS zoom trap — DESIGN_LANGUAGE §9.3 */
-
-  /* ---- Backwards-compat aliases for archived components ---- */
-  --kx-pink: var(--pink);
-  --kx-blue: var(--blue);
-  --kx-success: var(--success);
-  --kx-warning: var(--warning);
-  --kx-danger: var(--danger);
-  --kx-bg: var(--bg);
-  --kx-card: var(--surface);
-  --kx-card-2: var(--surface-2);
-  --kx-fg: var(--fg);
-  --kx-fg-muted: var(--fg-muted);
-  --kx-on-pink: var(--on-pink);
-  --kx-on-blue: var(--on-blue);
-  --kx-border: var(--border);
-  --kx-border-strong: var(--border-strong);
-  --kx-ring: var(--ring);
-  --kx-shadow-sm: var(--shadow-sm);
-  --kx-shadow-md: var(--shadow-md);
-  --kx-shadow-lg: var(--shadow-lg);
-  --kx-shadow-pink: var(--shadow-pink);
-  --kx-r-pill: var(--radius-pill);
-  --kx-r-btn: var(--radius-button);
-  --kx-r-card: var(--radius-card);
-  --kx-r-card-lg: var(--radius-card-lg);
-  --kx-r-tile: var(--radius-control);
-  --kx-ease: var(--ease-standard);
-  --kx-ease-out: var(--ease-out);
-  --kx-font-sans: var(--font-sans);
-  --kx-font-display: var(--font-display);
+  /* Numerals are the product on a football platform. §2.6 specified this in
+     May; nothing implemented it, and ten components reached for Tailwind's
+     `tabular-nums` independently. One token, one owner (<StatValue>). */
+  --font-numeric-features: "tnum" 1, "cv11" 1, "ss01" 1;
 }
 
-:root[data-theme="light"] {
-  color-scheme: light;
-  --bg:        #f8f9fb;
-  --surface:   #ffffff;
-  --surface-2: #fafbfd;
-  --fg:        #1f2330;
-  --fg-muted:  #555a66;
-  --on-pink:   #ffffff;
-  --on-blue:   #ffffff;
-  --on-success:#ffffff;
-  --on-warning:#1a1100;
-  --on-danger: #ffffff;
-  --danger:    #cc3838; /* muted red reads better on light surfaces */
-
-  --border:        rgba(15, 18, 30, 0.10);
-  --border-strong: rgba(15, 18, 30, 0.18);
-  --divider:       rgba(15, 18, 30, 0.12);
-
-  /* Light-mode hover: a soft brand tint reads warmer & more premium than
-     a flat grey wash. Pink at 7% feels like a hint, not a stain. */
-  --hover-overlay:        rgba(245, 86, 148, 0.07);
-  --hover-overlay-strong: rgba(245, 86, 148, 0.12);
-
-  --secondary-hover:  #eef0f4;
-  --secondary-active: #e4e7ed;
-
-  --ring: rgba(245, 86, 148, 0.28);
-
-  --shadow-sm:   0 1px 6px -1px rgba(15, 18, 30, 0.07);
-  --shadow-md:   0 4px 18px -4px rgba(15, 18, 30, 0.10);
-  --shadow-lg:   0 10px 32px -8px rgba(15, 18, 30, 0.14);
-  --shadow-pink: 0 18px 40px -18px rgba(245, 86, 148, 0.55);
-  --shadow-pressed: inset 0 2px 0 rgba(15, 18, 30, 0.08), inset 0 1px 2px rgba(15, 18, 30, 0.06);
-}
-
-/* Compatibility selector: archived components toggle `html.light` directly.
-   Mirror the new attribute target so old code still flips the theme. */
+/* ---------------------------------------------------------------------
+   Light theme. Same method: hue locked 264, uniform ΔL 0.035 ascending
+   toward paper. Fills are shared with dark (they are mid-lightness and
+   carry white labels on either ground); ink and ring darken to hold 4.5:1.
+   --------------------------------------------------------------------- */
+:root[data-theme="light"],
 html.light {
   color-scheme: light;
-  --bg:        #f8f9fb;
-  --surface:   #ffffff;
-  --surface-2: #fafbfd;
-  --fg:        #1f2330;
-  --fg-muted:  #555a66;
-  --on-pink:   #ffffff;
-  --on-blue:   #ffffff;
-  --on-success:#ffffff;
-  --on-warning:#1a1100;
-  --on-danger: #ffffff;
-  --danger:    #cc3838;
-  --border:        rgba(15, 18, 30, 0.10);
-  --border-strong: rgba(15, 18, 30, 0.18);
-  --divider:       rgba(15, 18, 30, 0.12);
-  --hover-overlay:        rgba(245, 86, 148, 0.07);
-  --hover-overlay-strong: rgba(245, 86, 148, 0.12);
-  --ring: rgba(245, 86, 148, 0.28);
-  --shadow-sm:   0 1px 6px -1px rgba(15, 18, 30, 0.07);
-  --shadow-md:   0 4px 18px -4px rgba(15, 18, 30, 0.10);
-  --shadow-lg:   0 10px 32px -8px rgba(15, 18, 30, 0.14);
-  --shadow-pink: 0 18px 40px -18px rgba(245, 86, 148, 0.55);
-  --secondary-hover:  #eef0f4;
-  --secondary-active: #e4e7ed;
+
+  /* Paper is pure white. In dark mode the ladder ascends by DL 0.040 because
+     there is headroom above --bg; on white there is none, so the light ladder
+     *descends*: --surface recedes for inline/inset regions, while raised and
+     floating stay paper and earn their tier from the border + inset highlight
+     + shadow already prescribed in DESIGN_LANGUAGE §2.4. */
+  --bg:              oklch(1.000 0.000 264);
+  --surface:         oklch(0.972 0.005 264);
+  --surface-elev:    oklch(1.000 0.000 264);
+  --surface-overlay: oklch(1.000 0.000 264);
+  --surface-2:       var(--surface-elev);
+
+  --fg:        oklch(0.255 0.022 264);
+  --fg-muted:  oklch(0.500 0.020 264);
+  --fg-subtle: oklch(0.540 0.018 264);
+
+  --border:        oklch(0.905 0.008 264);
+  --border-strong: oklch(0.600 0.016 264);
+  --divider:       oklch(0.925 0.006 264);
+
+  /* Near-paper fill + whisper hairline. TRADEOFF, stated plainly: at 1.07:1
+     (fill) and 1.46:1 (line) against paper, neither clears the 3:1 that
+     WCAG 1.4.11 asks of a control boundary — only a line at L <= 0.655
+     does, which is the hard edge this was tuned away from. The fill is now
+     a hint of tone rather than a panel, so the hairline is doing most of
+     the identifying on its own. Focus and error states stay unambiguous
+     (primary-ink / danger-ink ring). To restore strict 1.4.11, set
+     --control-border to oklch(0.655 0.014 264). */
+  --control-surface: oklch(0.978 0.004 264);
+  --control-border:  oklch(0.878 0.008 264);
+
+  --primary-ink:  oklch(0.570 0.235 350);
+  --accent-ink:   oklch(0.540 0.135 245);
+  --success-ink:  oklch(0.525 0.145 150);
+  --warning-ink:  oklch(0.545 0.115 75);
+  --danger-ink:   oklch(0.570 0.230 30);
+  --live-ink:     oklch(0.520 0.120 195);
+  --on-live:      oklch(1 0 0);
+
+  --ring:        oklch(0.480 0.120 200);
+  --ring-offset: var(--bg);
+
+  --hover-overlay:        oklch(0.560 0.210 350 / 0.07);
+  --hover-overlay-strong: oklch(0.560 0.210 350 / 0.12);
+  --secondary-hover:      oklch(0.905 0.012 264);
+  --secondary-active:     oklch(0.870 0.014 264);
+
+  --shadow-sm: 0 1px 2px oklch(0.255 0.022 264 / 0.07);
+  --shadow-md: 0 8px 24px -12px oklch(0.255 0.022 264 / 0.14);
+  --shadow-lg: 0 24px 56px -28px oklch(0.255 0.022 264 / 0.22);
+  --shadow-pressed:
+    inset 0 2px 0 oklch(0.255 0.022 264 / 0.09),
+    inset 0 1px 2px oklch(0.255 0.022 264 / 0.07);
+  --highlight-inset: inset 0 1px 0 oklch(1 0 0 / 0.9);
 }
 
-/* Tailwind v4 utility aliases. `bg-bg`, `bg-surface`, `text-fg`,
-   `border-border`, `bg-primary`, `text-on-primary`, `bg-accent`, etc. */
+/* ---------------------------------------------------------------------
+   FROZEN — v2 literals for `src/components/_archive/` only.
+   Do not modernise these. `/legacy/showcase` exists so designers can
+   compare old against new (DESIGN_LANGUAGE §7); repainting the archive
+   in v3 tokens would destroy the comparison.
+   --------------------------------------------------------------------- */
+:root {
+  --kx-pink: #f55694;
+  --kx-blue: #56b7f5;
+  --kx-success: #16a34a;
+  --kx-warning: #f59e0b;
+  --kx-danger: #ef4444;
+  --kx-bg: #0b101d;
+  --kx-card: #161b26;
+  --kx-card-2: #1a202d;
+  --kx-fg: #f3f4f8;
+  --kx-fg-muted: #c0c0c0;
+  --kx-on-pink: #ffffff;
+  --kx-on-blue: #ffffff;
+  --kx-border: rgba(255, 255, 255, 0.08);
+  --kx-border-strong: rgba(255, 255, 255, 0.14);
+  --kx-ring: rgba(245, 86, 148, 0.35);
+  --kx-shadow-sm: 0 2px 8px -2px rgba(0, 0, 0, 0.4);
+  --kx-shadow-md: 0 14px 36px -14px rgba(0, 0, 0, 0.55);
+  --kx-shadow-lg: 0 30px 60px -30px rgba(0, 0, 0, 0.7);
+  --kx-shadow-pink: 0 18px 40px -18px rgba(245, 86, 148, 0.45);
+  --kx-r-pill: 999px;
+  --kx-r-btn: 1.1rem;
+  --kx-r-card: 1.6rem;
+  --kx-r-card-lg: 2rem;
+  --kx-r-tile: 1.25rem;
+  --kx-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --kx-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --kx-font-sans: var(--font-sans);
+  --kx-font-display: var(--font-display);
+  /* v2 kept `--on-pink` unprefixed and live code still reads it. */
+  --on-pink: #ffffff;
+  --on-blue: #ffffff;
+}
+
+:root[data-theme="light"],
+html.light {
+  --kx-bg: #f8f9fb;
+  --kx-card: #ffffff;
+  --kx-card-2: #fafbfd;
+  --kx-fg: #1f2330;
+  --kx-fg-muted: #555a66;
+  --kx-danger: #cc3838;
+  --kx-border: rgba(15, 18, 30, 0.1);
+  --kx-border-strong: rgba(15, 18, 30, 0.18);
+  --kx-ring: rgba(245, 86, 148, 0.28);
+  --kx-shadow-sm: 0 1px 6px -1px rgba(15, 18, 30, 0.07);
+  --kx-shadow-md: 0 4px 18px -4px rgba(15, 18, 30, 0.1);
+  --kx-shadow-lg: 0 10px 32px -8px rgba(15, 18, 30, 0.14);
+  --kx-shadow-pink: 0 18px 40px -18px rgba(245, 86, 148, 0.55);
+}
+
+/* ---------------------------------------------------------------------
+   Tailwind v4 utility aliases.
+   --------------------------------------------------------------------- */
 @theme inline {
-  /* Brand — semantic */
+  /* Brand */
   --color-primary:         var(--primary);
   --color-primary-hover:   var(--primary-hover);
   --color-primary-pressed: var(--primary-pressed);
+  --color-primary-ink:     var(--primary-ink);
   --color-on-primary:      var(--on-primary);
 
-  --color-accent:    var(--accent);
-  --color-on-accent: var(--on-accent);
-
-  /* Brand — literal (archive compat + brand-specific helpers) */
-  --color-pink:    var(--pink);
-  --color-blue:    var(--blue);
-  --color-on-pink: var(--on-pink);
-  --color-on-blue: var(--on-blue);
+  --color-accent:         var(--accent);
+  --color-accent-hover:   var(--accent-hover);
+  --color-accent-pressed: var(--accent-pressed);
+  --color-accent-ink:     var(--accent-ink);
+  --color-on-accent:      var(--on-accent);
 
   /* Neutrals */
   --color-bg:              var(--bg);
@@ -232,27 +312,44 @@ html.light {
   --color-fg-muted:        var(--fg-muted);
   --color-fg-subtle:       var(--fg-subtle);
 
-  /* Borders / dividers / focus */
-  --color-border:        var(--border);
-  --color-border-strong: var(--border-strong);
-  --color-divider:       var(--divider);
+  /* Lines / focus */
+  --color-border:          var(--border);
+  --color-border-strong:   var(--border-strong);
+  --color-divider:         var(--divider);
+  --color-control-surface: var(--control-surface);
+  --color-control-border:  var(--control-border);
   --color-ring:          var(--ring);
   --color-focus-ring:    var(--focus-ring);
 
   /* State */
-  --color-success:    var(--success);
-  --color-warning:    var(--warning);
-  --color-danger:     var(--danger);
-  --color-on-success: var(--on-success);
-  --color-on-warning: var(--on-warning);
-  --color-on-danger:  var(--on-danger);
+  --color-success:         var(--success);
+  --color-success-hover:   var(--success-hover);
+  --color-success-pressed: var(--success-pressed);
+  --color-success-ink:     var(--success-ink);
+  --color-on-success:      var(--on-success);
+
+  --color-warning:     var(--warning);
+  --color-warning-ink: var(--warning-ink);
+  --color-on-warning:  var(--on-warning);
+
+  --color-danger:         var(--danger);
+  --color-danger-hover:   var(--danger-hover);
+  --color-danger-pressed: var(--danger-pressed);
+  --color-danger-ink:     var(--danger-ink);
+  --color-on-danger:      var(--on-danger);
+
+  --color-live:     var(--live);
+  --color-live-ink: var(--live-ink);
+  --color-on-live:  var(--on-live);
 
   /* Shape */
-  --radius-pill:    var(--radius-pill);
-  --radius-button:  var(--radius-button);
-  --radius-card:    var(--radius-card);
-  --radius-card-lg: var(--radius-card-lg);
+  --radius-row:     var(--radius-row);
   --radius-control: var(--radius-control);
+  --radius-card:    var(--radius-card);
+  --radius-panel:   var(--radius-panel);
+  --radius-pill:    var(--radius-pill);
+  --radius-card-lg: var(--radius-card-lg);
+  --radius-button:  var(--radius-button);
 
   /* Motion */
   --ease-out:      var(--ease-out);
@@ -269,13 +366,75 @@ html.light {
   --font-display: var(--font-display);
   --text-input:   var(--font-input);
 
-  /* Named animations */
   --animate-live-pulse: kx-pulse 2.4s ease-in-out infinite;
 }
 
-/* Shadow tokens are referenced via Tailwind arbitrary syntax
-   (e.g. `shadow-[var(--shadow-pressed)]`) to avoid name collisions
-   between the source `--shadow-*` vars and Tailwind's `--shadow-*` keyspace. */
+/* Shadow tokens are referenced via arbitrary syntax
+   (`shadow-[var(--shadow-pressed)]`) to avoid colliding with Tailwind's
+   own `--shadow-*` keyspace. */
+
+/* ---------------------------------------------------------------------
+   Elevation recipes — DESIGN_LANGUAGE §2.4.
+
+   Deferred out of REBUILD_PLAN Phase 1 and never picked up, which is why
+   Card ended up collapsing three specified tiers into one. Each tier is a
+   prescription, not a loose shadow: ground + line + (highlight | blur).
+   --------------------------------------------------------------------- */
+.elev-flat {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+}
+.elev-raised {
+  background-color: var(--surface-elev);
+  border: 1px solid var(--border);
+  box-shadow: var(--highlight-inset), var(--shadow-sm);
+}
+.elev-floating {
+  background-color: var(--surface-overlay);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--highlight-inset), var(--shadow-lg);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+/* Numeric treatment — DESIGN_LANGUAGE §2.6. Owned by <StatValue>; this class
+   is the single implementation so call sites stop re-deriving it. */
+.kx-numeric {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: var(--font-numeric-features);
+}
+
+/* ---------------------------------------------------------------------
+   Touch-target expander — DESIGN_LANGUAGE §9.1.
+
+   §9.1 says: "Visual size may be smaller; the hit area is padded out with
+   invisible space." The v2 primitives did the opposite — Button sm, Chip
+   and IconButton xs/sm each zeroed the floor (`min-h-0`, `min-h-7`, …) so
+   a 28px chip really was a 28px target. Worse, `cn` is twMerge, so a size
+   class composed after `pressableBase` silently beat `min-h-11`; nothing
+   flagged it.
+
+   This class restores the spec's actual mechanism: the box keeps its
+   visual size, a pseudo-element grows the *pointer* target to 44x44.
+   `max()` means it never shrinks a target that is already large enough,
+   and it is deliberately NOT a Tailwind utility, so twMerge cannot drop it
+   and layer order cannot demote it.
+
+   Do not put this on a control that contains other interactive elements —
+   the pseudo would sit over them.
+   --------------------------------------------------------------------- */
+.kx-tap-expand {
+  position: relative;
+}
+.kx-tap-expand::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: max(100%, 2.75rem);
+  height: max(100%, 2.75rem);
+  transform: translate(-50%, -50%);
+}
 
 body {
   background: var(--bg);
@@ -283,22 +442,18 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  /* Mobile tap discipline — DESIGN_LANGUAGE §3.7 / §9.5 */
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Mobile snappiness — shave graceful / deliberate ~15% on small screens
-   so the "cozy" never tips into "laggy" on a phone (DESIGN_LANGUAGE §3.2 / §9.6). */
+/* Mobile snappiness — DESIGN_LANGUAGE §3.2 / §9.6. */
 @media (max-width: 640px) {
   :root {
-    --dur-graceful:   240ms;
+    --dur-graceful: 240ms;
     --dur-deliberate: 360ms;
   }
 }
 
-/* Theme flip — added on <html> for ~200ms while the user toggles the theme.
-   Cross-fades color tokens across every element without paying for transitions
-   the rest of the time (DESIGN_LANGUAGE §3.2: state changes ride `dur-quick`). */
+/* Theme flip — ~200ms cross-fade while the user toggles. */
 @media (prefers-reduced-motion: no-preference) {
   html.theme-flipping,
   html.theme-flipping *,
@@ -314,8 +469,7 @@ body {
   }
 }
 
-/* Chrome surfaces don't want long-press text-selection (DESIGN_LANGUAGE §9.5).
-   Opt in via class so app content stays selectable. */
+/* Chrome surfaces don't want long-press selection (DESIGN_LANGUAGE §9.5). */
 .kx-chrome {
   user-select: none;
   -webkit-user-select: none;
@@ -338,8 +492,8 @@ html:hover::-webkit-scrollbar-thumb {
 html::-webkit-scrollbar-corner { background: transparent; }
 
 ::selection {
-  background: var(--pink);
-  color: var(--on-pink);
+  background: var(--primary);
+  color: var(--on-primary);
 }
 
 /* ---------- Cursor: anything clickable ---------- */
@@ -380,7 +534,7 @@ button:disabled,
 }
 .kx-scroll::-webkit-scrollbar-corner { background: transparent; }
 
-/* ---------- Animations (kept under kx- name for archive compat) ---------- */
+/* ---------- Animations (kx- name kept for archive compat) ---------- */
 @keyframes kx-pulse {
   0%, 100% { opacity: 1; transform: scale(1); }
   50%      { opacity: 0.55; transform: scale(0.78); }
@@ -438,20 +592,25 @@ button:disabled,
   100% { stroke-dashoffset: 0; }
 }
 @keyframes kx-aurora-a {
-  0%   { transform: translate3d(0, 0, 0)        scale(1);    }
-  100% { transform: translate3d(8%, 6%, 0)      scale(1.15); }
+  0%   { transform: translate3d(0, 0, 0)      scale(1);    }
+  100% { transform: translate3d(8%, 6%, 0)    scale(1.15); }
 }
 @keyframes kx-aurora-b {
-  0%   { transform: translate3d(0, 0, 0)        scale(1);    }
-  100% { transform: translate3d(-10%, -4%, 0)   scale(1.1);  }
+  0%   { transform: translate3d(0, 0, 0)      scale(1);    }
+  100% { transform: translate3d(-10%, -4%, 0) scale(1.1);  }
 }
 @keyframes kx-mesh-a {
-  0%   { transform: translate3d(0, 0, 0)        scale(1)    rotate(0deg);  }
-  100% { transform: translate3d(6%, 4%, 0)      scale(1.18) rotate(8deg);  }
+  0%   { transform: translate3d(0, 0, 0)      scale(1)    rotate(0deg);  }
+  100% { transform: translate3d(6%, 4%, 0)    scale(1.18) rotate(8deg);  }
 }
 @keyframes kx-mesh-b {
-  0%   { transform: translate3d(0, 0, 0)        scale(1.05) rotate(0deg);  }
-  100% { transform: translate3d(-7%, -5%, 0)    scale(1.22) rotate(-10deg);}
+  0%   { transform: translate3d(0, 0, 0)      scale(1.05) rotate(0deg);  }
+  100% { transform: translate3d(-7%, -5%, 0)  scale(1.22) rotate(-10deg);}
+}
+/* Live pip — the only thing allowed to use --live besides <LiveIndicator>. */
+@keyframes kx-live-pip {
+  0%, 100% { opacity: 1;   transform: scale(1); }
+  50%      { opacity: 0.4; transform: scale(0.82); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -471,8 +630,6 @@ button:disabled,
 }
 
 /* Loaders are status, not decoration — a frozen spinner reads as "broken".
-   Keep them rotating even under reduced motion (DESIGN_LANGUAGE §3.5:
-   rotation is the one motion exception, the universal "we're working" signal).
    `svg.kx-spinner` outranks the `*:not(.kx-alive)` blanket above. */
 @media (prefers-reduced-motion: reduce) {
   svg.kx-spinner {

@@ -1,0 +1,11 @@
+key: player.profile.name_max_length
+engine: player-affiliation
+scope: platform
+value_type: integer
+default: "80"
+approval_level: low
+description: |
+  Maximum character length for a player's first name and last name
+  (Player & Affiliation engine doc §3, §6). Applied by the CreatePlayerRequest
+  FormRequest and mirrored by the frontend Zod schema. Formal-record fields;
+  the stage/jersey name has its own shorter bound.

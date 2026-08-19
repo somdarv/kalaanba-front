@@ -1,0 +1,71 @@
+openapi: 3.1.0
+info:
+  title: "Club — Create a club"
+  version: "1.0.0"
+  description: |
+    Creates a club and makes the caller its Owner (Club engine doc §5, §7).
+    Informal V1 onboarding — minimal required fields. Location (City Hub + Area)
+    is validated against the Zone engine. The home UX hides the "create a club"
+    CTA in V1, but the endpoint exists so organisers can seed real clubs and so
+    an Owner exists to accept join requests (WP-C2).
+
+paths:
+  /api/v1/clubs:
+    post:
+      summary: Create a club (creator becomes Owner)
+      operationId: createClub
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema: { type: string, minLength: 8, maxLength: 128 }
+        - in: header
+          name: X-Request-Id
+          required: false
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [name, club_type, city_hub_id, area_id]
+              properties:
+                name: { type: string, minLength: 2, maxLength: 120 }
+                club_type:
+                  type: string
+                  description: Stable internal key from the club.types config set.
+                city_hub_id: { type: string, format: uuid }
+                area_id: { type: string, format: uuid }
+                crest_url: { type: [string, "null"], format: uri, maxLength: 2048 }
+      responses:
+        "201":
+          description: Club created; caller is its Owner.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data: { $ref: "./get-clubs.v1.yaml#/components/schemas/ClubView" }
+                  meta: { type: object }
+        "401":
+          description: Missing or invalid bearer token.
+        "422":
+          description: |
+            Validation errors. Stable error keys:
+              club.name_invalid
+              club.type_unknown
+              club.city_hub_invalid
+              club.area_invalid
+              club.location_unknown
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: SanctumPersonalAccessToken

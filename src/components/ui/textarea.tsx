@@ -30,6 +30,20 @@ export type TextareaProps = TextareaHTMLAttributes<HTMLTextAreaElement> & {
   fluid?: boolean;
 };
 
+/**
+ * A textarea is always prose, so the browser contract is fixed rather than
+ * purpose-keyed (DESIGN_LANGUAGE §9.3): sentence case, autocorrect and
+ * spellcheck on, and `enterKeyHint="enter"` because Enter inserts a newline
+ * here instead of advancing the form.
+ */
+const TEXTAREA_DEFAULTS = {
+  autoCapitalize: "sentences",
+  autoCorrect: "on",
+  spellCheck: true,
+  enterKeyHint: "enter",
+  placeholder: "Write your message…",
+} as const;
+
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
   function Textarea(
     {
@@ -47,6 +61,12 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
       value,
       defaultValue,
       onChange,
+      onKeyDown,
+      autoCapitalize,
+      autoCorrect,
+      spellCheck,
+      enterKeyHint,
+      placeholder,
       ...props
     },
     ref,
@@ -69,7 +89,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
             htmlFor={fieldId}
             className={cn(
               "mb-2 block text-sm font-medium",
-              hasError ? "text-danger" : "text-fg",
+              hasError ? "text-danger-ink" : "text-fg",
             )}
           >
             {label}
@@ -80,13 +100,13 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           data-disabled={disabled || undefined}
           data-error={hasError || undefined}
           className={cn(
-            "relative w-full rounded-card bg-surface-2",
-            "border-[0.5px] border-border-strong",
+            "relative w-full rounded-card bg-control-surface",
+            "border border-control-border",
             "px-4 py-3",
             "transition-[box-shadow,border-color,background-color] duration-quick ease-out",
-            "hover:shadow-sm hover:border-border-strong",
-            "focus-within:border-primary focus-within:ring-1 focus-within:ring-primary",
-            "data-error:border-danger data-error:focus-within:ring-danger",
+            "hover:shadow-sm hover:border-border",
+            "focus-within:border-primary-ink focus-within:ring-1 focus-within:ring-primary-ink",
+            "data-error:border-danger-ink data-error:focus-within:ring-danger-ink",
             "data-disabled:cursor-not-allowed data-disabled:opacity-50",
           )}
         >
@@ -101,9 +121,22 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
             aria-describedby={msgId}
             value={value}
             defaultValue={defaultValue}
+            autoCapitalize={autoCapitalize ?? TEXTAREA_DEFAULTS.autoCapitalize}
+            autoCorrect={autoCorrect ?? TEXTAREA_DEFAULTS.autoCorrect}
+            spellCheck={spellCheck ?? TEXTAREA_DEFAULTS.spellCheck}
+            enterKeyHint={enterKeyHint ?? TEXTAREA_DEFAULTS.enterKeyHint}
+            placeholder={placeholder ?? TEXTAREA_DEFAULTS.placeholder}
             onChange={(e) => {
               if (!isControlled) setInternal(e.target.value);
               onChange?.(e);
+            }}
+            onKeyDown={(e) => {
+              onKeyDown?.(e);
+              // Enter is reserved for newlines, so Cmd/Ctrl+Enter is the only
+              // keyboard route to submit from inside a textarea.
+              if (e.key === "Enter" && (e.metaKey || e.ctrlKey) && !e.defaultPrevented) {
+                e.currentTarget.form?.requestSubmit();
+              }
             }}
             className={cn(
               "block w-full resize-y bg-transparent text-input text-fg outline-none",
@@ -121,7 +154,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
                 id={msgId}
                 className={cn(
                   "text-xs",
-                  hasError ? "text-danger" : "text-fg-muted",
+                  hasError ? "text-danger-ink" : "text-fg-muted",
                 )}
               >
                 {error ?? hint}

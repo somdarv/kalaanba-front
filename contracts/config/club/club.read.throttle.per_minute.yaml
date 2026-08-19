@@ -1,0 +1,10 @@
+key: club.read.throttle.per_minute
+engine: club
+scope: platform
+value_type: integer
+default: "60"
+approval_level: low
+description: |
+  Per-minute rate limit for the authenticated "clubs near you" discovery read
+  (GET /api/v1/clubs), keyed by the caller. Generous — this is a hot,
+  low-risk reference read used while browsing.

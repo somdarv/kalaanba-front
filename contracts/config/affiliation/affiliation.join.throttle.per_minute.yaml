@@ -1,0 +1,11 @@
+key: affiliation.join.throttle.per_minute
+engine: player-affiliation
+scope: platform
+value_type: integer
+default: "10"
+approval_level: low
+description: |
+  Per-minute rate limit for the affiliation join lifecycle — a player's
+  request-to-join plus a club admin's accept/decline (POST under
+  /api/v1/clubs/{club}/join-requests), keyed by the acting user. Bounds
+  request/decision spam; generous since these are ordinary user actions.

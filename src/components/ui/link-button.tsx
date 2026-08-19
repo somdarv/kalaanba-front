@@ -29,7 +29,7 @@ export const LinkButton = forwardRef<HTMLAnchorElement, LinkButtonProps>(
           "text-fg font-medium",
           "transition-[color,background-color] duration-[var(--dur-quick)] ease-[var(--ease-out)]",
           "outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring rounded-md",
-          "hover:text-primary",
+          "hover:text-primary-ink",
           tone === "tonal" &&
             "hover:bg-[color-mix(in_oklab,transparent,var(--fg)_6%)]",
           className,

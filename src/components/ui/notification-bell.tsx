@@ -43,7 +43,7 @@ function CountBadge({ count }: { count: number }) {
         "absolute -right-0.5 -top-0.5",
         "grid place-items-center",
         "min-h-4.5 min-w-4.5",
-        "rounded-full bg-primary text-on-primary",
+        "rounded-pill bg-primary text-on-primary",
         "text-[10px] font-semibold leading-none tabular-nums",
         "ring-2 ring-bg",
         isWide && "px-1",
@@ -104,9 +104,9 @@ export const NotificationBell = forwardRef<
       aria-label={ariaLabel ?? defaultLabel}
       className={cn(
         pressableBase,
-        "relative h-11 w-11 rounded-full",
+        "relative h-11 w-11 rounded-pill",
         // Outlined icon-button surface — matches IconButton `secondary`.
-        "bg-surface-2 text-fg border border-border",
+        "bg-surface-elev text-fg border border-border",
         "hover:border-border-strong hover:bg-(--secondary-hover)",
         "active:bg-(--secondary-active) active:shadow-(--shadow-pressed)",
         className,

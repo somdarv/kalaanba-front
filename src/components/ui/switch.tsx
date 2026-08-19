@@ -48,13 +48,13 @@ export function Switch({
       disabled={disabled}
       onClick={() => onChange(!checked)}
       className={cn(
-        "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full",
+        "relative inline-flex h-6 w-11 shrink-0 items-center rounded-pill",
         "transition-[background-color] duration-quick ease-out",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg",
         // Distinct off-state in both themes: subtle inset pill, primary fill when on.
         checked
           ? "bg-primary"
-          : "bg-surface-2 ring-1 ring-inset ring-border-strong",
+          : "bg-surface-elev ring-1 ring-inset ring-border-strong",
         "disabled:cursor-not-allowed disabled:opacity-50",
       )}
     >
@@ -62,7 +62,7 @@ export function Switch({
         aria-hidden
         className={cn(
           // Solid white knob in both themes — reads as a physical toggle.
-          "absolute left-0.5 size-5 rounded-full bg-white shadow-sm ring-1 ring-black/10",
+          "absolute left-0.5 size-5 rounded-pill bg-white shadow-sm ring-1 ring-black/10",
           // The knob sliding IS the metaphor — physical translation, not
           // synthetic state feedback. Soft graceful ease across the track.
           "transition-transform duration-graceful ease-out",

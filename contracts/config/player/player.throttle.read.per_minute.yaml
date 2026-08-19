@@ -1,0 +1,12 @@
+key: player.throttle.read.per_minute
+engine: player-affiliation
+scope: platform
+value_type: integer
+default: "60"
+approval_level: low
+description: |
+  Per-IP rate limit for the public player vocabulary read
+  (`GET /api/v1/players/meta`, ADR-0007). Reference data with no per-user
+  content, so the cap is generous — it exists to bound scraping, not to
+  ration a normal client, which fetches this once and revalidates by ETag.
+  Mirrors `zone.throttle.read.per_minute`.

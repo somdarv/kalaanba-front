@@ -1,0 +1,15 @@
+key: player.meta.cache_ttl_seconds
+engine: player-affiliation
+scope: platform
+value_type: integer
+default: "300"
+approval_level: low
+description: |
+  `Cache-Control: max-age` in seconds for `GET /api/v1/players/meta`
+  (ADR-0007). Bounds how long an edge or browser cache may serve the profile
+  vocabulary before revalidating, and therefore how quickly an admin's label
+  or option-set change reaches clients already holding a copy.
+
+  `stale-while-revalidate` is derived as 12x this value. Correctness does not
+  depend on the TTL — the response carries an ETag that changes whenever any
+  sourced config key changes, so a revalidation is cheap and always correct.

@@ -17,10 +17,20 @@ import { cn } from "@/lib/cn";
  * - `dur-quick` ease-out cross-fade on color / shadow / border / transform
  * - `active:scale-[0.99]` tactile press
  * - `touch-action: manipulation` to kill 300ms tap delay
+ *
+ * The focus ring is its own hue (`--ring`, hue 200) rather than the brand.
+ * v2 used pink at 35% alpha, which put a pink ring on the pink primary
+ * button — 1.00:1 against its own fill, i.e. invisible exactly where it
+ * mattered most. Paired with `outline-offset-2` the ring lands on the
+ * ground behind the control (10.8:1 on `--bg`) and never overlaps the fill.
+ *
+ * A primitive that renders visually smaller than 44px must add
+ * `kx-tap-expand` rather than lowering `min-h-*` — see `.kx-tap-expand`
+ * in globals.css for why zeroing the floor silently defeated it.
  */
 export const pressableBase = cn(
   "relative inline-flex items-center justify-center select-none",
-  "min-h-11 min-w-11", // 44px floor
+  "min-h-11 min-w-11", // 44px floor — DESIGN_LANGUAGE §9.1
   "touch-manipulation",
   "transition-[background-color,color,box-shadow,border-color,opacity,transform]",
   "duration-quick ease-out",
@@ -29,6 +39,14 @@ export const pressableBase = cn(
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring",
   "disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 aria-disabled:opacity-50 aria-disabled:cursor-not-allowed aria-disabled:active:scale-100",
 );
+
+/**
+ * Opt-in hit-area expander for primitives whose *visual* box is under 44px
+ * (dense toolbars, filter chips, inline row actions). Keeps the look,
+ * restores the target. Never apply to a control that wraps other
+ * interactive elements.
+ */
+export const tapExpand = "kx-tap-expand";
 
 export type PressableProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   children: ReactNode;

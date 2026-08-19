@@ -2,18 +2,24 @@
 
 import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from "react";
 import { cn } from "@/lib/cn";
-import { pressableBase } from "./pressable";
+import { pressableBase, tapExpand } from "./pressable";
 
 export type ChipIntent = "neutral" | "primary" | "accent" | "success" | "warning" | "danger";
 export type ChipSize = "sm" | "md";
 
+/**
+ * Tinted chips read as *ink on a wash*, so both the label and the wash come
+ * from the `-ink` role, never the fill role. v2 used `text-primary-ink` here —
+ * with the fill tuned to carry a white label (L 0.56) that same value as
+ * text on a dark surface measures ~3.9:1. The ink variants clear 7:1+.
+ */
 const INTENT_STATIC: Record<ChipIntent, string> = {
-  neutral: "bg-surface-2 text-fg border border-border",
-  primary: "bg-[color-mix(in_oklab,transparent,var(--primary)_18%)] text-primary border border-[color-mix(in_oklab,transparent,var(--primary)_30%)]",
-  accent: "bg-[color-mix(in_oklab,transparent,var(--accent)_18%)] text-accent border border-[color-mix(in_oklab,transparent,var(--accent)_30%)]",
-  success: "bg-[color-mix(in_oklab,transparent,var(--success)_18%)] text-success border border-[color-mix(in_oklab,transparent,var(--success)_30%)]",
-  warning: "bg-[color-mix(in_oklab,transparent,var(--warning)_18%)] text-warning border border-[color-mix(in_oklab,transparent,var(--warning)_30%)]",
-  danger: "bg-[color-mix(in_oklab,transparent,var(--danger)_18%)] text-danger border border-[color-mix(in_oklab,transparent,var(--danger)_30%)]",
+  neutral: "bg-surface-elev text-fg border border-border",
+  primary: "bg-[color-mix(in_oklab,transparent,var(--primary-ink)_16%)] text-primary-ink border border-[color-mix(in_oklab,transparent,var(--primary-ink)_28%)]",
+  accent: "bg-[color-mix(in_oklab,transparent,var(--accent-ink)_16%)] text-accent-ink border border-[color-mix(in_oklab,transparent,var(--accent-ink)_28%)]",
+  success: "bg-[color-mix(in_oklab,transparent,var(--success-ink)_16%)] text-success-ink border border-[color-mix(in_oklab,transparent,var(--success-ink)_28%)]",
+  warning: "bg-[color-mix(in_oklab,transparent,var(--warning-ink)_16%)] text-warning-ink border border-[color-mix(in_oklab,transparent,var(--warning-ink)_28%)]",
+  danger: "bg-[color-mix(in_oklab,transparent,var(--danger-ink)_16%)] text-danger-ink border border-[color-mix(in_oklab,transparent,var(--danger-ink)_28%)]",
 };
 
 const INTENT_PRESSED: Record<ChipIntent, string> = {
@@ -28,6 +34,12 @@ const INTENT_PRESSED: Record<ChipIntent, string> = {
 const SIZE: Record<ChipSize, string> = {
   sm: "h-7 min-h-7 px-2.5 text-xs gap-1",
   md: "h-8 min-h-8 px-3 text-sm gap-1.5",
+};
+
+/** Interactive chips keep the compact box but recover a 44×44 target. */
+const TOGGLE_SIZE: Record<ChipSize, string> = {
+  sm: cn(SIZE.sm, tapExpand),
+  md: cn(SIZE.md, tapExpand),
 };
 
 // ---- Static chip (display-only) ----
@@ -52,7 +64,7 @@ export function Chip({
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full font-medium whitespace-nowrap",
+        "inline-flex items-center rounded-pill font-medium whitespace-nowrap",
         INTENT_STATIC[intent],
         SIZE[size],
         className,
@@ -96,18 +108,21 @@ export const ChipToggle = forwardRef<HTMLButtonElement, ChipToggleProps>(
         aria-pressed={pressed}
         className={cn(
           pressableBase,
-          // Override the 44 floor — chips are intentionally smaller.
-          "min-h-0 min-w-0 rounded-full font-medium",
-          SIZE[size],
+          // The chip is intentionally smaller than 44px. It drops the
+          // min-height floor but recovers the touch target through
+          // `tapExpand` in TOGGLE_SIZE — v2 dropped the floor and stopped
+          // there, shipping 28px targets (DESIGN_LANGUAGE §9.1).
+          "min-h-0 min-w-0 rounded-pill font-medium",
+          TOGGLE_SIZE[size],
           pressed
             ? cn(
                 INTENT_PRESSED[intent],
-                "active:shadow-[var(--shadow-pressed)]",
+                "active:shadow-(--shadow-pressed)",
               )
             : cn(
                 INTENT_STATIC[intent],
                 "hover:bg-[color-mix(in_oklab,transparent,var(--fg)_8%)]",
-                "active:shadow-[var(--shadow-pressed)]",
+                "active:shadow-(--shadow-pressed)",
               ),
           className,
         )}

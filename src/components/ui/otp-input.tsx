@@ -15,7 +15,7 @@ import { cn } from "@/lib/cn";
  * box, paste fills boxes left to right, arrow keys navigate.
  *
  * Visual recipe matches the rest of the input suite: tall rounded-rectangle
- * boxes on `bg-surface-2` that flex to fill the row (so the group is the same
+ * boxes on `bg-control-surface` that flex to fill the row (so the group is the same
  * width as a full-width button beneath it), hairline border, brand ring on
  * focus, danger border + ring on error, and a faint placeholder per empty box.
  *
@@ -135,7 +135,7 @@ export function OtpInput({
           id={`${fieldId}-label`}
           className={cn(
             "mb-1.5 block text-sm font-medium",
-            hasError ? "text-danger" : "text-fg",
+            hasError ? "text-danger-ink" : "text-fg",
           )}
         >
           {label}
@@ -174,13 +174,13 @@ export function OtpInput({
               className={cn(
                 // Tall rounded rectangle that flexes to fill the row, so the
                 // group spans the same width as a full-width button below it.
-                "h-14 min-w-0 flex-1 rounded-xl bg-surface-2 text-center text-lg font-semibold tabular-nums text-fg",
-                "border-[0.5px] border-border-strong",
+                "h-14 min-w-0 flex-1 rounded-control bg-control-surface text-center text-lg font-semibold tabular-nums text-fg",
+                "border border-control-border",
                 "transition-[box-shadow,border-color,background-color] duration-quick ease-out",
                 "hover:shadow-sm",
                 "placeholder:font-normal placeholder:text-fg-subtle",
-                "focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary",
-                "data-error:border-danger data-error:focus:ring-danger",
+                "focus:outline-none focus:border-primary-ink focus:ring-1 focus:ring-primary-ink",
+                "data-error:border-danger-ink data-error:focus:ring-danger-ink",
                 "disabled:cursor-not-allowed disabled:opacity-50",
               )}
             />
@@ -193,7 +193,7 @@ export function OtpInput({
           id={msgId}
           className={cn(
             "mt-1.5 text-xs",
-            hasError ? "text-danger" : "text-fg-muted",
+            hasError ? "text-danger-ink" : "text-fg-muted",
           )}
         >
           {error ?? hint}

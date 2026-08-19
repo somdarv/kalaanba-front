@@ -135,7 +135,7 @@ function SelectInner<T extends string>(
           htmlFor={fieldId}
           className={cn(
             "mb-2 block text-sm font-medium",
-            hasError ? "text-danger" : "text-fg",
+            hasError ? "text-danger-ink" : "text-fg",
           )}
         >
           {label}
@@ -160,15 +160,15 @@ function SelectInner<T extends string>(
           data-error={hasError || undefined}
           data-open={open || undefined}
           className={cn(
-            "relative flex h-12 w-full items-center gap-2 rounded-full bg-surface-2",
-            "border-[0.5px] border-border-strong text-input",
+            "relative flex h-12 w-full items-center gap-2 rounded-control bg-control-surface",
+            "border border-control-border text-input",
             leftIcon ? "pl-4" : "pl-5",
             "pr-3",
             "transition-[box-shadow,border-color,background-color] duration-quick ease-out",
-            "hover:shadow-sm hover:border-border-strong",
-            "data-open:border-primary data-open:ring-1 data-open:ring-primary",
-            "focus-visible:outline-none focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary",
-            "data-error:border-danger data-error:data-open:ring-danger",
+            "hover:shadow-sm hover:border-border",
+            "data-open:border-primary-ink data-open:ring-1 data-open:ring-primary-ink",
+            "focus-visible:outline-none focus-visible:border-primary-ink focus-visible:ring-1 focus-visible:ring-focus-ring",
+            "data-error:border-danger-ink data-error:data-open:ring-danger-ink",
             "disabled:cursor-not-allowed disabled:opacity-50",
           )}
         >
@@ -209,7 +209,7 @@ function SelectInner<T extends string>(
         <Popover open={open} onClose={() => setOpen(false)} anchorRef={triggerRef}>
           <div onKeyDown={onKey} className="p-2">
             {searchable ? (
-              <div className="mb-2 flex h-10 items-center gap-2 rounded-full bg-surface-2 px-4">
+              <div className="mb-2 flex h-10 items-center gap-2 rounded-control bg-surface-elev px-4">
                 <MagnifyingGlass size={16} weight="bold" className="text-fg-muted" />
                 <input
                   autoFocus
@@ -247,7 +247,7 @@ function SelectInner<T extends string>(
                       className={cn(
                         "flex cursor-pointer items-center gap-3 rounded-control px-3 py-2.5 text-sm",
                         isActive && "bg-(--hover-overlay)",
-                        isSelected && "text-primary",
+                        isSelected && "text-primary-ink",
                         option.disabled && "cursor-not-allowed opacity-50",
                       )}
                     >
@@ -286,7 +286,7 @@ function SelectInner<T extends string>(
           id={msgId}
           className={cn(
             "mt-1.5 text-xs",
-            hasError ? "text-danger" : "text-fg-muted",
+            hasError ? "text-danger-ink" : "text-fg-muted",
           )}
         >
           {error ?? hint}

@@ -95,7 +95,7 @@ export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
             htmlFor={fieldId}
             className={cn(
               "mb-2 block text-sm font-medium",
-              hasError ? "text-danger" : "text-fg",
+              hasError ? "text-danger-ink" : "text-fg",
             )}
           >
             {label}
@@ -107,12 +107,12 @@ export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
           data-error={hasError || undefined}
           data-focused={focused || undefined}
           className={cn(
-            "relative flex h-12 w-full items-center gap-1 rounded-full bg-surface-2",
-            "border-[0.5px] border-border-strong px-1",
+            "relative flex h-12 w-full items-center gap-1 rounded-control bg-control-surface",
+            "border border-control-border px-1",
             "transition-[box-shadow,border-color,background-color] duration-quick ease-out",
-            "hover:shadow-sm hover:border-border-strong",
-            "data-focused:border-primary data-focused:ring-1 data-focused:ring-primary",
-            "data-error:border-danger data-error:data-focused:ring-danger",
+            "hover:shadow-sm hover:border-border",
+            "data-focused:border-primary-ink data-focused:ring-1 data-focused:ring-primary-ink",
+            "data-error:border-danger-ink data-error:data-focused:ring-danger-ink",
             "data-disabled:cursor-not-allowed data-disabled:opacity-50",
           )}
         >
@@ -130,11 +130,23 @@ export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
             name={name}
             type="number"
             inputMode="numeric"
+            autoComplete="off"
+            enterKeyHint="next"
+            autoCorrect="off"
+            spellCheck={false}
+            step={step}
+            min={Number.isFinite(min) ? min : undefined}
+            max={Number.isFinite(max) ? max : undefined}
             value={Number.isFinite(value) ? value : ""}
             disabled={disabled}
             aria-label={label ? undefined : ariaLabel}
             aria-invalid={hasError || undefined}
             aria-describedby={msgId}
+            // The stepper buttons are the visual affordance; these tell a
+            // screen reader the same range the arrow keys operate over.
+            aria-valuenow={Number.isFinite(value) ? value : undefined}
+            aria-valuemin={Number.isFinite(min) ? min : undefined}
+            aria-valuemax={Number.isFinite(max) ? max : undefined}
             onChange={(event) => {
               const next = Number(event.target.value);
               if (!Number.isNaN(next)) set(next);
@@ -168,7 +180,7 @@ export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
             id={msgId}
             className={cn(
               "mt-1.5 text-xs",
-              hasError ? "text-danger" : "text-fg-muted",
+              hasError ? "text-danger-ink" : "text-fg-muted",
             )}
           >
             {error ?? hint}
@@ -197,10 +209,10 @@ function StepperButton({
       disabled={disabled}
       onClick={onClick}
       className={cn(
-        "grid size-10 shrink-0 place-items-center rounded-full text-fg-muted",
+        "grid size-10 shrink-0 place-items-center rounded-pill text-fg-muted",
         "transition-colors duration-quick ease-out",
         "hover:bg-(--hover-overlay) hover:text-fg",
-        "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary",
+        "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-focus-ring",
         "disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-fg-muted",
       )}
     >

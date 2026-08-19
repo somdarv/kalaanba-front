@@ -3,6 +3,7 @@
 import { forwardRef, useState } from "react";
 import { Eye, EyeSlash } from "@phosphor-icons/react";
 import { TextField, type TextFieldProps } from "./text-field";
+import type { InputPurpose } from "./input-attributes";
 import { cn } from "@/lib/cn";
 
 /**
@@ -17,15 +18,21 @@ import { cn } from "@/lib/cn";
  */
 export type PasswordFieldProps = Omit<
   TextFieldProps,
-  "type" | "rightSlot" | "leftIcon"
+  "type" | "rightSlot" | "leftIcon" | "purpose"
 > & {
   /** Optional left icon (e.g. a Lock glyph). */
   leftIcon?: TextFieldProps["leftIcon"];
+  /**
+   * `current-password` (default) offers the saved credential; `new-password`
+   * asks the manager to *generate* one and stops it filling the old value
+   * into a signup or reset form (DESIGN_LANGUAGE §9.3).
+   */
+  purpose?: Extract<InputPurpose, "current-password" | "new-password">;
 };
 
 export const PasswordField = forwardRef<HTMLInputElement, PasswordFieldProps>(
   function PasswordField(
-    { autoComplete = "current-password", enterKeyHint = "done", ...props },
+    { purpose = "current-password", ...props },
     ref,
   ) {
     const [visible, setVisible] = useState(false);
@@ -34,9 +41,10 @@ export const PasswordField = forwardRef<HTMLInputElement, PasswordFieldProps>(
     return (
       <TextField
         ref={ref}
+        purpose={purpose}
+        // Revealing swaps the native type but must NOT swap the purpose —
+        // the autofill token and keyboard stay pinned to the password bundle.
         type={visible ? "text" : "password"}
-        autoComplete={autoComplete}
-        enterKeyHint={enterKeyHint}
         rightSlot={
           <button
             type="button"
@@ -45,10 +53,10 @@ export const PasswordField = forwardRef<HTMLInputElement, PasswordFieldProps>(
             disabled={disabled}
             onClick={() => setVisible((v) => !v)}
             className={cn(
-              "grid size-9 place-items-center rounded-full text-fg-muted mr-1",
+              "grid size-9 place-items-center rounded-pill text-fg-muted mr-1",
               "transition-colors duration-quick ease-out",
               "hover:bg-(--hover-overlay) hover:text-fg",
-              "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary",
+              "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-focus-ring",
               "disabled:cursor-not-allowed",
             )}
           >

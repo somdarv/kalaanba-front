@@ -14,7 +14,7 @@ import { useUser } from "@/lib/api/hooks/use-auth";
  * the loader:
  *   - still loading the session        → spinner
  *   - no usable session (null OR error) → /auth/login (onboarding needs auth)
- *   - already has an area               → /dashboard
+ *   - already has an area               → / (live-activity home)
  *   - signed in, no area                → the skippable picker
  */
 export default function AreaOnboardingPage() {
@@ -28,7 +28,7 @@ export default function AreaOnboardingPage() {
     if (!user) {
       router.replace("/auth/login");
     } else if (user.area_id) {
-      router.replace("/dashboard");
+      router.replace("/");
     }
   }, [isLoading, user, router]);
 
@@ -37,7 +37,7 @@ export default function AreaOnboardingPage() {
   if (showPicker) {
     return (
       <main className="mx-auto flex min-h-[100dvh] w-full max-w-md flex-col justify-center px-[max(1rem,env(safe-area-inset-left))] py-10">
-        <AreaOnboarding onDone={() => router.replace("/dashboard")} />
+        <AreaOnboarding onDone={() => router.replace("/")} />
       </main>
     );
   }

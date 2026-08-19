@@ -97,7 +97,7 @@ export function Calendar({
           type="button"
           aria-label="Previous month"
           onClick={goPrev}
-          className="grid size-9 place-items-center rounded-full text-fg-muted hover:bg-(--hover-overlay) hover:text-fg focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
+          className="grid size-9 place-items-center rounded-pill text-fg-muted hover:bg-(--hover-overlay) hover:text-fg focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-focus-ring"
         >
           <CaretLeft size={16} weight="bold" />
         </button>
@@ -106,7 +106,7 @@ export function Calendar({
           type="button"
           aria-label="Next month"
           onClick={goNext}
-          className="grid size-9 place-items-center rounded-full text-fg-muted hover:bg-(--hover-overlay) hover:text-fg focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
+          className="grid size-9 place-items-center rounded-pill text-fg-muted hover:bg-(--hover-overlay) hover:text-fg focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-focus-ring"
         >
           <CaretRight size={16} weight="bold" />
         </button>
@@ -131,11 +131,11 @@ export function Calendar({
               disabled={disabled}
               onClick={() => onChange(new Date(day))}
               className={cn(
-                "grid h-9 w-9 place-items-center rounded-full text-sm tabular-nums transition-colors duration-quick ease-out",
-                "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary",
+                "grid h-9 w-9 place-items-center rounded-pill text-sm tabular-nums transition-colors duration-quick ease-out",
+                "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-focus-ring",
                 inMonth ? "text-fg" : "text-fg-subtle",
                 !selected && !disabled && "hover:bg-(--hover-overlay)",
-                today_ && !selected && "bg-surface-2 font-semibold",
+                today_ && !selected && "bg-surface-elev font-semibold",
                 selected &&
                   "bg-primary text-on-primary font-semibold shadow-sm hover:bg-primary",
                 disabled && "cursor-not-allowed opacity-40",
@@ -154,7 +154,7 @@ export function Calendar({
             setView(startOfMonth(today));
             onChange(new Date());
           }}
-          className="rounded-full px-3 py-1.5 text-xs font-medium text-fg-muted hover:text-fg hover:bg-(--hover-overlay)"
+          className="rounded-pill px-3 py-1.5 text-xs font-medium text-fg-muted hover:text-fg hover:bg-(--hover-overlay)"
         >
           Today
         </button>
@@ -162,7 +162,7 @@ export function Calendar({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full bg-surface-2 px-4 py-1.5 text-xs font-medium text-fg border-[0.5px] border-border-strong hover:shadow-sm"
+            className="rounded-pill bg-surface-elev px-4 py-1.5 text-xs font-medium text-fg border-[0.5px] border-border-strong hover:shadow-sm"
           >
             Close
           </button>

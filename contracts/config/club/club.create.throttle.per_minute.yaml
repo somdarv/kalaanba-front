@@ -1,0 +1,10 @@
+key: club.create.throttle.per_minute
+engine: club
+scope: platform
+value_type: integer
+default: "5"
+approval_level: medium
+description: |
+  Per-minute rate limit for authenticated club creation (POST /api/v1/clubs),
+  keyed by the acting user. Bounds spam/duplicate club creation. Medium
+  approval — too low frustrates legitimate organisers seeding real teams.

@@ -1,0 +1,11 @@
+key: player.profile.create.throttle.per_minute
+engine: player-affiliation
+scope: platform
+value_type: integer
+default: "5"
+approval_level: medium
+description: |
+  Per-minute rate limit for the authenticated player-profile creation endpoint
+  (POST /api/v1/players), keyed by the acting user. Creation is one-per-user
+  and idempotent, so this mainly bounds abusive retries. Medium approval — too
+  low frustrates legitimate retries on flaky mobile networks.

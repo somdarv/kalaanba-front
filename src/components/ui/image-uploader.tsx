@@ -115,7 +115,7 @@ export function ImageUploader({
 
   const shapeClass =
     shape === "circle"
-      ? "rounded-full aspect-square"
+      ? "rounded-pill aspect-square"
       : shape === "banner"
         ? "rounded-card aspect-[16/5] w-full"
         : "rounded-card aspect-square";
@@ -130,7 +130,7 @@ export function ImageUploader({
           htmlFor={fieldId}
           className={cn(
             "mb-1.5 block text-sm font-medium",
-            hasError ? "text-danger" : "text-fg",
+            hasError ? "text-danger-ink" : "text-fg",
           )}
         >
           {label}
@@ -141,7 +141,7 @@ export function ImageUploader({
         <div
           style={tileStyle}
           className={cn(
-            "relative overflow-hidden bg-surface-2",
+            "relative overflow-hidden bg-surface-elev",
             "border-[0.5px] border-border-strong",
             shapeClass,
           )}
@@ -157,12 +157,12 @@ export function ImageUploader({
             disabled={disabled}
             onClick={() => onChange(null)}
             className={cn(
-              "absolute right-2 top-2 grid size-9 place-items-center rounded-full",
+              "absolute right-2 top-2 grid size-9 place-items-center rounded-pill",
               "bg-surface-elev text-fg shadow-sm",
               "border-[0.5px] border-border",
               "transition-colors duration-quick ease-out",
-              "hover:bg-surface hover:text-danger",
-              "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary",
+              "hover:bg-surface hover:text-danger-ink",
+              "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-focus-ring",
               "disabled:cursor-not-allowed disabled:opacity-50",
             )}
           >
@@ -193,12 +193,12 @@ export function ImageUploader({
           data-disabled={disabled || undefined}
           className={cn(
             "relative flex flex-col items-center justify-center gap-2",
-            "border-[1.5px] border-dashed border-border-strong bg-surface-2 text-center",
+            "border-[1.5px] border-dashed border-border-strong bg-surface-elev text-center",
             "transition-[background-color,border-color,box-shadow] duration-quick ease-out",
             "hover:border-fg-muted hover:bg-(--hover-overlay)",
-            "data-dragging:border-primary data-dragging:bg-surface-elev data-dragging:shadow-sm",
-            "data-error:border-danger",
-            "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary",
+            "data-dragging:border-primary-ink data-dragging:bg-surface-elev data-dragging:shadow-sm",
+            "data-error:border-danger-ink",
+            "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-focus-ring",
             "data-disabled:cursor-not-allowed data-disabled:opacity-50",
             !disabled && "cursor-pointer",
             shapeClass,
@@ -206,7 +206,7 @@ export function ImageUploader({
         >
           <span
             aria-hidden
-            className="grid size-10 place-items-center rounded-full bg-surface-elev text-fg-muted"
+            className="grid size-10 place-items-center rounded-pill bg-surface-elev text-fg-muted"
           >
             {shape === "banner" ? (
               <UploadSimple size={18} weight="bold" />
@@ -236,7 +236,7 @@ export function ImageUploader({
           id={msgId}
           className={cn(
             "mt-1.5 text-xs",
-            hasError ? "text-danger" : "text-fg-muted",
+            hasError ? "text-danger-ink" : "text-fg-muted",
           )}
         >
           {shownError ?? hint}

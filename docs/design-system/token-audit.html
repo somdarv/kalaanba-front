@@ -1,0 +1,815 @@
+<title>Kalaanba Token Audit</title>
+
+<style>
+  /* ============================================================
+     Built in the palette it proposes. Every neutral on this page
+     is hue-locked to 264 and steps by a uniform ΔL of 0.040 —
+     the exact fix argued for below. The page is the specimen.
+     ============================================================ */
+
+  :root {
+    /* Dark is the committed default — Kalaanba ships dark-first. */
+    --bg:        #0a0e16;
+    --surface:   #121721;
+    --elev:      #1a202d;
+    --overlay:   #242a36;
+    --ink:       #f3f5f9;
+    --ink-muted: #abb1bd;
+    --ink-subtle:#757a84;
+    --rule:      #232936;
+    --rule-hi:   #333a49;
+
+    --rose:      #c32e85;
+    --rose-ink:  #ff71bb;
+    --cyan:      #1ee6e7;
+    --red:       #c83122;
+    --red-ink:   #ff7a6b;
+    --amber:     #efa30f;
+
+    --shadow: 0 24px 48px -32px rgba(0,0,0,.9);
+
+    --measure: 68ch;
+    --gap: clamp(1rem, 3vw, 1.75rem);
+
+    --mono: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Menlo, Consolas, monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg:        #edf0f6;
+      --surface:   #f8fafe;
+      --elev:      #ffffff;
+      --overlay:   #ffffff;
+      --ink:       #1d232e;
+      --ink-muted: #5d636f;
+      --ink-subtle:#878c96;
+      --rule:      #dbe0ea;
+      --rule-hi:   #c3cad8;
+      --rose-ink:  #a82370;
+      --red-ink:   #b02a1d;
+      --cyan:      #0d7f80;
+      --shadow: 0 24px 48px -34px rgba(20,28,45,.28);
+    }
+  }
+
+  :root[data-theme="light"] {
+    --bg:        #edf0f6;
+    --surface:   #f8fafe;
+    --elev:      #ffffff;
+    --overlay:   #ffffff;
+    --ink:       #1d232e;
+    --ink-muted: #5d636f;
+    --ink-subtle:#878c96;
+    --rule:      #dbe0ea;
+    --rule-hi:   #c3cad8;
+    --rose-ink:  #a82370;
+    --red-ink:   #b02a1d;
+    --cyan:      #0d7f80;
+    --shadow: 0 24px 48px -34px rgba(20,28,45,.28);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.6;
+    margin: 0;
+    padding: clamp(1.25rem, 4vw, 3.5rem) clamp(1rem, 4vw, 2rem) 6rem;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  .wrap { max-width: 78rem; margin: 0 auto; }
+
+  /* ---------- type scale ---------- */
+  h1, h2, h3 { text-wrap: balance; margin: 0; font-weight: 680; letter-spacing: -0.022em; }
+  h1 { font-size: clamp(2.1rem, 5.5vw, 3.4rem); line-height: 1.02; letter-spacing: -0.04em; }
+  h2 { font-size: clamp(1.35rem, 3vw, 1.85rem); line-height: 1.12; letter-spacing: -0.03em; }
+  h3 { font-size: 1.02rem; line-height: 1.3; letter-spacing: -0.012em; font-weight: 660; }
+  p  { margin: 0; max-width: var(--measure); }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--ink-subtle);
+    font-weight: 500;
+  }
+
+  .lede { font-size: clamp(1.02rem, 2vw, 1.16rem); color: var(--ink-muted); line-height: 1.55; }
+
+  code, .num {
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+  }
+  code {
+    font-size: .855em;
+    background: var(--elev);
+    border: 1px solid var(--rule);
+    border-radius: 5px;
+    padding: .08em .38em;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+
+  a { color: var(--rose-ink); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  a:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: 3px;
+    border-radius: 3px;
+  }
+
+  /* ---------- rhythm ---------- */
+  header.masthead { display: flex; flex-direction: column; gap: 1.15rem; padding-bottom: 2.5rem; }
+  section { padding-top: clamp(2.75rem, 6vw, 4.25rem); }
+  .stack { display: flex; flex-direction: column; gap: var(--gap); }
+  .stack-sm { display: flex; flex-direction: column; gap: .7rem; }
+  .sec-head { display: flex; flex-direction: column; gap: .55rem; padding-bottom: 1.5rem; }
+
+  /* ---------- verdict ---------- */
+  .verdict {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 18px;
+    padding: clamp(1.25rem, 3vw, 2rem);
+    box-shadow: var(--shadow);
+  }
+  @media (min-width: 46rem) { .verdict { grid-template-columns: auto minmax(0, 1fr); gap: 2.5rem; align-items: center; } }
+
+  .score { display: flex; flex-direction: column; gap: .1rem; }
+  .score-val {
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+    font-size: clamp(3.2rem, 9vw, 4.6rem);
+    line-height: .9;
+    letter-spacing: -.05em;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .score-val span { color: var(--ink-subtle); font-size: .42em; letter-spacing: -.02em; }
+  .score-band { font-size: .82rem; color: var(--amber); font-weight: 600; letter-spacing: .01em; }
+
+  /* ---------- tables ---------- */
+  .scroller { overflow-x: auto; border: 1px solid var(--rule); border-radius: 14px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: .875rem; min-width: 34rem; }
+  th, td { text-align: left; padding: .68rem .9rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  thead th {
+    font-family: var(--mono);
+    font-size: .66rem;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--ink-subtle);
+    font-weight: 500;
+    white-space: nowrap;
+    background: var(--elev);
+  }
+  tbody tr:last-child td { border-bottom: 0; }
+  td.n, th.n { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  tfoot td { font-weight: 660; background: var(--elev); border-bottom: 0; }
+
+  .pass { color: var(--cyan); font-weight: 660; }
+  .fail { color: var(--red-ink); font-weight: 660; }
+
+  /* ---------- findings ---------- */
+  .finding {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--sev, var(--rule-hi));
+    border-radius: 4px 14px 14px 4px;
+    padding: 1.15rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: .65rem;
+  }
+  .finding.p1 { --sev: var(--red); }
+  .finding.p2 { --sev: var(--amber); }
+  .finding.p3 { --sev: var(--rule-hi); }
+
+  .finding-top { display: flex; flex-wrap: wrap; align-items: baseline; gap: .6rem; }
+  .chip {
+    font-family: var(--mono);
+    font-size: .64rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    font-weight: 600;
+    padding: .2rem .45rem;
+    border-radius: 4px;
+    border: 1px solid currentColor;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+  .chip.p1 { color: var(--red-ink); }
+  .chip.p2 { color: var(--amber); }
+  .chip.p3 { color: var(--ink-subtle); }
+  .loc { font-family: var(--mono); font-size: .72rem; color: var(--ink-subtle); margin-left: auto; }
+  .finding p { font-size: .925rem; color: var(--ink-muted); }
+  .finding p strong { color: var(--ink); font-weight: 620; }
+
+  /* ---------- the elevation specimen ---------- */
+  .elev-demo { display: grid; gap: 1.1rem; grid-template-columns: minmax(0,1fr); }
+  @media (min-width: 44rem) { .elev-demo { grid-template-columns: 1fr 1fr; } }
+
+  .elev-col { display: flex; flex-direction: column; gap: .5rem; }
+  .elev-label { display: flex; justify-content: space-between; align-items: baseline; gap: .5rem; }
+  .elev-label b { font-size: .8rem; font-weight: 660; }
+  .elev-label .num { font-size: .7rem; color: var(--ink-subtle); }
+  .ramp { display: flex; flex-direction: column; border-radius: 12px; overflow: hidden; border: 1px solid var(--rule); }
+  .ramp div {
+    height: 3.1rem;
+    display: flex;
+    align-items: center;
+    padding: 0 .85rem;
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .02em;
+    color: #98a0b0;
+  }
+  .ramp.proposed div { color: #8e97a8; }
+
+  /* ---------- swatches ---------- */
+  .swatches { display: grid; gap: .7rem; grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr)); }
+  .sw {
+    border: 1px solid var(--rule);
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+  }
+  .sw-chip { height: 3.4rem; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: .72rem; font-weight: 640; }
+  .sw-meta { padding: .5rem .6rem .6rem; display: flex; flex-direction: column; gap: .12rem; }
+  .sw-name { font-size: .76rem; font-weight: 620; font-family: var(--mono); }
+  .sw-val { font-size: .66rem; color: var(--ink-subtle); font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+  /* ---------- button specimens ---------- */
+  .btn-row { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; }
+  .btn-spec {
+    display: inline-flex; align-items: center; gap: .45rem;
+    height: 2.75rem; padding: 0 1.15rem; border-radius: 999px;
+    font-size: .9rem; font-weight: 560; color: #fff; border: 0;
+    font-family: var(--sans);
+  }
+  .btn-spec .ratio { font-family: var(--mono); font-size: .72rem; opacity: .92; font-variant-numeric: tabular-nums; }
+
+  /* ---------- misc ---------- */
+  .grid-2 { display: grid; gap: var(--gap); grid-template-columns: minmax(0,1fr); }
+  @media (min-width: 50rem) { .grid-2 { grid-template-columns: 1fr 1fr; } }
+
+  .panel { background: var(--surface); border: 1px solid var(--rule); border-radius: 14px; padding: 1.15rem 1.25rem; }
+  .panel h3 { margin-bottom: .5rem; }
+  .panel p, .panel li { font-size: .9rem; color: var(--ink-muted); }
+
+  ul.tight { margin: 0; padding-left: 1.05rem; display: flex; flex-direction: column; gap: .35rem; }
+  ul.tight li::marker { color: var(--ink-subtle); }
+
+  .callout {
+    border: 1px solid var(--rule-hi);
+    border-radius: 14px;
+    padding: 1.1rem 1.25rem;
+    background: var(--elev);
+    display: flex; flex-direction: column; gap: .5rem;
+  }
+  .callout .eyebrow { color: var(--cyan); }
+  .callout p { font-size: .92rem; color: var(--ink-muted); }
+
+  pre {
+    margin: 0;
+    overflow-x: auto;
+    background: var(--elev);
+    border: 1px solid var(--rule);
+    border-radius: 12px;
+    padding: 1rem 1.1rem;
+    font-family: var(--mono);
+    font-size: .78rem;
+    line-height: 1.65;
+    color: var(--ink-muted);
+    tab-size: 2;
+  }
+  pre b { color: var(--ink); font-weight: 600; }
+  pre i { color: var(--ink-subtle); font-style: normal; }
+  pre u { color: var(--cyan); text-decoration: none; }
+
+  hr { border: 0; border-top: 1px solid var(--rule); margin: 0; }
+
+  footer { padding-top: 3.5rem; color: var(--ink-subtle); font-size: .8rem; }
+  footer p { max-width: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <span class="eyebrow">Design system audit · 12 August 2026</span>
+    <h1>The tokens are coherent.<br>The recipes are not.</h1>
+    <p class="lede">
+      Kalaanba's token layer is well-organised and genuinely thought through. What fails is the
+      layer above it: four of five filled buttons can't legibly show their own label, the three-tier
+      elevation system resolves to one tier, and the focus ring is invisible on the control it most
+      needs to mark. Everything below is measured, not eyeballed.
+    </p>
+  </header>
+
+  <div class="callout" style="border-color:var(--cyan)">
+    <span class="eyebrow">Resolved — 12 August 2026</span>
+    <p style="color:var(--ink)">
+      Everything below has been fixed and shipped under
+      <code>WP-20260812-oklch-token-migration</code> / <code>ADR-0006</code>. The findings
+      are kept as written so the reasoning survives; the fix for each is recorded at the
+      end of its card. See <code>/design</code> for the built result.
+    </p>
+    <div class="btn-row" style="margin-top:.35rem">
+      <span class="chip" style="color:var(--cyan)">45 files migrated</span>
+      <span class="chip" style="color:var(--cyan)">96 tests passing</span>
+      <span class="chip" style="color:var(--cyan)">0 residual v2 patterns</span>
+    </div>
+  </div>
+
+  <div class="verdict" style="margin-top:var(--gap)">
+    <div class="score">
+      <span class="eyebrow">Health</span>
+      <span class="score-val">11<span>/20</span></span>
+      <span class="score-band">At time of audit — now resolved</span>
+    </div>
+    <div class="stack-sm">
+      <h3>Implementation integrity: pass, with one systemic crack</h3>
+      <p style="font-size:.92rem;color:var(--ink-muted)">
+        This <em>is</em> a coherent, product-specific system — ~60 primitives composing one real
+        interaction recipe, not a shadcn reskin. The bundled detector returned a single hit, in a
+        test file, which is a false positive. The crack is drift: <code>DESIGN_LANGUAGE.md</code>
+        specifies recipes the code silently declined to implement, and nothing caught it, because
+        the spec was never encoded as a token or a test.
+      </p>
+    </div>
+  </div>
+
+  <section>
+    <div class="sec-head">
+      <span class="eyebrow">01 — Scorecard</span>
+      <h2>Where it stands</h2>
+    </div>
+    <div class="scroller">
+      <table>
+        <thead>
+          <tr><th>Dimension</th><th class="n">Score</th><th>Key finding</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Accessibility</td><td class="n"><span class="fail">1</span>/4</td><td>4 of 5 filled button variants fail WCAG AA for their own label; focus ring is pink-on-pink</td></tr>
+          <tr><td>Performance</td><td class="n">3/4</td><td>Lean. One unused variable font (Archivo) shipped to every page</td></tr>
+          <tr><td>Responsive</td><td class="n"><span class="fail">2</span>/4</td><td><code>twMerge</code> lets size classes override the 44&nbsp;px floor; Button&nbsp;sm renders 36&nbsp;px, Chip&nbsp;sm 28&nbsp;px</td></tr>
+          <tr><td>Theming</td><td class="n">2/4</td><td>Ramp steps are uneven; <code>--fg-muted</code> is hue-orphaned; three dead tokens registered</td></tr>
+          <tr><td>Implementation integrity</td><td class="n">3/4</td><td>Coherent system, but Card collapses three specified tiers into one</td></tr>
+        </tbody>
+        <tfoot>
+          <tr><td>Total</td><td class="n">11/20</td><td>Acceptable</td></tr>
+        </tfoot>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="eyebrow">02 — Measured</span>
+      <h2>What's visually wrong</h2>
+      <p class="lede" style="font-size:1rem">Six findings, each computed from the shipped token values.</p>
+    </div>
+
+    <div class="stack">
+
+      <article class="finding p1">
+        <div class="finding-top">
+          <span class="chip p1">P1</span>
+          <h3>Filled controls can't show their own label</h3>
+          <span class="loc">globals.css:29–58 · button.tsx:23–54</span>
+        </div>
+        <p>
+          Every filled intent pairs a bright fill with a pure-white label. Measured against
+          WCAG&nbsp;AA for normal text (4.5:1), <strong>four of five fail</strong> — including the
+          primary action. Warning passes only because it uses a near-black label instead.
+        </p>
+        <div class="btn-row" style="margin-top:.2rem">
+          <span class="btn-spec" style="background:#f55694">Primary <span class="ratio">3.16:1</span></span>
+          <span class="btn-spec" style="background:#56b7f5">Accent <span class="ratio">2.21:1</span></span>
+          <span class="btn-spec" style="background:#16a34a">Success <span class="ratio">3.30:1</span></span>
+          <span class="btn-spec" style="background:#ef4444">Danger <span class="ratio">3.76:1</span></span>
+          <span class="btn-spec" style="background:#f59e0b;color:#1a1100">Warning <span class="ratio">8.70:1</span></span>
+        </div>
+        <p style="font-size:.86rem">
+          The root cause is lightness: the brand colours sit at OKLCH&nbsp;L&nbsp;0.68 (pink) and
+          L&nbsp;0.75 (blue). Nothing at that lightness can carry white text. They are excellent
+          <em>ink</em> colours — pink on <code>--surface</code> measures 5.45:1 — and were pressed
+          into service as <em>fills</em>.
+        </p>
+              <p style="font-size:.85rem;color:var(--cyan);border-top:1px solid var(--rule);padding-top:.7rem;margin-top:.2rem"><strong style="color:var(--cyan)">Fixed.</strong> Fills retuned to L ~0.55. Every intent now clears AA in all three states: primary 5.23 / 4.61 / 6.50.</p>
+      </article>
+
+      <article class="finding p1">
+        <div class="finding-top">
+          <span class="chip p1">P1</span>
+          <h3>The elevation system has one tier, not three</h3>
+          <span class="loc">card.tsx:25–38 · DESIGN_LANGUAGE §2.4</span>
+        </div>
+        <p>
+          <code>CardTone</code> exposes <code>flat</code> and <code>raised</code>, and
+          <strong>both resolve to the identical string</strong> — <code>bg-surface shadow-md</code>.
+          The prop is a no-op. The spec's inset top highlight, described as "what separates this
+          from flat web", appears <strong>zero times</strong> in the codebase.
+          <code>--surface-overlay</code> is defined and registered with <strong>zero usages</strong>.
+        </p>
+        <p>
+          Underneath that, the ramp itself can't support three tiers.
+          <code>--surface</code>&nbsp;→&nbsp;<code>--surface-elev</code> is a lightness step of
+          <strong>ΔL&nbsp;0.022</strong> — roughly half the size of the step below it, and under the
+          threshold where a large flat area reads as separate at all.
+        </p>
+
+        <div class="elev-demo" style="margin-top:.4rem">
+          <div class="elev-col">
+            <div class="elev-label"><b>Current</b> <span class="num">ΔL +.047 / +.022 / +.041</span></div>
+            <div class="ramp">
+              <div style="background:#0b101d">--bg &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L .175</div>
+              <div style="background:#161b26">--surface &nbsp;L .222</div>
+              <div style="background:#1a202d">--elev &nbsp;&nbsp;&nbsp;&nbsp;L .244</div>
+              <div style="background:#232a39">--overlay L .285</div>
+            </div>
+            <p style="font-size:.78rem;color:var(--ink-subtle)">The surface→elev edge is the one that disappears.</p>
+          </div>
+          <div class="elev-col">
+            <div class="elev-label"><b>Proposed</b> <span class="num">ΔL +.040 / +.040 / +.040</span></div>
+            <div class="ramp proposed">
+              <div style="background:#0a0e16">--bg &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L .165</div>
+              <div style="background:#121721">--surface &nbsp;L .205</div>
+              <div style="background:#1a202d">--elev &nbsp;&nbsp;&nbsp;&nbsp;L .245</div>
+              <div style="background:#242a36">--overlay L .285</div>
+            </div>
+            <p style="font-size:.78rem;color:var(--ink-subtle)">Every edge carries the same weight.</p>
+          </div>
+        </div>
+              <p style="font-size:.85rem;color:var(--cyan);border-top:1px solid var(--rule);padding-top:.7rem;margin-top:.2rem"><strong style="color:var(--cyan)">Fixed.</strong> Ramp evened to a uniform ΔL 0.040. Card rebuilt on <code>.elev-flat</code> / <code>.elev-raised</code> / <code>.elev-floating</code>; inset highlight implemented.</p>
+      </article>
+
+      <article class="finding p1">
+        <div class="finding-top">
+          <span class="chip p1">P1</span>
+          <h3>The focus ring is invisible where it matters most</h3>
+          <span class="loc">globals.css:76–77 · pressable.tsx:29</span>
+        </div>
+        <p>
+          <code>--ring</code> is <code>rgba(245,86,148,.35)</code> — pink. On a pink primary button
+          it is <strong>pink on pink</strong>. WCAG 1.4.11 requires 3:1 for focus indicators; this
+          measures 1.00:1 against its own fill. Keyboard users lose the primary action entirely.
+        </p>
+              <p style="font-size:.85rem;color:var(--cyan);border-top:1px solid var(--rule);padding-top:.7rem;margin-top:.2rem"><strong style="color:var(--cyan)">Fixed.</strong> <code>--ring</code> moved to its own hue (200). Every <code>focus-visible:ring-*</code> in the suite now resolves to it.</p>
+      </article>
+
+      <article class="finding p1">
+        <div class="finding-top">
+          <span class="chip p1">P1</span>
+          <h3>Size classes silently defeat the 44&nbsp;px floor</h3>
+          <span class="loc">button.tsx:57 · chip.tsx:29–30, 100</span>
+        </div>
+        <p>
+          <code>cn</code> is <code>twMerge(clsx(…))</code>. Because <code>SIZE[size]</code> is
+          composed <em>after</em> <code>pressableBase</code>, tailwind-merge resolves the conflict
+          by keeping the later class — so <code>min-h-9</code> wins over <code>min-h-11</code>.
+        </p>
+        <div class="scroller" style="margin-top:.2rem">
+          <table>
+            <thead><tr><th>Primitive</th><th>Declared</th><th class="n">Renders</th><th class="n">Floor</th></tr></thead>
+            <tbody>
+              <tr><td>Button <code>sm</code></td><td><code>h-9 min-h-9</code></td><td class="n">36 px</td><td class="n"><span class="fail">FAIL</span></td></tr>
+              <tr><td>Chip <code>sm</code></td><td><code>h-7 min-h-7</code></td><td class="n">28 px</td><td class="n"><span class="fail">FAIL</span></td></tr>
+              <tr><td>Chip <code>md</code></td><td><code>h-8 min-h-8</code></td><td class="n">32 px</td><td class="n"><span class="fail">FAIL</span></td></tr>
+              <tr><td>Button <code>md</code> / <code>lg</code></td><td><code>h-11</code> / <code>h-12</code></td><td class="n">44 / 48 px</td><td class="n"><span class="pass">PASS</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          This is shipping in feature code: the Accept and Decline actions in
+          <code>club-requests-manager.tsx:53–72</code> are 36&nbsp;px targets on a phone.
+          §9.1 calls sub-44 a refusal trigger and §9.7 gates QA sign-off on it — so the
+          system's own hard rule is being broken by the system's own primitives.
+        </p>
+              <p style="font-size:.85rem;color:var(--cyan);border-top:1px solid var(--rule);padding-top:.7rem;margin-top:.2rem"><strong style="color:var(--cyan)">Fixed.</strong> <code>.kx-tap-expand</code> grows the pointer target with a pseudo-element and is deliberately not a Tailwind utility, so twMerge cannot drop it.</p>
+      </article>
+
+      <article class="finding p2">
+        <div class="finding-top">
+          <span class="chip p2">P2</span>
+          <h3>Danger and brand are neighbours, not opposites</h3>
+          <span class="loc">globals.css:14–19, 29, 41</span>
+        </div>
+        <p>
+          The token file asserts <em>"danger → red (clearly NOT pink)"</em>. Measured, they sit
+          <strong>25° apart</strong> at near-identical chroma and lightness:
+        </p>
+        <div class="scroller" style="margin-top:.2rem">
+          <table>
+            <thead><tr><th>Token</th><th class="n">L</th><th class="n">C</th><th class="n">H</th></tr></thead>
+            <tbody>
+              <tr><td><code>--pink</code></td><td class="n">0.682</td><td class="n">0.201</td><td class="n">359.9°</td></tr>
+              <tr><td><code>--danger</code></td><td class="n">0.637</td><td class="n">0.208</td><td class="n">25.3°</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>At badge and chip scale on a dark ground, a destructive action and a brand accent are one glance apart.</p>
+              <p style="font-size:.85rem;color:var(--cyan);border-top:1px solid var(--rule);padding-top:.7rem;margin-top:.2rem"><strong style="color:var(--cyan)">Fixed.</strong> Re-spaced: primary 350, danger 30. Minimum separation across all six semantic roles is now 40°, enforced by a unit test.</p>
+      </article>
+
+      <article class="finding p2">
+        <div class="finding-top">
+          <span class="chip p2">P2</span>
+          <h3>One neutral broke the family</h3>
+          <span class="loc">globals.css:50</span>
+        </div>
+        <p>
+          Every dark neutral is hue-consistent at 265–267° — genuinely good discipline. Except
+          <code>--fg-muted: #c0c0c0</code>, which measures <strong>C&nbsp;0.000</strong>: a dead
+          neutral grey dropped into a blue-black family. Against a cool ground it reads slightly
+          warm and dirty. The same break exists in the light theme, where
+          <code>--surface: #ffffff</code> is pure neutral among 264° neighbours.
+        </p>
+              <p style="font-size:.85rem;color:var(--cyan);border-top:1px solid var(--rule);padding-top:.7rem;margin-top:.2rem"><strong style="color:var(--cyan)">Fixed.</strong> All neutrals hue-locked to 264 with non-zero chroma, asserted in <code>design-tokens.test.ts</code>.</p>
+      </article>
+
+      <article class="finding p3">
+        <div class="finding-top">
+          <span class="chip p3">P3</span>
+          <h3>Dead weight in the token layer</h3>
+          <span class="loc">globals.css · layout.tsx:26–31, 69</span>
+        </div>
+        <ul class="tight">
+          <li><code>--radius-button</code> — declared, aliased, registered in <code>@theme inline</code>, <strong>used nowhere</strong>. Every control is <code>rounded-full</code>.</li>
+          <li><code>--shadow-pink</code> — declared in both themes, registered, <strong>zero usages</strong>. Also brand-coupled: it hardcodes the pink RGB, so changing brand breaks it.</li>
+          <li><strong>Archivo</strong> is loaded via <code>next/font</code> and attached to <code>&lt;html&gt;</code>, but <code>--font-archivo</code> is referenced nowhere. A variable font with a <code>wdth</code> axis ships on every route for nothing.</li>
+          <li>~30 lines of <code>--kx-*</code> archive aliases live in the active token file.</li>
+        </ul>
+              <p style="font-size:.85rem;color:var(--cyan);border-top:1px solid var(--rule);padding-top:.7rem;margin-top:.2rem"><strong style="color:var(--cyan)">Fixed.</strong> <code>--radius-button</code> aliased to the pill token, <code>--shadow-pink</code> deleted, Archivo removed from the font load, <code>--radius-tile</code> finally defined.</p>
+      </article>
+
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="eyebrow">03 — Drift</span>
+      <h2>Where the spec and the code disagree</h2>
+      <p class="lede" style="font-size:1rem">
+        In each case the code made the better call and the document was never updated. The spec is
+        now actively misleading whoever reads it next.
+      </p>
+    </div>
+    <div class="scroller">
+      <table>
+        <thead><tr><th>DESIGN_LANGUAGE.md says</th><th>The code does</th><th>Who's right</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>§3.5 — hover is <code>translateY(-1px)</code></td>
+            <td><code>pressable.tsx:8–11</code> explicitly refuses: "stay anchored in space (no slide/lift/jiggle)"</td>
+            <td>Code</td>
+          </tr>
+          <tr>
+            <td>§4.3 — "border-strong carries depth before shadow does"</td>
+            <td><code>card.tsx:19–21</code> — "No border. The surface + shadow define the card"</td>
+            <td>Spec</td>
+          </tr>
+          <tr>
+            <td>§2.6 — <code>font-feature-settings: "tnum" 1, "cv11" 1</code> on score/stat components</td>
+            <td>Zero occurrences. Ad-hoc Tailwind <code>tabular-nums</code> in 10 files instead</td>
+            <td>Spec</td>
+          </tr>
+          <tr>
+            <td>§4.1 — catalogue includes <code>StatBlock</code> and <code>Eyebrow</code></td>
+            <td>Neither exists</td>
+            <td>Spec</td>
+          </tr>
+          <tr>
+            <td>REBUILD_PLAN Phase 2 — Pressable, Button, Card unticked</td>
+            <td>All three shipped months ago</td>
+            <td>Code</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="eyebrow">04 — Proposal</span>
+      <h2>An OKLCH system, tuned for football</h2>
+      <p class="lede" style="font-size:1rem">
+        The reference points — the Premier League's graphic language and the two dashboards you
+        sent — share one grammar: a deep near-neutral ground, elevation carried by lightness rather
+        than shadow, hairline separators, huge tabular numerals, and <em>one</em> saturated colour
+        doing real signal work while photography carries the warmth.
+      </p>
+    </div>
+
+    <div class="stack">
+
+      <div class="callout">
+        <span class="eyebrow">Why OKLCH earns its place here</span>
+        <p>
+          Hex can't tell you that <code>#161b26</code>&nbsp;→&nbsp;<code>#1a202d</code> is half the
+          step of <code>#0b101d</code>&nbsp;→&nbsp;<code>#161b26</code>. OKLCH can, because L is
+          perceptually uniform: equal ΔL means equal perceived step. That single property fixes the
+          elevation bug at the source, makes hover and press a <em>lightness delta</em> instead of
+          a white-mix (which is what currently desaturates pink into chalk on hover), and lets hue
+          be locked across a whole neutral family so an orphan like <code>--fg-muted</code> becomes
+          impossible to introduce.
+        </p>
+      </div>
+
+      <div>
+        <h3 style="margin-bottom:.75rem">Ground — hue locked at 264°, uniform ΔL 0.040</h3>
+        <div class="swatches">
+          <div class="sw"><div class="sw-chip" style="background:#0a0e16;color:#8e97a8">bg</div><div class="sw-meta"><span class="sw-name">--bg</span><span class="sw-val">0.165 0.018 264</span></div></div>
+          <div class="sw"><div class="sw-chip" style="background:#121721;color:#8e97a8">surface</div><div class="sw-meta"><span class="sw-name">--surface</span><span class="sw-val">0.205 0.020 264</span></div></div>
+          <div class="sw"><div class="sw-chip" style="background:#1a202d;color:#98a0b0">elev</div><div class="sw-meta"><span class="sw-name">--surface-elev</span><span class="sw-val">0.245 0.022 264</span></div></div>
+          <div class="sw"><div class="sw-chip" style="background:#242a36;color:#aab2c0">overlay</div><div class="sw-meta"><span class="sw-name">--surface-overlay</span><span class="sw-val">0.285 0.024 264</span></div></div>
+        </div>
+        <p style="font-size:.85rem;color:var(--ink-subtle);margin-top:.65rem">
+          Chroma rises slightly with lightness — the way real material behaves as light hits it.
+          It's a small thing that separates a considered dark ramp from a tinted grey one.
+        </p>
+      </div>
+
+      <div>
+        <h3 style="margin-bottom:.75rem">Fills — every one clears 4.5:1 with a white label</h3>
+        <div class="swatches">
+          <div class="sw"><div class="sw-chip" style="background:#c32e85;color:#fff">5.19:1</div><div class="sw-meta"><span class="sw-name">--primary</span><span class="sw-val">0.560 0.200 350</span></div></div>
+          <div class="sw"><div class="sw-chip" style="background:#c83122;color:#fff">5.36:1</div><div class="sw-meta"><span class="sw-name">--danger</span><span class="sw-val">0.550 0.190 &nbsp;30</span></div></div>
+          <div class="sw"><div class="sw-chip" style="background:#0a7e3a;color:#fff">5.17:1</div><div class="sw-meta"><span class="sw-name">--success</span><span class="sw-val">0.520 0.140 150</span></div></div>
+          <div class="sw"><div class="sw-chip" style="background:#037ac0;color:#fff">4.62:1</div><div class="sw-meta"><span class="sw-name">--accent</span><span class="sw-val">0.560 0.140 245</span></div></div>
+        </div>
+      </div>
+
+      <div>
+        <h3 style="margin-bottom:.75rem">Ink &amp; signal — brand as text, plus one electric reserved for live</h3>
+        <div class="swatches">
+          <div class="sw"><div class="sw-chip" style="background:#121721;color:#ff71bb">7.13:1</div><div class="sw-meta"><span class="sw-name">--primary-ink</span><span class="sw-val">0.740 0.190 350</span></div></div>
+          <div class="sw"><div class="sw-chip" style="background:#121721;color:#1ee6e7">11.57:1</div><div class="sw-meta"><span class="sw-name">--live</span><span class="sw-val">0.840 0.140 195</span></div></div>
+          <div class="sw"><div class="sw-chip" style="background:#efa30f;color:#1a1100">9.12:1</div><div class="sw-meta"><span class="sw-name">--warning</span><span class="sw-val">0.770 0.160 &nbsp;75</span></div></div>
+          <div class="sw"><div class="sw-chip" style="background:#121721;color:#abb1bd">8.97:1</div><div class="sw-meta"><span class="sw-name">--fg-muted</span><span class="sw-val">0.760 0.018 264</span></div></div>
+        </div>
+        <p style="font-size:.85rem;color:var(--ink-subtle);margin-top:.65rem">
+          The split is the key move: <strong>brand-as-fill</strong> and <strong>brand-as-ink</strong>
+          become separate tokens instead of one colour asked to do both jobs badly.
+          <code>--live</code> is a genuine domain semantic — in-play matches — and is the only place
+          the electric colour is allowed to appear. That's the "lively" you asked for, rationed so
+          it still means something.
+        </p>
+      </div>
+
+      <div>
+        <h3 style="margin-bottom:.75rem">Hue separation — minimum 40° between adjacent roles</h3>
+        <div class="scroller">
+          <table>
+            <thead><tr><th>Role</th><th class="n">Hue</th><th class="n">Gap to next</th><th>Reads as</th></tr></thead>
+            <tbody>
+              <tr><td><code>--primary</code></td><td class="n">350°</td><td class="n">40°</td><td>rose / magenta — brand</td></tr>
+              <tr><td><code>--danger</code></td><td class="n">30°</td><td class="n">45°</td><td>red-orange — destructive</td></tr>
+              <tr><td><code>--warning</code></td><td class="n">75°</td><td class="n">75°</td><td>amber — caution</td></tr>
+              <tr><td><code>--success</code></td><td class="n">150°</td><td class="n">45°</td><td>green — confirmed</td></tr>
+              <tr><td><code>--live</code></td><td class="n">195°</td><td class="n">50°</td><td>cyan — in play</td></tr>
+              <tr><td><code>--accent</code></td><td class="n">245°</td><td class="n">105°</td><td>blue — secondary</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size:.85rem;color:var(--ink-subtle);margin-top:.65rem">
+          Current minimum is 25°, between the two colours that must never be confused.
+        </p>
+      </div>
+
+      <div>
+        <h3 style="margin-bottom:.75rem">State without white-mixing</h3>
+        <pre><i>/* Current — mixes toward white, desaturating pink into chalk */</i>
+hover: <b>color-mix(in oklab, var(--primary) 86%, white 14%)</b>
+
+<i>/* Proposed — move L only; hue and chroma hold */</i>
+--primary:         <b>oklch(0.560 0.200 350)</b>
+--primary-hover:   <b>oklch(<u>0.610</u> 0.200 350)</b>   <i>ΔL +0.05</i>
+--primary-pressed: <b>oklch(<u>0.510</u> 0.200 350)</b>   <i>ΔL −0.05</i></pre>
+        <p style="font-size:.85rem;color:var(--ink-subtle);margin-top:.65rem">
+          Same delta, every colour, every theme. No per-token hand-tuning, and the brand never
+          goes pale on hover.
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="eyebrow">05 — Shape &amp; type</span>
+      <h2>Why it reads consumer, not sport</h2>
+    </div>
+
+    <div class="grid-2">
+      <div class="panel stack-sm">
+        <h3>The radius scale has no tight end</h3>
+        <p>
+          Everything is either a full pill or 25–32&nbsp;px. Cards are <code>1.6rem</code>, hero
+          cards <code>2rem</code>, and every control is <code>rounded-full</code>. There is no
+          radius for a dense row — so fixture lists, ledger rows, and standings tables have nothing
+          to sit in that doesn't look like a soft consumer card.
+        </p>
+        <p>
+          Both references use tight geometry for data and generous geometry for panels. Proposed:
+          <code>--radius-row: 10px</code>, <code>--radius-control: 12px</code>,
+          <code>--radius-card: 20px</code>, <code>--radius-panel: 28px</code>, pill reserved for
+          filters and status only.
+        </p>
+      </div>
+
+      <div class="panel stack-sm">
+        <h3>Numerals are the product, and they have no home</h3>
+        <p>
+          A football platform's core object is a number — a score, a position, a stat line. §2.6
+          specifies a numeric treatment; nothing implements it. Ten components reach for Tailwind's
+          <code>tabular-nums</code> independently, which means ten chances to forget.
+        </p>
+        <p>
+          Proposed: a <code>--font-numeric</code> token carrying
+          <code>font-variant-numeric: tabular-nums</code> plus <code>"cv11"</code>, and a
+          <code>&lt;StatValue&gt;</code> primitive that owns it. Scores stop being styled
+          per-call-site.
+        </p>
+      </div>
+    </div>
+
+    <div class="panel stack-sm" style="margin-top:var(--gap)">
+      <h3>The primitives a football product doesn't have yet</h3>
+      <p>
+        The inventory is strong on generic app furniture and empty on the domain. There is no way
+        to render the thing the product exists to render:
+      </p>
+      <ul class="tight">
+        <li><code>ScoreLine</code> — the two-crest, big-numeral result object both references build their whole layout around</li>
+        <li><code>FixtureRow</code> — dense, tappable, date/venue/status, the atom of every list in the app</li>
+        <li><code>StandingsTable</code> — tabular numerals, sticky first column, form guide</li>
+        <li><code>Crest</code> — club identity at consistent scale with a real fallback</li>
+        <li><code>LiveIndicator</code> — the sole consumer of <code>--live</code></li>
+        <li><code>StatValue</code> / <code>Eyebrow</code> — both already specified in §4.1, neither built</li>
+      </ul>
+      <p>
+        Until these exist, every feature screen re-invents them inline, which is where visual
+        uniformity actually goes to die — not in the tokens.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="eyebrow">06 — Sequence</span>
+      <h2>What I'd do, in order</h2>
+    </div>
+    <div class="scroller">
+      <table>
+        <thead><tr><th class="n">#</th><th>Step</th><th>Why now</th></tr></thead>
+        <tbody>
+          <tr><td class="n">1</td><td>Migrate <code>globals.css</code> to OKLCH; split brand into <code>--primary</code> (fill) and <code>--primary-ink</code>; re-space hues; even the ramp</td><td>Fixes the contrast, elevation and neutral findings at one source. Nothing above it changes.</td></tr>
+          <tr><td class="n">2</td><td>Give <code>--ring</code> its own hue and add a <code>--ring-offset</code> against the fill</td><td>P1 keyboard blocker, ~10 lines</td></tr>
+          <tr><td class="n">3</td><td>Move the 44&nbsp;px floor out of class strings into a <code>min-height</code> that <code>twMerge</code> can't win against</td><td>Stops the floor being silently overridable forever, not just in today's two primitives</td></tr>
+          <tr><td class="n">4</td><td>Rebuild Card on three real tiers; implement the inset highlight; delete the dead tokens and the Archivo import</td><td>Makes <code>tone</code> mean something and drops unused bytes</td></tr>
+          <tr><td class="n">5</td><td>Add the radius scale's tight end + <code>StatValue</code>, <code>ScoreLine</code>, <code>FixtureRow</code>, <code>Crest</code>, <code>LiveIndicator</code></td><td>The actual sports language. Everything before this is groundwork.</td></tr>
+          <tr><td class="n">6</td><td>Reconcile <code>DESIGN_LANGUAGE.md</code> and <code>REBUILD_PLAN.md</code> to the built system</td><td>Otherwise the next reader is misled the same way</td></tr>
+          <tr><td class="n">7</td><td>Rebuild <code>/</code> on the result, replacing the <code>/legacy/landing</code> redirect</td><td>The front door is still serving archived code the system bans importing</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout" style="margin-top:var(--gap)">
+      <span class="eyebrow">Note on scope</span>
+      <p>
+        Steps 1–4 are a token and primitive refactor — they keep the identity and fix what's broken,
+        and need no ADR. Step 5 onward changes the visual language, which under
+        <code>DESIGN_LANGUAGE.md §8</code> and <code>design-system-mandatory.instructions.md</code>
+        requires an ADR in <code>docs/adr/</code> before it can land.
+      </p>
+    </div>
+  </section>
+
+  <footer>
+    <hr style="margin-bottom:1.5rem">
+    <p>
+      All colour values converted with the Oklab transform (Ottosson, D65) and verified in-gamut for
+      sRGB. Contrast ratios per WCAG 2.1 relative luminance. Detector run:
+      <code>impeccable detect.mjs</code> across <code>src/components/ui</code>,
+      <code>src/app/showcase</code>, <code>src/app/globals.css</code> — one finding, in a test
+      file, verified false positive. Legacy surfaces under <code>src/app/legacy/</code> and
+      <code>src/components/_archive/</code> were excluded as instructed.
+    </p>
+  </footer>
+
+</div>

@@ -104,7 +104,7 @@ export function PhoneInput({
           htmlFor={fieldId}
           className={cn(
             "mb-1.5 block text-sm font-medium",
-            hasError ? "text-danger" : "text-fg",
+            hasError ? "text-danger-ink" : "text-fg",
           )}
         >
           {label}
@@ -116,12 +116,12 @@ export function PhoneInput({
         data-disabled={disabled || undefined}
         className={cn(
           // Single pill — identical recipe to TextField (§2.3 radius-pill, §2.4 flat).
-          "group relative flex h-12 w-full items-center rounded-full bg-surface-2",
-          "border-[0.5px] border-border-strong",
+          "group relative flex h-12 w-full items-center rounded-control bg-control-surface",
+          "border border-control-border",
           "transition-[box-shadow,border-color,background-color] duration-quick ease-out",
-          "hover:shadow-sm hover:border-border-strong",
-          "focus-within:border-primary focus-within:ring-1 focus-within:ring-primary",
-          "data-error:border-danger data-error:focus-within:ring-danger",
+          "hover:shadow-sm hover:border-border",
+          "focus-within:border-primary-ink focus-within:ring-1 focus-within:ring-primary-ink",
+          "data-error:border-danger-ink data-error:focus-within:ring-danger-ink",
           "data-disabled:cursor-not-allowed data-disabled:opacity-50",
         )}
       >
@@ -140,7 +140,7 @@ export function PhoneInput({
             "transition-colors duration-quick ease-out",
             // Tap/hover feedback via the shared overlay token (§3.5).
             "hover:bg-(--hover-overlay) active:bg-(--hover-overlay)",
-            "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary focus-visible:ring-inset",
+            "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:ring-inset",
             "disabled:cursor-not-allowed",
           )}
         >
@@ -165,8 +165,12 @@ export function PhoneInput({
           id={fieldId}
           name={name}
           type="tel"
-          inputMode="numeric"
+          inputMode="tel"
           autoComplete="tel-national"
+          enterKeyHint="next"
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
           disabled={disabled}
           value={display}
           onChange={handleInput}
@@ -191,7 +195,7 @@ export function PhoneInput({
           matchTriggerWidth={false}
         >
           <div className="w-72 p-2">
-            <div className="mb-2 flex h-10 items-center gap-2 rounded-full bg-surface-2 px-4">
+            <div className="mb-2 flex h-10 items-center gap-2 rounded-control bg-surface-elev px-4">
               <MagnifyingGlass size={16} weight="bold" className="text-fg-muted" />
               <input
                 type="text"
@@ -251,7 +255,7 @@ export function PhoneInput({
           id={msgId}
           className={cn(
             "mt-1.5 text-xs",
-            hasError ? "text-danger" : "text-fg-muted",
+            hasError ? "text-danger-ink" : "text-fg-muted",
           )}
         >
           {error ?? hint}

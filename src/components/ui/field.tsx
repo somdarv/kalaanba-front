@@ -135,7 +135,7 @@ export function Field({
               className={cn(
                 "block font-medium",
                 labelTextSize,
-                hasError ? "text-danger" : "text-fg",
+                hasError ? "text-danger-ink" : "text-fg",
                 disabled && "opacity-60",
               )}
             >
@@ -143,7 +143,7 @@ export function Field({
               {required ? (
                 <span
                   aria-hidden
-                  className="ml-0.5 text-danger"
+                  className="ml-0.5 text-danger-ink"
                 >
                   *
                 </span>
@@ -167,7 +167,7 @@ export function Field({
         {error ? (
           <p
             id={errorId}
-            className={cn("mt-1.5 text-danger", messageTextSize)}
+            className={cn("mt-1.5 text-danger-ink", messageTextSize)}
           >
             {error}
           </p>

@@ -78,9 +78,9 @@ export function Checkbox({
           "border-[1.5px] transition-[background-color,border-color,box-shadow] duration-quick ease-out",
           isOn || isMixed
             ? "border-primary bg-primary"
-            : "border-border-strong bg-surface-2 hover:border-fg-muted",
-          "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary",
-          "data-error:border-danger data-error:bg-transparent",
+            : "border-border-strong bg-surface-elev hover:border-fg-muted",
+          "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-focus-ring",
+          "data-error:border-danger-ink data-error:bg-transparent",
           "disabled:cursor-not-allowed",
         )}
       >
@@ -112,7 +112,7 @@ export function Checkbox({
               className={cn(
                 "block text-sm",
                 emphasizeLabel && "font-semibold",
-                hasError ? "text-danger" : "text-fg",
+                hasError ? "text-danger-ink" : "text-fg",
               )}
             >
               {label}
@@ -123,7 +123,7 @@ export function Checkbox({
               id={`${fieldId}-msg`}
               className={cn(
                 "mt-0.5 block text-xs",
-                hasError ? "text-danger" : "text-fg-muted",
+                hasError ? "text-danger-ink" : "text-fg-muted",
               )}
             >
               {error ?? hint}

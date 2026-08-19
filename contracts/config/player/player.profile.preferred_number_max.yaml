@@ -1,0 +1,10 @@
+key: player.profile.preferred_number_max
+engine: player-affiliation
+scope: platform
+value_type: integer
+default: "99"
+approval_level: low
+description: |
+  Highest allowed value for a player's preferred shirt number (Player &
+  Affiliation engine doc §3, §6). Configurable so competitions/leagues with
+  wider squad-number ranges can be accommodated without a code change.

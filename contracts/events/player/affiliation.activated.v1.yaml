@@ -1,0 +1,30 @@
+event_name: affiliation.activated
+schema_version: 1
+engine: player-affiliation
+description: |
+  Emitted when a club Owner/Admin accepts a join request and the player
+  becomes an active member (engine doc §8, §11). Consumed by Notification
+  (tell the player), Club (roster/availability summaries), Analytics, and Fan
+  Buzz. A parallel `affiliation.declined` v1 is emitted on rejection.
+required:
+  - affiliation_id
+  - player_id
+  - club_id
+  - state
+  - decided_by_user_id
+  - decided_at
+payload:
+  affiliation_id: { type: uuid }
+  player_id: { type: uuid }
+  club_id: { type: uuid }
+  state:
+    type: string
+    description: active (this event) — internal key.
+  decided_by_user_id:
+    type: uuid
+    description: The club Owner/Admin who accepted.
+  decided_at: { type: string, format: date-time }
+idempotency: |
+  event_id is a deterministic UUIDv5 of `{event_name}:{affiliation_id}`, so a
+  retried decision cannot double-emit; the service also refuses to re-decide a
+  non-pending request.

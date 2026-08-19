@@ -1,0 +1,65 @@
+openapi: 3.1.0
+info:
+  title: "Club — Clubs near you (discovery)"
+  version: "1.0.0"
+  description: |
+    Lists clubs in an Area for the "join a club near you" finder (Club engine
+    doc §6 location, §15 public profile). Authenticated; capped at
+    club.near_you.page_size. Returns the minimal public club profile only.
+
+paths:
+  /api/v1/clubs:
+    get:
+      summary: List clubs in an area
+      operationId: listClubsNearby
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: area_id
+          required: true
+          schema: { type: string, format: uuid }
+          description: The Area to search within (typically the player's area).
+      responses:
+        "200":
+          description: Clubs in the area, newest-first.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: "#/components/schemas/ClubView" }
+                  meta:
+                    type: object
+                    properties:
+                      count: { type: integer }
+                      area_id: { type: string, format: uuid }
+        "401":
+          description: Missing or invalid bearer token.
+        "422":
+          description: |
+            Missing/invalid area_id. Stable error key: club.area_required.
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: SanctumPersonalAccessToken
+  schemas:
+    ClubView:
+      type: object
+      required: [id, name, club_type, city_hub_id, area_id, maturity_level]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        club_type: { type: string }
+        city_hub_id: { type: string, format: uuid }
+        area_id: { type: string, format: uuid }
+        crest_url: { type: [string, "null"], format: uri }
+        maturity_level:
+          type: string
+          description: informal | structured | verified | registered (internal key)

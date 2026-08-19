@@ -38,8 +38,8 @@ const BASE =
 
 const SHAPE: Record<NonNullable<SkeletonProps["shape"]>, string> = {
   rect: "rounded-md",
-  pill: "rounded-full",
-  circle: "rounded-full",
+  pill: "rounded-pill",
+  circle: "rounded-pill",
 };
 
 function SkeletonBase({
@@ -125,7 +125,7 @@ function SkeletonAvatar({ size = "md", className }: SkeletonAvatarProps) {
     <div
       aria-hidden
       data-slot="skeleton-avatar"
-      className={cn(BASE, "shrink-0 rounded-full", AVATAR_SIZE[size], className)}
+      className={cn(BASE, "shrink-0 rounded-pill", AVATAR_SIZE[size], className)}
     />
   );
 }
@@ -154,7 +154,7 @@ function SkeletonButton({
       aria-hidden
       data-slot="skeleton-button"
       style={{ width }}
-      className={cn(BASE, "rounded-full", BUTTON_HEIGHT[size], className)}
+      className={cn(BASE, "rounded-pill", BUTTON_HEIGHT[size], className)}
     />
   );
 }

@@ -1,0 +1,20 @@
+key: player.availability.descriptions
+engine: player-affiliation
+scope: platform
+value_type: json
+default: '{"available":"Clubs building a squad will see you as ready.","limited":"You will show as playable, with notice needed.","unavailable":"You stay on the register but out of squad shortlists.","unknown":"You can set this any time from your profile."}'
+approval_level: low
+description: |
+  One-line consequence copy shown beneath each availability option at profile
+  setup, telling the player what the choice actually does. Player availability
+  feeds club-level readiness (Player & Affiliation engine doc §12), and a signal
+  the player does not understand is a signal they answer carelessly.
+
+  Cosmetic and translatable. Optional per key — a key with no entry renders its
+  label alone. Served through `GET /api/v1/players/meta` (ADR-0007).
+
+  Locale variants: a suffixed key (`<this key>.<language tag>`, e.g.
+  `player.positions.labels.fr`) overrides this map for that language.
+  Resolution narrows from the full tag to the bare language to this key —
+  `fr-FR` tries `.fr-fr`, then `.fr`, then this one — so a region needs its
+  own map only where it actually differs.

@@ -1,0 +1,12 @@
+key: club.types
+engine: club
+scope: platform
+value_type: json
+default: '["community","informal","school","academy","corporate","religious","institution","facility","registered"]'
+approval_level: medium
+description: |
+  The allowed set of club-type internal keys (stable snake_case) offered at
+  club creation (Club engine doc §3). Logic depends on these keys; the
+  human-facing labels are resolved separately and translatable (Constitution
+  Law 4). Medium approval — changing the set affects the creation selector and
+  any type-based discovery/filtering.

@@ -1,10 +1,18 @@
 # Kalaanba — Design Language
 
 > **Tagline**: _Solid. Proactive. Premium._
-> **Status**: Spec — implementation begins per `REBUILD_PLAN.md`.
-> **Last updated**: 2026-05-24
+> **Status**: Built. Token layer is v3 (OKLCH) per `ADR-0006`.
+> **Last updated**: 2026-08-12 (WP-20260812-oklch-token-migration)
 
 This document is the **source of truth** for how Kalaanba looks, moves, and responds. Every primitive, every screen, every animation must follow these rules — or update them via an ADR.
+
+> **2026-08-12 reconciliation.** Between May and August this document drifted from the
+> code, and in most cases the code had made the better call. A measured audit
+> (`token-audit.html`, `ADR-0006`) resolved every conflict; the sections below now
+> describe what is actually built. The three that changed materially: §2 (tokens are
+> OKLCH, and brand fill is split from brand ink), §3.5 (pressables do not lift on
+> hover), and §9.1 (sub-44px controls expand their hit area rather than lowering the
+> floor).
 
 ---
 
@@ -31,83 +39,92 @@ Tokens live in `src/app/globals.css`. **Code never references colors literally �
 ### 2.1 Naming convention
 
 - Semantic, not brand-literal: `--primary` not `--pink`.
-- Paired foreground/background: every fillable token gets an `--on-X` partner. Example: `--primary` (bg) ↔ `--on-primary` (text/icon color readable on it). Swap the brand color, every pairing rebalances.
+- **Colour is authored in OKLCH** (`oklch(L C H)`). L is perceptually uniform, so an equal ΔL is an equal perceived step — the property that makes a ramp checkable instead of a matter of taste. See `ADR-0006`.
+- **Neutrals are hue-locked to 264.** A neutral that drifts off 264 is a bug.
+- **Fill and ink are separate roles.** A colour tuned to carry a white label (L ≈ 0.55) is too dark to be legible *as text* on a dark surface, and a colour tuned for text (L ≈ 0.76) cannot carry a white label. Every brand and state colour therefore has both: `--primary` (fill) and `--primary-ink` (text/icon).
+- Paired foreground/background: every fillable token gets an `--on-X` partner.
 - Internal-key names are stable; the _value_ may change per theme/season.
 
 ### 2.2 Color tokens (the full set)
 
 ```
-/* Brand */
---primary             /* the seed action color — today f55694 (pink) */
---primary-hover       /* lighten 4% */
---primary-pressed     /* darken 6% */
---on-primary          /* foreground on primary bg */
+/* Ground — hue locked 264, uniform ΔL 0.040 */
+--bg               oklch(0.165 0.018 264)
+--surface          oklch(0.205 0.020 264)
+--surface-elev     oklch(0.245 0.022 264)
+--surface-overlay  oklch(0.285 0.024 264)
 
---accent              /* secondary brand — today 56b7f5 (blue) */
---on-accent
+/* Ink */
+--fg               oklch(0.970 0.005 264)
+--fg-muted         oklch(0.760 0.018 264)
+--fg-subtle        oklch(0.580 0.016 264)
 
-/* Neutrals */
---bg                  /* canvas */
---surface             /* default raised surface (cards, sheets) */
---surface-elev        /* one step higher (hover, nested cards) */
---surface-overlay     /* modals, popovers, toasts (with blur) */
---fg                  /* primary text */
---fg-muted            /* secondary text */
---fg-subtle           /* tertiary / disabled text */
+/* Lines. --border is structural; --border-strong defines a control
+   boundary and therefore clears 3:1 (WCAG 1.4.11). */
+--border  --border-strong  --divider
 
-/* Lines */
---border              /* default 1px line — barely there */
---border-strong       /* emphasised line / hover state */
---divider             /* horizontal rule */
+/* Brand — fill / hover / pressed / ink. Hover is L +0.030, pressed
+   L −0.050; hue and chroma hold. Never mix toward white. */
+--primary  --primary-hover  --primary-pressed  --primary-ink  --on-primary
+--accent   --accent-hover   --accent-pressed   --accent-ink   --on-accent
 
-/* State */
---success     --on-success
---warning     --on-warning
---danger      --on-danger
+/* State — adjacent hues are >= 40 degrees apart */
+--success  --success-hover  --success-pressed  --success-ink  --on-success
+--warning  --warning-ink    --on-warning
+--danger   --danger-hover   --danger-pressed   --danger-ink   --on-danger
 
-/* Focus */
---focus-ring          /* always derived from --primary at ~35% alpha */
+/* Live — in-play matches ONLY. One electric hue, rationed so it still
+   means something. Consumed only by <LiveIndicator>. */
+--live  --live-ink  --on-live
+
+/* Focus — its own hue (200), never the brand. Paired with
+   outline-offset it lands on the ground behind the control. */
+--ring  --focus-ring  --ring-offset
 ```
 
-**Rule:** every color token MUST be registered in `@theme inline` so Tailwind utilities exist (`bg-primary`, `text-on-primary`, `border-border-strong`, etc.).
+Hue map: primary 350 · danger 30 · warning 75 · success 150 · live 195 · accent 245.
+
+**Rule:** every color token MUST be registered in `@theme inline` so Tailwind utilities exist (`bg-primary`, `text-primary-ink`, `border-border-strong`, etc.).
+
+**Rule:** a filled control MUST clear 4.5:1 against its own label, in every state.
 
 ### 2.3 Shape tokens
 
+The scale has a tight end and a generous end. Dense data (fixture rows, table cells) takes the tight end; panels take the generous end. Using card radii for data rows is what makes football data read as consumer app.
+
 ```
---radius-pill       999px
---radius-button     1.1rem    /* ~17.6px */
---radius-control    1.25rem   /* inputs, chips */
---radius-card       1.6rem
---radius-card-lg    2rem      /* hero / feature cards */
+--radius-row      0.625rem  /* 10px — list + fixture rows, table cells */
+--radius-control  0.75rem   /* 12px — inputs, selects, textarea */
+--radius-card     1.25rem   /* 20px — cards */
+--radius-panel    1.75rem   /* 28px — hero / feature panels */
+--radius-pill     999px     /* buttons, chips, filters, status */
 ```
 
 ### 2.4 Elevation — _recipes_, not loose shadows
 
 Premium = combined recipes. Each tier is a **prescription**: background + border + shadow + optional inset highlight.
 
-| Tier         | Use cases                           | Recipe                                                                                                      |
-| ------------ | ----------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| **flat**     | Inline regions, list rows, dividers | `bg-surface` + `border-border`                                                                              |
-| **raised**   | Cards, panels, sticky bars          | `bg-surface-elev` + `border-border-strong` + `shadow-md` + inset highlight `0 1px 0 rgba(255,255,255,0.04)` |
-| **floating** | Modals, popovers, toasts, dropdowns | `bg-surface-overlay` + `border-border-strong` + `shadow-lg` + `backdrop-blur(18px)`                         |
+| Tier         | Use cases                           | Recipe                                                                       |
+| ------------ | ----------------------------------- | ---------------------------------------------------------------------------- |
+| **flat**     | Inline regions, list rows, dividers | `bg-surface` + `border-border`                                               |
+| **raised**   | Cards, panels, sticky bars          | `bg-surface-elev` + `border-border` + `--highlight-inset` + `shadow-sm`      |
+| **floating** | Modals, popovers, toasts, dropdowns | `bg-surface-overlay` + `border-border-strong` + `shadow-lg` + `blur(18px)`   |
 
 The inset top highlight on `raised` and the blur on `floating` are what separate this from "flat web".
 
+**These are implemented as `.elev-flat` / `.elev-raised` / `.elev-floating` in `globals.css`.** Compose the class; do not re-derive the recipe. `<Card tone>` is the typed entry point.
+
+The tiers only read because the ground ramp steps by a uniform ΔL 0.040. In v2 the `surface → surface-elev` step was ΔL 0.022 and "raised" was invisible, which is how `Card` ended up collapsing all three tiers into one.
+
 ### 2.5 Motion tokens
 
-```
---ease-out: cubic-bezier(0.16, 1, 0.3, 1);   /* the only public easing */
---dur-quick:    140ms                         /* state changes (hover, press, focus) */
---dur-graceful: 320ms                         /* enter / exit, sheet open, modal */
-```
-
-One ease, two durations. Anything outside this needs justification.
+Canonical values live in **§3.2** — that is the single definition. (This section previously listed a second, conflicting set: `cubic-bezier(0.16, 1, 0.3, 1)` at 140ms/320ms. The code follows §3.2; the duplicate is removed.)
 
 ### 2.6 Typography
 
 - **Display**: `Sora` — hero 64/1.05 tracking `-0.025em`, h1 40/1.1 `-0.02em`, h2 32/1.15 `-0.015em`. **Tight tracking on display is non-negotiable** — it's the single biggest "premium" signal.
-- **Body**: `Inter` — 16/1.55 default, 14/1.5 secondary, 12 uppercase `0.14em` for eyebrows.
-- **Numeric**: tabular-nums + stylistic set on score/stat components only (`font-feature-settings: "tnum" 1, "cv11" 1`).
+- **Body**: `Inter` — 16/1.55 default, 14/1.5 secondary, 12 uppercase `0.14em` for eyebrows (`<Eyebrow>`).
+- **Numeric**: `--font-numeric-features` (`"tnum" 1, "cv11" 1, "ss01" 1`), applied via the `.kx-numeric` class and owned by `<StatValue>`. Do not reach for Tailwind's `tabular-nums` directly in a component — that is what left ten call sites each holding their own half of this rule.
 
 ---
 
@@ -149,15 +166,19 @@ Animations ≤ 240ms on small screens — slow eases feel laggy on a phone. The 
 
 Both touch and pointer matter — Kalaanba runs on phones and on desk admin tools. Hover is desktop-only; tap state is universal. The CSS below guarantees both.
 
-| State                            | Effect                                                                              |
-| -------------------------------- | ----------------------------------------------------------------------------------- |
-| Default                          | Token-defined                                                                       |
-| Hover (`@media (hover: hover)`)  | `translateY(-1px)` + border step up + (if filled) shadow step up — desktop/pen only |
-| Focus-visible                    | `--focus-ring` outline 2px offset 2px                                               |
-| Active / Press (touch + desktop) | `translate(0)` + `scale(0.985)` + tint shift + shadow step down                     |
-| Disabled                         | `opacity: 0.5` + `pointer-events: none` + `cursor: not-allowed`                     |
+| State                            | Effect                                                                    |
+| -------------------------------- | ------------------------------------------------------------------------- |
+| Default                          | Token-defined                                                             |
+| Hover                            | Fill steps to its `-hover` token (L +0.030); borders step to `-strong`. **No positional motion.** |
+| Focus-visible                    | `--focus-ring` outline 2px, offset 2px                                    |
+| Active / Press (touch + desktop) | `scale(0.99)` + fill steps to `-pressed` (L −0.050) + `--shadow-pressed` inset |
+| Disabled                         | `opacity: 0.5` + `cursor: not-allowed`                                    |
 
-Hover effects **must** be wrapped in `@media (hover: hover) and (pointer: fine)` so they don't stick on touch devices after a tap. Active state is the primary feedback channel on touch.
+**Revised 2026-05, confirmed 2026-08.** This table previously specified `translateY(-1px)` on hover. `pressableBase` deliberately does not implement it: pressables stay anchored in space, and the press-compression carries the tactility instead — a 1% scale-down is 1:1 with the user's physical intent and reads as tactile rather than synthetic. The code was right; the doc is now corrected.
+
+Because hover is a pure colour change with no positional component, it does not stick on touch after a tap, and no `@media (hover: hover)` guard is required for it. Any effect that *does* move or reveal something still needs that guard. Active state remains the primary feedback channel on touch.
+
+The focus ring uses its own hue (200), never the brand. v2 used `--primary` at 35% alpha, which put a pink ring on the pink primary button — 1.00:1 against its own fill, i.e. invisible exactly where it mattered most.
 
 ### 3.6 Reduced motion
 
@@ -198,11 +219,22 @@ Hover effects **must** be wrapped in `@media (hover: hover) and (pointer: fine)`
 - `KeyboardFooter` — sticky CTA bar that lifts above the on-screen keyboard (via `interactiveWidget=resizes-content` + safe-area). Used on login, checkout, OTP entry, any single-purpose form.
 - `Toast` — anchored bottom-center on mobile, top-right on desktop. Above safe-area inset.
 
+**Football primitives** (`src/components/ui/` — added 2026-08-12, `ADR-0006`):
+
+The system was strong on generic app furniture and empty on the domain — there was no way to render the object the product exists to render. All six are purely presentational per §4.2: they accept props and render markup, never fetch, and never compute (Constitution Law 3).
+
+- `Eyebrow` — the 12px uppercase tracked label.
+- `StatValue` / `StatBlock` — numeric display; sole owner of `.kx-numeric`.
+- `Crest` — club identity at consistent scale. Distinct from `Avatar`: a crest is an institution, is not round, and sits on a neutral plate so light and dark marks both read. Initials fallback is the common case for grassroots clubs, not the exception.
+- `LiveIndicator` — the in-play signal and the only permitted consumer of `--live`.
+- `ScoreLine` — two crests, two display-scale numerals, a status. Marks anything outside `result_confirmed` as provisional (Law 7).
+- `FixtureRow` — the dense, tappable atom of every fixture list.
+
+`ScoreLine` and `FixtureRow` key on stable internal status strings (`scheduled`, `live`, `result_confirmed`, …) and take display labels as props, per Law 4. They never render a hardcoded status string.
+
 **Composed pieces** (`src/components/site/` or `src/components/<feature>/`):
 
-- `<LiveSurface variant="aurora" | "mesh" | "glass">` — the one opt-in flourish primitive that rehouses the aurora/mesh keyframes. Used on landing/hero only.
-- `<Eyebrow>` — the 12px uppercase tracked label.
-- `<StatBlock>` — numeric display with tabular-nums.
+- `<LiveSurface variant="aurora" | "mesh" | "glass">` — the one opt-in flourish primitive that rehouses the aurora/mesh keyframes. Used on landing/hero only. (Currently lives in `ui/`.)
 
 ### 4.2 Naming & layering
 
@@ -265,8 +297,21 @@ Kalaanba is consumed primarily on phones. Every primitive, layout, and screen sh
 ### 9.1 Touch targets
 
 - **Minimum hit area: 44 × 44 px** (iOS HIG). 48 × 48 preferred for primary actions.
-- Visual size may be smaller; the hit area is padded out with invisible space (`min-h-11 min-w-11` or equivalent).
+- Visual size may be smaller; the hit area is padded out with invisible space.
 - This applies to **every** interactive: buttons, icon buttons, chips, badges-as-links, tab labels, list rows, close affordances. Sub-44 hit areas are a refusal trigger.
+
+**Mechanism (mandatory).** A control whose visual box is under 44px uses `tapExpand`
+(the `.kx-tap-expand` class), which grows the *pointer* target with a pseudo-element and
+leaves layout untouched. It must **not** simply lower `min-h-*`.
+
+This is not a style preference — it is load-bearing. `cn` is `twMerge`, so a size class
+composed after `pressableBase` wins the conflict: `min-h-9` silently beat the `min-h-11`
+floor, and v2 shipped 36px Button `sm`, 28px Chip `sm`, and 36px Accept/Decline actions
+on a phone. `.kx-tap-expand` is deliberately not a Tailwind utility, so `twMerge` cannot
+drop it and layer order cannot demote it.
+
+Do not apply it to a control that wraps other interactive elements — the pseudo-element
+would sit over them.
 
 ### 9.2 Viewport & layout
 

@@ -129,7 +129,7 @@ export function LiveSurface({
       >
         <span
           aria-hidden
-          className="kx-alive pointer-events-none absolute -left-1/4 -top-1/3 h-[140%] w-[80%] rounded-full opacity-70 blur-3xl"
+          className="kx-alive pointer-events-none absolute -left-1/4 -top-1/3 h-[140%] w-[80%] rounded-pill opacity-70 blur-3xl"
           style={{
             background: `radial-gradient(closest-side, color-mix(in oklab, ${a} 32%, transparent), transparent 70%)`,
             animation: "kx-aurora-a 14s ease-in-out infinite alternate",
@@ -138,7 +138,7 @@ export function LiveSurface({
         />
         <span
           aria-hidden
-          className="kx-alive pointer-events-none absolute -bottom-1/3 -right-1/4 h-[140%] w-[80%] rounded-full opacity-60 blur-3xl"
+          className="kx-alive pointer-events-none absolute -bottom-1/3 -right-1/4 h-[140%] w-[80%] rounded-pill opacity-60 blur-3xl"
           style={{
             background: `radial-gradient(closest-side, color-mix(in oklab, ${b} 28%, transparent), transparent 70%)`,
             animation: "kx-aurora-b 18s ease-in-out infinite alternate",
