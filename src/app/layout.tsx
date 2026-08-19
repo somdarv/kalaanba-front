@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Sora, Archivo } from "next/font/google";
+import { Inter, Sora } from "next/font/google";
 import "./globals.css";
 import { AppProviders } from "@/components/providers/app-providers";
 import { ThemeProvider } from "@/components/providers/theme-provider";
@@ -20,15 +20,10 @@ const sora = Sora({
   display: "swap",
 });
 
-// Kept configured but unused — flip --font-sans / --font-display in globals.css
-// to var(--font-archivo) to try it. Google Fonts has no standalone "Archivo
-// Condensed"; Archivo is a variable font with a width (wdth) axis instead.
-const archivo = Archivo({
-  variable: "--font-archivo",
-  subsets: ["latin"],
-  axes: ["wdth"],
-  display: "swap",
-});
+// Archivo was configured here "to try it" and never referenced — no CSS ever
+// read --font-archivo, but next/font still emitted the @font-face and shipped
+// a variable font with a wdth axis on every route. Removed in
+// WP-20260812-oklch-token-migration; re-add it the day something uses it.
 
 export const metadata: Metadata = {
   title: "Kalaanba — your game, on the record.",
@@ -52,9 +47,13 @@ export const viewport: Viewport = {
   // Lets sticky CTAs (KeyboardFooter) ride above the on-screen keyboard
   // instead of being overlaid by it (DESIGN_LANGUAGE.md §9.2).
   interactiveWidget: "resizes-content",
+  // Must track --bg or the iOS status bar and Android system bar drift away
+  // from the app (DESIGN_LANGUAGE §9.4). Hex, not oklch: theme-color parsing
+  // is inconsistent across mobile browsers. These are the sRGB renderings of
+  // oklch(0.165 0.018 264) and oklch(1.000 0.000 264).
   themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#0b101d" },
-    { media: "(prefers-color-scheme: light)", color: "#f8f9fb" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0e16" },
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
   ],
 };
 
@@ -66,7 +65,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${sora.variable} ${archivo.variable}`}
+      className={`${inter.variable} ${sora.variable}`}
       suppressHydrationWarning
     >
       <head>

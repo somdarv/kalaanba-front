@@ -1,0 +1,19 @@
+key: player.profile.preferred_number_quick_picks
+engine: player-affiliation
+scope: platform
+value_type: json
+default: '[1,4,6,7,8,9,10,11]'
+approval_level: low
+description: |
+  Shirt numbers offered as one-tap choices at profile setup, before the player
+  falls back to typing any number in range (Player & Affiliation engine doc §3,
+  §6). Purely a presentation shortcut: the authoritative range remains
+  `player.profile.preferred_number_min` .. `player.profile.preferred_number_max`,
+  and every value here must sit inside it.
+
+  Registered rather than hardcoded because the "common" numbers are a cultural
+  judgement, not a constant — a different market, or a futsal/5-a-side context,
+  wants a different eight. Kept short enough to stay one thumb-reach grid at
+  360px (DESIGN_LANGUAGE §9.2).
+
+  Served through `GET /api/v1/players/meta` (ADR-0007).

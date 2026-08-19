@@ -57,7 +57,7 @@ export function ThemeToggle({ className, compact = false }: ThemeToggleProps) {
       role="radiogroup"
       aria-label="Theme"
       className={cn(
-        "inline-flex items-center gap-1 rounded-full bg-surface-2 p-1 border border-border",
+        "inline-flex items-center gap-1 rounded-pill bg-surface-elev p-1 border border-border",
         className,
       )}
     >
@@ -71,7 +71,7 @@ export function ThemeToggle({ className, compact = false }: ThemeToggleProps) {
             aria-checked={isActive}
             onClick={() => setTheme(opt.value)}
             className={cn(
-              "relative inline-flex items-center gap-1.5 rounded-full font-medium",
+              "relative inline-flex items-center gap-1.5 rounded-pill font-medium",
               compact ? "h-8 w-8 justify-center" : "h-9 px-3 text-sm",
               "touch-manipulation outline-none",
               "transition-[background-color,color,box-shadow] duration-[var(--dur-quick)] ease-[var(--ease-out)]",

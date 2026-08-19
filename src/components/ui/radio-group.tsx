@@ -6,7 +6,7 @@ import { cn } from "@/lib/cn";
 /**
  * RadioGroup — single-select from a list of options.
  *
- * Visual recipe: each option is a card-style row on `bg-surface-2`,
+ * Visual recipe: each option is a card-style row on `bg-surface-elev`,
  * promoted to a brand-tinted card with hairline `border-primary` when
  * selected. The radio dot sits left, label + optional hint right.
  *
@@ -56,7 +56,7 @@ export function RadioGroup<T extends string>({
           id={`${groupId}-label`}
           className={cn(
             "mb-1.5 block text-sm font-medium",
-            hasError ? "text-danger" : "text-fg",
+            hasError ? "text-danger-ink" : "text-fg",
           )}
         >
           {label}
@@ -88,21 +88,21 @@ export function RadioGroup<T extends string>({
               className={cn(
                 "group flex items-start gap-3 rounded-card border p-3 text-left",
                 "transition-[background-color,border-color] duration-quick ease-out",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring",
                 // Active = light pink tint + primary border. No shadow ring.
-                "data-active:border-primary data-active:bg-primary/10",
+                "data-active:border-primary-ink data-active:bg-primary/10",
                 "data-active:hover:bg-primary/15",
                 // Inactive: hover lifts the surface with a faint pink tint
                 // (background change only — border colour stays constant).
                 !active &&
-                  "border-border bg-surface-2 hover:bg-primary/8",
-                "data-error:border-danger",
+                  "border-border bg-surface-elev hover:bg-primary/8",
+                "data-error:border-danger-ink",
                 "disabled:cursor-not-allowed disabled:opacity-50",
               )}
             >
               <span
                 className={cn(
-                  "relative mt-0.5 grid size-5 shrink-0 place-items-center rounded-full",
+                  "relative mt-0.5 grid size-5 shrink-0 place-items-center rounded-pill",
                   "border-[1.5px] transition-[border-color] duration-quick ease-out",
                   active
                     ? "border-primary"
@@ -111,7 +111,7 @@ export function RadioGroup<T extends string>({
               >
                 <span
                   className={cn(
-                    "size-2.5 rounded-full bg-primary",
+                    "size-2.5 rounded-pill bg-primary",
                     // Bloom in: fade + scale. The dot is the metaphor for
                     // "this one is selected" — its appearance should feel
                     // soft, not snapped.
@@ -126,7 +126,7 @@ export function RadioGroup<T extends string>({
                 <span
                   className={cn(
                     "block text-sm font-medium",
-                    hasError ? "text-danger" : "text-fg",
+                    hasError ? "text-danger-ink" : "text-fg",
                   )}
                 >
                   {opt.label}
@@ -159,7 +159,7 @@ export function RadioGroup<T extends string>({
           id={msgId}
           className={cn(
             "mt-1.5 text-xs",
-            hasError ? "text-danger" : "text-fg-muted",
+            hasError ? "text-danger-ink" : "text-fg-muted",
           )}
         >
           {error ?? hint}

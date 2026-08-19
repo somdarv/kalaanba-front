@@ -189,7 +189,7 @@ export function FormSection({
                   <span
                     aria-hidden
                     className={cn(
-                      "inline-flex h-6 w-6 items-center justify-center rounded-full bg-fg/8 text-fg-muted",
+                      "inline-flex h-6 w-6 items-center justify-center rounded-pill bg-fg/8 text-fg-muted",
                       "transition-[transform,background-color,color] duration-graceful ease-out",
                       "group-hover:bg-fg/12 group-hover:text-fg",
                       isOpen ? "rotate-90" : "rotate-0",

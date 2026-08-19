@@ -1,0 +1,164 @@
+openapi: 3.1.0
+info:
+  title: "Player & Affiliation — Profile form vocabulary"
+  version: "1.0.0"
+  description: |
+    Everything a client needs to *render* a player-profile form, resolved from
+    Admin Configuration at request time: the option sets, their display labels,
+    and the bounds the form must enforce.
+
+    Exists because Constitution Law 2 (configurability) and Law 4 (stable keys /
+    configurable labels) are unenforceable if the client compiles its own copy of
+    a config value into a bundle. See ADR-0007 for the pattern; this is its first
+    implementation.
+
+    Scope discipline: this endpoint returns **presentation vocabulary only**. No
+    domain truth, no per-user state, no computed values (Law 3). Adding a
+    player's own data here would be a boundary violation.
+
+    Public read — the vocabulary is not sensitive and the signed-out marketing
+    surfaces need it too. Rate-limited at the anonymous tier.
+
+paths:
+  /api/v1/players/meta:
+    get:
+      summary: Option sets, labels, and bounds for the player-profile form
+      operationId: getPlayerMeta
+      security: []
+      parameters:
+        - in: header
+          name: Accept-Language
+          required: false
+          schema: { type: string }
+          description: |
+            Resolves the label maps. Changes labels ONLY — never keys, never
+            order (Constitution Law 4).
+
+            Resolution narrows from the full tag to the bare language to the
+            unsuffixed default: `fr-FR` reads `player.positions.labels.fr-fr`,
+            then `.fr`, then `player.positions.labels`. Responses carry
+            `Vary: Accept-Language`.
+        - in: header
+          name: If-None-Match
+          required: false
+          schema: { type: string }
+          description: Reference data; clients should cache and revalidate.
+      responses:
+        "200":
+          description: The current profile-form vocabulary.
+          headers:
+            ETag:
+              schema: { type: string }
+              description: Changes when any sourced config key changes.
+            Cache-Control:
+              schema: { type: string }
+              description: |
+                max-age is `player.meta.cache_ttl_seconds`;
+                stale-while-revalidate is 12x it.
+                Example: public, max-age=300, stale-while-revalidate=3600
+            Vary:
+              schema: { type: string }
+              description: Always `Accept-Language` — labels vary by locale.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data: { $ref: "#/components/schemas/PlayerMetaView" }
+                  meta: { type: object }
+        "304":
+          description: Not modified — the cached copy is current.
+
+components:
+  schemas:
+    LabelledOption:
+      type: object
+      additionalProperties: false
+      required: [key, label]
+      properties:
+        key:
+          type: string
+          description: |
+            Stable internal snake_case key. All logic keys on this; it never
+            changes for cosmetic reasons (Constitution Law 4).
+        label:
+          type: string
+          description: |
+            Display string, translated per Accept-Language. Falls back to `key`
+            when the label map has no entry — a missing label must never render
+            an unselectable blank option.
+        description:
+          type: [string, "null"]
+          description: |
+            Optional one-line consequence copy shown beneath the option.
+
+    PlayerMetaView:
+      type: object
+      additionalProperties: false
+      required: [positions, availability, market_statuses, preferred_number, name]
+      properties:
+        positions:
+          type: array
+          description: |
+            Primary positions, in `player.positions` order — order is
+            presentation and belongs to config, not to the client's sort.
+            Labels from `player.positions.labels`.
+          items: { $ref: "#/components/schemas/LabelledOption" }
+
+        availability:
+          type: array
+          description: |
+            Availability options (§12), in config order. Labels from
+            `player.availability.labels`, per-option `description` from
+            `player.availability.descriptions`.
+          items: { $ref: "#/components/schemas/LabelledOption" }
+
+        availability_default:
+          type: string
+          description: |
+            Key from `player.availability.default`, preselected when the player
+            has not chosen. Must be one of `availability[].key`.
+
+        market_statuses:
+          type: array
+          description: |
+            Market-status labels (§4) for rendering the player card. Sourced from
+            `player.market_status.labels`.
+          items: { $ref: "#/components/schemas/LabelledOption" }
+
+        preferred_number:
+          type: object
+          additionalProperties: false
+          required: [min, max, quick_picks]
+          description: |
+            Authoritative shirt-number bounds. Client validation is DERIVED from
+            these, never duplicated as literals (ADR-0007 §3).
+          properties:
+            min:
+              type: integer
+              description: From `player.profile.preferred_number_min`.
+            max:
+              type: integer
+              description: From `player.profile.preferred_number_max`.
+            quick_picks:
+              type: array
+              description: |
+                One-tap shortcuts from
+                `player.profile.preferred_number_quick_picks`. Every value is
+                guaranteed inside [min, max]; an out-of-range entry is dropped
+                server-side rather than served.
+              items: { type: integer }
+
+        name:
+          type: object
+          additionalProperties: false
+          required: [max_length, stage_name_max_length]
+          description: Length bounds the form must enforce (§3).
+          properties:
+            max_length:
+              type: integer
+              description: From `player.profile.name_max_length`.
+            stage_name_max_length:
+              type: integer
+              description: From `player.profile.stage_name_max_length`.

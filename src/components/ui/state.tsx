@@ -65,7 +65,7 @@ function StateShell({
         : "text-lg";
   const descriptionSize = size === "sm" ? "text-xs" : "text-sm";
   const iconBg =
-    tone === "danger" ? "bg-danger/10 text-danger" : "bg-fg/8 text-fg-muted";
+    tone === "danger" ? "bg-danger/10 text-danger-ink" : "bg-fg/8 text-fg-muted";
 
   return (
     <div
@@ -79,7 +79,7 @@ function StateShell({
       <span
         aria-hidden
         className={cn(
-          "mb-4 inline-flex items-center justify-center rounded-full",
+          "mb-4 inline-flex items-center justify-center rounded-pill",
           iconSize,
           iconBg,
         )}

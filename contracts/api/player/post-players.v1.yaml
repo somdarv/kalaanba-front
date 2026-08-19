@@ -1,0 +1,158 @@
+openapi: 3.1.0
+info:
+  title: "Player & Affiliation — Create my player profile"
+  version: "1.0.0"
+  description: |
+    Turns the authenticated account into a Player (Player & Affiliation engine
+    doc §4, §6, §22). The new player is created CLAIMED and FREE-AGENT — not
+    attached to any club (club join is a separate flow). One player per user in
+    V1: re-submitting returns the existing player (200) instead of creating a
+    duplicate.
+
+    The player name model is independent of the Identity account `name`
+    (different engine): first/last/stage are the player's own fields (§3). The
+    headshot is a separate player-media asset (§7), passed as a URL the caller
+    already uploaded; it is optional and never blocks creation.
+
+paths:
+  /api/v1/players:
+    post:
+      summary: Create the authenticated user's player profile (free agent)
+      operationId: createPlayer
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema: { type: string, minLength: 8, maxLength: 128 }
+        - in: header
+          name: X-Request-Id
+          required: false
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [first_name, last_name, stage_name]
+              properties:
+                first_name:
+                  type: string
+                  description: Formal given name. Bounds: player.profile.name_max_length.
+                last_name:
+                  type: string
+                  description: Formal family name. Bounds: player.profile.name_max_length.
+                stage_name:
+                  type: string
+                  description: |
+                    Football/jersey name shown on cards + lineups (§3). Bounds:
+                    player.profile.stage_name_max_length.
+                preferred_number:
+                  type: [integer, "null"]
+                  description: |
+                    Preferred shirt number. Range: player.profile.preferred_number_min
+                    .. player.profile.preferred_number_max. May differ from any
+                    competition-assigned squad number.
+                primary_position:
+                  type: [string, "null"]
+                  description: |
+                    Stable internal position key — must be one of the config set
+                    player.positions (e.g. goalkeeper | defender | midfielder |
+                    forward). Optional at creation.
+                availability_status:
+                  type: [string, "null"]
+                  description: |
+                    Stable internal availability key (available | limited |
+                    unavailable | unknown, §12). Defaults to
+                    player.availability.default when omitted.
+                headshot_url:
+                  type: [string, "null"]
+                  format: uri
+                  maxLength: 2048
+                  description: |
+                    URL of a previously uploaded headshot (§7). Separate from the
+                    Identity account avatar. Optional — never blocks onboarding.
+      responses:
+        "201":
+          description: Player profile created.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data: { $ref: "#/components/schemas/PlayerView" }
+                  meta: { type: object }
+        "200":
+          description: |
+            Player already existed for this user (one-per-user in V1). Returns
+            the existing player unchanged.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data: { $ref: "#/components/schemas/PlayerView" }
+                  meta: { type: object }
+        "401":
+          description: Missing or invalid bearer token.
+        "422":
+          description: |
+            Validation errors. Stable error keys:
+              player.profile.name_invalid
+              player.profile.stage_name_invalid
+              player.profile.preferred_number_out_of_range
+              player.profile.position_unknown
+              player.profile.availability_unknown
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  errors:
+                    type: object
+                    additionalProperties:
+                      type: array
+                      items: { type: string }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: SanctumPersonalAccessToken
+  schemas:
+    PlayerView:
+      type: object
+      required:
+        - id
+        - user_id
+        - first_name
+        - last_name
+        - stage_name
+        - availability_status
+        - market_status
+        - claim_status
+      properties:
+        id: { type: string, format: uuid }
+        user_id: { type: string, format: uuid }
+        first_name: { type: string }
+        last_name: { type: string }
+        stage_name: { type: string }
+        preferred_number: { type: [integer, "null"] }
+        primary_position: { type: [string, "null"] }
+        availability_status:
+          type: string
+          description: available | limited | unavailable | unknown
+        market_status:
+          type: string
+          description: free_agent (V1 — club affiliation ships separately)
+        claim_status:
+          type: string
+          description: claimed
+        headshot_url: { type: [string, "null"], format: uri }

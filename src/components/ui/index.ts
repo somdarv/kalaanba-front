@@ -41,6 +41,8 @@ export { Stack, HStack, VStack } from "./stack";
 export type { StackProps } from "./stack";
 export { TextField } from "./text-field";
 export type { TextFieldProps } from "./text-field";
+export { INPUT_ATTRIBUTES, resolveInputAttributes } from "./input-attributes";
+export type { InputPurpose, ResolvedInputAttributes } from "./input-attributes";
 export { PasswordField } from "./password-field";
 export type { PasswordFieldProps } from "./password-field";
 export { Textarea } from "./textarea";
@@ -134,3 +136,24 @@ export type { ScrollToProps, ScrollToTarget, ScrollControlsProps } from "./scrol
 export { AppShell, SiteHeader } from "./app-shell";
 export type { AppShellProps, SiteHeaderProps } from "./app-shell";
 export { VisuallyHidden } from "./visually-hidden";
+
+/* ---- Football primitives (WP-20260812-oklch-token-migration, ADR-0006) ----
+   The system was strong on generic app furniture and empty on the domain:
+   there was no way to render the thing the product exists to render. */
+export { Eyebrow } from "./eyebrow";
+export type { EyebrowProps, EyebrowTone } from "./eyebrow";
+export { StatValue, StatBlock } from "./stat-value";
+export type {
+  StatValueProps,
+  StatBlockProps,
+  StatValueSize,
+  StatValueTone,
+} from "./stat-value";
+export { Crest } from "./crest";
+export type { CrestProps, CrestSize } from "./crest";
+export { LiveIndicator } from "./live-indicator";
+export type { LiveIndicatorProps } from "./live-indicator";
+export { ScoreLine } from "./score-line";
+export type { ScoreLineProps, ScoreLineTeam, MatchStatus } from "./score-line";
+export { FixtureRow } from "./fixture-row";
+export type { FixtureRowProps } from "./fixture-row";

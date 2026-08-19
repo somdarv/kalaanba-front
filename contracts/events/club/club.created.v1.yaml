@@ -1,0 +1,39 @@
+event_name: club.created
+schema_version: 1
+engine: club
+description: |
+  Emitted when a user creates a club and becomes its Owner (Club engine doc
+  §5, §7). Consumed by Analytics (club growth), Notification (welcome / next
+  steps), Fan Buzz / Discovery (a new club may surface locally), and Season
+  (a new active club auto-joins the season per Club §8, handled downstream).
+required:
+  - club_id
+  - name
+  - club_type
+  - city_hub_id
+  - area_id
+  - created_by_user_id
+  - created_at
+payload:
+  club_id:
+    type: uuid
+  name:
+    type: string
+  club_type:
+    type: string
+    description: Stable internal key from the club.types config set.
+  city_hub_id:
+    type: uuid
+    description: Zone-engine City Hub (cross-engine reference).
+  area_id:
+    type: uuid
+    description: Zone-engine Area (cross-engine reference).
+  created_by_user_id:
+    type: uuid
+    description: Identity account that created the club and owns it.
+  created_at:
+    type: string
+    format: date-time
+idempotency: |
+  event_id is the club_id, so a retried creation cannot double-emit
+  (Constitution §1.14). Creation is guarded by the Idempotency-Key middleware.

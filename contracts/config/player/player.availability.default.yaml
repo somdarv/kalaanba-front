@@ -1,0 +1,11 @@
+key: player.availability.default
+engine: player-affiliation
+scope: platform
+value_type: string
+default: "unknown"
+approval_level: low
+description: |
+  The availability state a newly created player starts in when none is chosen
+  (Player & Affiliation engine doc §12). Stable internal key — one of
+  available | limited | unavailable | unknown. Labels are configurable and
+  translatable; logic keys are fixed (Constitution Law 4).

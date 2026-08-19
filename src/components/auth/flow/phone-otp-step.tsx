@@ -9,6 +9,8 @@ import {
   useRequestOtp,
   useVerifyOtp,
 } from "@/lib/api/hooks/use-auth";
+import { AuthLink } from "../auth-link";
+import { AuthStep } from "../auth-step";
 
 /**
  * PhoneOtpStep — the code screen, and the FINAL step for both paths (ADR-0004).
@@ -112,29 +114,47 @@ export function PhoneOtpStep({
   };
 
   return (
-    <form
+    <AuthStep
       onSubmit={(e) => {
         e.preventDefault();
         void submitCode();
       }}
-      className="flex flex-col gap-6"
+      title={isRegister ? "Verify your number" : "Welcome back"}
+      subtitle={
+        isRegister ? (
+          <>
+            We sent a 6-digit code to{" "}
+            <span className="font-semibold text-fg">{phoneE164}</span>.
+          </>
+        ) : (
+          "Pick up where you left off."
+        )
+      }
+      action={
+        <Button type="submit" size="lg" fullWidth loading={pending}>
+          {isRegister ? "Create account" : "Verify"}
+        </Button>
+      }
+      footer={
+        <div className="flex flex-col items-center gap-1">
+          <AuthLink
+            tone="primary"
+            onClick={handleResend}
+            disabled={cooldown > 0 || requestOtp.isPending}
+          >
+            {cooldown > 0
+              ? `You can request a new code in ${cooldown}s`
+              : resentNote
+                ? "New code sent. Resend again"
+                : "Didn't get it? Resend code"}
+          </AuthLink>
+          <AuthLink onClick={onChangeNumber}>
+            <ArrowLeft size={16} weight="bold" aria-hidden />
+            Change number
+          </AuthLink>
+        </div>
+      }
     >
-      <header className="space-y-1.5">
-        <h1 className="font-display text-2xl font-bold tracking-tight text-fg lg:text-3xl">
-          {isRegister ? "Verify your number" : "Welcome back"}
-        </h1>
-        <p className="text-sm text-fg-muted">
-          {isRegister ? (
-            <>
-              We sent a 6-digit code to{" "}
-              <span className="font-medium text-fg">{phoneE164}</span>.
-            </>
-          ) : (
-            "Pick up where you left off."
-          )}
-        </p>
-      </header>
-
       <OtpInput
         value={otp}
         onChange={setOtp}
@@ -142,36 +162,6 @@ export function PhoneOtpStep({
         autoFocus
         aria-label="One-time code"
       />
-
-      <Button type="submit" fullWidth loading={pending}>
-        {isRegister ? "Create account" : "Verify"}
-      </Button>
-
-      {/* Resend — left-aligned under the code. */}
-      <button
-        type="button"
-        onClick={handleResend}
-        disabled={cooldown > 0 || requestOtp.isPending}
-        className="self-start text-left text-sm font-medium text-primary underline-offset-2 hover:underline disabled:text-fg-subtle disabled:no-underline"
-      >
-        {cooldown > 0
-          ? `You can request a new code in ${cooldown}s`
-          : resentNote
-            ? "New code sent. Resend again"
-            : "Didn't get it? Resend code"}
-      </button>
-
-      {/* Change number — set apart with a back affordance. */}
-      <div className="mt-auto border-t border-divider pt-5">
-        <button
-          type="button"
-          onClick={onChangeNumber}
-          className="inline-flex items-center gap-1.5 text-sm text-fg-muted underline-offset-2 hover:text-fg hover:underline"
-        >
-          <ArrowLeft size={16} weight="bold" aria-hidden />
-          Change number
-        </button>
-      </div>
-    </form>
+    </AuthStep>
   );
 }

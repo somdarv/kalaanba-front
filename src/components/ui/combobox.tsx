@@ -155,7 +155,7 @@ export function Combobox<T extends string>({
           htmlFor={fieldId}
           className={cn(
             "mb-1.5 block text-sm font-medium",
-            hasError ? "text-danger" : "text-fg",
+            hasError ? "text-danger-ink" : "text-fg",
           )}
         >
           {label}
@@ -173,12 +173,12 @@ export function Combobox<T extends string>({
           inputRef.current?.focus();
         }}
         className={cn(
-          "group relative flex min-h-12 w-full flex-wrap items-center gap-1.5 rounded-card bg-surface-2 py-1.5 pl-3 pr-3",
-          "border-[0.5px] border-border-strong",
+          "group relative flex min-h-12 w-full flex-wrap items-center gap-1.5 rounded-card bg-control-surface py-1.5 pl-3 pr-3",
+          "border border-control-border",
           "transition-[box-shadow,border-color,background-color] duration-quick ease-out",
           "hover:shadow-sm",
-          "focus-within:border-primary focus-within:ring-1 focus-within:ring-primary",
-          "data-error:border-danger data-error:focus-within:ring-danger",
+          "focus-within:border-primary-ink focus-within:ring-1 focus-within:ring-primary-ink",
+          "data-error:border-danger-ink data-error:focus-within:ring-danger-ink",
           "data-disabled:cursor-not-allowed data-disabled:opacity-50",
           !disabled && "cursor-text",
         )}
@@ -190,7 +190,7 @@ export function Combobox<T extends string>({
             <span
               key={v}
               className={cn(
-                "inline-flex h-7 items-center gap-1.5 rounded-full bg-surface-elev pl-2.5 pr-1 text-xs font-medium text-fg",
+                "inline-flex h-7 items-center gap-1.5 rounded-pill bg-surface-elev pl-2.5 pr-1 text-xs font-medium text-fg",
                 "border-[0.5px] border-border",
               )}
             >
@@ -207,10 +207,10 @@ export function Combobox<T extends string>({
                   remove(v);
                 }}
                 className={cn(
-                  "grid size-5 place-items-center rounded-full text-fg-muted",
+                  "grid size-5 place-items-center rounded-pill text-fg-muted",
                   "transition-colors duration-quick ease-out",
                   "hover:bg-(--hover-overlay) hover:text-fg",
-                  "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary",
+                  "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-focus-ring",
                   "disabled:cursor-not-allowed",
                 )}
               >
@@ -266,7 +266,7 @@ export function Combobox<T extends string>({
       >
         <div className="p-2">
           {options.length > 8 ? (
-            <div className="mb-2 flex h-10 items-center gap-2 rounded-full bg-surface-2 px-4">
+            <div className="mb-2 flex h-10 items-center gap-2 rounded-control bg-surface-elev px-4">
               <MagnifyingGlass
                 size={16}
                 weight="bold"
@@ -327,7 +327,7 @@ export function Combobox<T extends string>({
                           "grid size-5 shrink-0 place-items-center rounded-md border-[1.5px]",
                           isSelected
                             ? "border-primary bg-primary text-on-primary"
-                            : "border-border-strong bg-surface-2",
+                            : "border-border-strong bg-surface-elev",
                         )}
                       >
                         {isSelected ? (
@@ -353,7 +353,7 @@ export function Combobox<T extends string>({
           id={msgId}
           className={cn(
             "mt-1.5 text-xs",
-            hasError ? "text-danger" : "text-fg-muted",
+            hasError ? "text-danger-ink" : "text-fg-muted",
           )}
         >
           {error ?? hint}

@@ -6,6 +6,7 @@ import { EnvelopeSimple } from "@phosphor-icons/react";
 import { Button, TextField } from "@/components/ui";
 import { useVerifyEmail } from "@/lib/api/hooks/use-auth";
 import { SubmitError, messageFor } from "./auth-feedback";
+import { AuthStep } from "./auth-step";
 
 export type EmailVerifyPendingProps = {
   email: string;
@@ -42,21 +43,29 @@ export function EmailVerifyPending({
   };
 
   return (
-    <form onSubmit={handleVerify} className="flex flex-col gap-6">
-      <header className="space-y-3">
-        <span className="grid size-12 place-items-center rounded-full bg-primary/10 text-primary">
-          <EnvelopeSimple size={24} weight="bold" aria-hidden />
-        </span>
-        <h1 className="font-display text-2xl font-bold tracking-tight text-fg lg:text-3xl">
-          Check your email
-        </h1>
-        <p className="text-sm text-fg-muted">
+    <AuthStep
+      onSubmit={handleVerify}
+      icon={<EnvelopeSimple size={24} weight="bold" aria-hidden />}
+      title="Check your email"
+      subtitle={
+        <>
           We sent a verification link to{" "}
-          <span className="font-medium text-fg">{email}</span>. Open it to
+          <span className="font-semibold text-fg">{email}</span>. Open it to
           finish setting up your account.
-        </p>
-      </header>
-
+        </>
+      }
+      action={
+        <Button
+          type="submit"
+          size="lg"
+          fullWidth
+          loading={verify.isPending}
+          disabled={token.trim().length === 0}
+        >
+          Verify &amp; continue
+        </Button>
+      }
+    >
       <TextField
         label="Verification token"
         hint="Paste the token from your email to verify here."
@@ -69,15 +78,6 @@ export function EmailVerifyPending({
       />
 
       <SubmitError message={submitError} />
-
-      <Button
-        type="submit"
-        fullWidth
-        loading={verify.isPending}
-        disabled={token.trim().length === 0}
-      >
-        Verify & continue
-      </Button>
-    </form>
+    </AuthStep>
   );
 }

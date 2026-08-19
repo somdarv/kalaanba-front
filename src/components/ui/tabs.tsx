@@ -11,8 +11,8 @@ import { cn } from "@/lib/cn";
  * Direct port of the legacy `KxTabs` recipe (kalaanba-front/src/components/_archive/
  * showcase/primitives.tsx, line 360) translated to our semantic tokens.
  *
- *   list:       rounded-full  bg-surface-2  p-1.5
- *   tab:        h-9 rounded-full px-4 text-[13px] font-medium
+ *   list:       rounded-pill  bg-surface-elev  p-1.5
+ *   tab:        h-9 rounded-pill px-4 text-[13px] font-medium
  *   active:     bg-surface text-fg shadow-sm
  *   inactive:   text-fg-muted hover:text-fg
  *
@@ -103,7 +103,7 @@ export function Tabs<T extends string>({
       aria-label={ariaLabel}
       onKeyDown={onKeyDown}
       className={cn(
-        "inline-flex items-center gap-1 rounded-full bg-surface-2 p-1.5",
+        "inline-flex items-center gap-1 rounded-pill bg-surface-elev p-1.5",
         className,
       )}
     >
@@ -125,9 +125,9 @@ export function Tabs<T extends string>({
               if (!it.disabled) onChange(it.value);
             }}
             className={cn(
-              "relative inline-flex h-9 items-center gap-2 rounded-full px-4 text-[13px] font-medium",
+              "relative inline-flex h-9 items-center gap-2 rounded-pill px-4 text-[13px] font-medium",
               "transition-[color,background-color,box-shadow] duration-200 ease-out",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg",
               "disabled:cursor-not-allowed disabled:opacity-50",
               active
                 ? "bg-surface text-fg shadow-sm"

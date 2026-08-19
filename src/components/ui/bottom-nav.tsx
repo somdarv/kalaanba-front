@@ -70,8 +70,8 @@ export function BottomNav<T extends string = string>({
                 className={cn(
                   "relative mx-auto flex min-h-11 min-w-11 w-full flex-col items-center justify-center gap-0.5 px-2 py-1.5",
                   "transition-colors duration-200 ease-out",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg",
-                  active ? "text-primary" : "text-fg-muted hover:text-fg",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg",
+                  active ? "text-primary-ink" : "text-fg-muted hover:text-fg",
                 )}
               >
                 <span
@@ -82,7 +82,7 @@ export function BottomNav<T extends string = string>({
                   {it.badge ? (
                     <span
                       className={cn(
-                        "absolute -right-1.5 -top-1 grid min-h-4 min-w-4 place-items-center rounded-full bg-danger px-1 text-[10px] font-semibold leading-none text-on-danger",
+                        "absolute -right-1.5 -top-1 grid min-h-4 min-w-4 place-items-center rounded-pill bg-danger px-1 text-[10px] font-semibold leading-none text-on-danger",
                       )}
                     >
                       {it.badge === true ? "" : it.badge}

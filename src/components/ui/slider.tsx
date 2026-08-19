@@ -15,7 +15,7 @@ import { cn } from "@/lib/cn";
  *  - `Slider`       — single-thumb range input (controlled).
  *  - `RangeSlider`  — two-thumb range with `[min, max]` value.
  *
- * Both share the same visual recipe: a 6 px track on `bg-surface-2`
+ * Both share the same visual recipe: a 6 px track on `bg-surface-elev`
  * with a brand-filled progress segment and a white 20 px thumb ringed
  * in primary. Keyboard: ←/→ adjust by step, Shift+←/→ jumps by 10×,
  * Home/End jump to bounds.
@@ -187,7 +187,7 @@ export function Slider({
               htmlFor={fieldId}
               className={cn(
                 "text-sm font-medium",
-                hasError ? "text-danger" : "text-fg",
+                hasError ? "text-danger-ink" : "text-fg",
               )}
             >
               {label}
@@ -213,12 +213,12 @@ export function Slider({
         <div
           ref={trackRef}
           className={cn(
-            "pointer-events-none absolute left-0 right-0 top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-surface-2",
+            "pointer-events-none absolute left-0 right-0 top-1/2 h-1.5 -translate-y-1/2 rounded-pill bg-surface-elev",
           )}
         >
           <div
             aria-hidden
-            className="absolute left-0 top-0 h-full rounded-full bg-primary"
+            className="absolute left-0 top-0 h-full rounded-pill bg-primary"
             style={{ width: `${pct}%` }}
           />
         </div>
@@ -237,7 +237,7 @@ export function Slider({
           onKeyDown={onKeyDown}
           className={cn(
             // Pointer events are handled by the wrapper — thumb is purely visual.
-            "pointer-events-none absolute top-1/2 size-5 -translate-x-1/2 -translate-y-1/2 rounded-full",
+            "pointer-events-none absolute top-1/2 size-5 -translate-x-1/2 -translate-y-1/2 rounded-pill",
             "bg-white ring-2 ring-primary shadow-md",
             "focus-visible:outline-none focus-visible:ring-[3px]",
           )}
@@ -259,7 +259,7 @@ export function Slider({
         <p
           className={cn(
             "mt-1.5 text-xs",
-            hasError ? "text-danger" : "text-fg-muted",
+            hasError ? "text-danger-ink" : "text-fg-muted",
           )}
         >
           {error ?? hint}
@@ -402,7 +402,7 @@ export function RangeSlider({
               id={`${fieldId}-label`}
               className={cn(
                 "text-sm font-medium",
-                hasError ? "text-danger" : "text-fg",
+                hasError ? "text-danger-ink" : "text-fg",
               )}
             >
               {label}
@@ -429,12 +429,12 @@ export function RangeSlider({
         <div
           ref={trackRef}
           className={cn(
-            "pointer-events-none absolute left-0 right-0 top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-surface-2",
+            "pointer-events-none absolute left-0 right-0 top-1/2 h-1.5 -translate-y-1/2 rounded-pill bg-surface-elev",
           )}
         >
           <div
             aria-hidden
-            className="absolute top-0 h-full rounded-full bg-primary"
+            className="absolute top-0 h-full rounded-pill bg-primary"
             style={{
               left: `${pctLo}%`,
               width: `${Math.max(0, pctHi - pctLo)}%`,
@@ -459,7 +459,7 @@ export function RangeSlider({
               onKeyDown={makeKey(which)}
               className={cn(
                 // Pointer events handled by the wrapper \u2014 thumb is purely visual.
-                "pointer-events-none absolute top-1/2 size-5 -translate-x-1/2 -translate-y-1/2 rounded-full",
+                "pointer-events-none absolute top-1/2 size-5 -translate-x-1/2 -translate-y-1/2 rounded-pill",
                 "bg-white ring-2 ring-primary shadow-md",
                 "focus-visible:outline-none focus-visible:ring-[3px]",
               )}
@@ -473,7 +473,7 @@ export function RangeSlider({
         <p
           className={cn(
             "mt-1.5 text-xs",
-            hasError ? "text-danger" : "text-fg-muted",
+            hasError ? "text-danger-ink" : "text-fg-muted",
           )}
         >
           {error ?? hint}

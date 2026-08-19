@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { EnvelopeSimple, DeviceMobile } from "@phosphor-icons/react";
 import { z } from "zod";
 
-import { Button, TextField } from "@/components/ui";
+import { Button, Divider, TextField } from "@/components/ui";
 import { useLookup } from "@/lib/api/hooks/use-auth";
 import { SubmitError, messageFor } from "../auth-feedback";
+import { AuthStep } from "../auth-step";
 
 /**
  * IdentifierStep — the single neutral entry screen (ADR-0004).
@@ -14,6 +16,12 @@ import { SubmitError, messageFor } from "../auth-feedback";
  * never offers a "create an account" link. The button reads "Continue"
  * because the path is not yet decided. On submit it calls `POST /auth/lookup`
  * and hands the resolved channel + existence up to the orchestrator.
+ *
+ * The channel swap sits under an "or" rule as a real secondary button — the
+ * slot the reference layout gives to social sign-in. Kalaanba has no social
+ * providers (Identity §"Open questions": Google/Apple OAuth is deferred to
+ * V2), so the slot carries the alternative we actually support: the other
+ * channel. It was previously a 20px-tall text link, i.e. a §9.1 violation.
  */
 
 const DEFAULT_DIAL_CODE = "233"; // Ghana — grassroots default when none is given.
@@ -113,58 +121,70 @@ export function IdentifierStep({
   };
 
   return (
-    <form onSubmit={handleContinue} className="flex flex-col gap-6">
-      <header className="space-y-1.5">
-        <h1 className="font-display text-2xl font-bold tracking-tight text-fg lg:text-3xl">
-          Get in the game
-        </h1>
-        <p className="text-sm text-fg-muted">
-          Enter your {usingPhone ? "number" : "email"} to play, organise or
-          follow.
-        </p>
-      </header>
+    <AuthStep
+      onSubmit={handleContinue}
+      title="Get in the game"
+      subtitle={`Enter your ${usingPhone ? "number" : "email"} to play, organise or follow.`}
+      action={
+        <Button type="submit" size="lg" fullWidth loading={lookup.isPending}>
+          Continue
+        </Button>
+      }
+      footer={
+        <>
+          <div className="flex w-full items-center gap-3" aria-hidden>
+            <Divider className="flex-1" />
+            <span className="text-xs font-semibold tracking-[0.14em] text-fg-subtle uppercase">
+              or
+            </span>
+            <Divider className="flex-1" />
+          </div>
 
-      <div className="flex flex-col gap-2">
-        {usingPhone ? (
-          <TextField
-            label="Phone number"
-            type="tel"
-            inputMode="tel"
-            autoComplete="tel"
-            enterKeyHint="go"
-            placeholder="Phone number"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            error={fieldError ?? undefined}
-          />
-        ) : (
-          <TextField
-            label="Email"
-            type="email"
-            inputMode="email"
-            autoComplete="email"
-            enterKeyHint="go"
-            placeholder="you@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            error={fieldError ?? undefined}
-          />
-        )}
-
-        <button
-          type="button"
-          onClick={swapChannel}
-          className="self-start text-sm font-medium text-primary underline-offset-2 hover:underline"
-        >
-          {usingPhone ? "Use email instead" : "Use phone instead"}
-        </button>
-      </div>
+          <Button
+            type="button"
+            intent="secondary"
+            fullWidth
+            onClick={swapChannel}
+            leadingIcon={
+              usingPhone ? (
+                <EnvelopeSimple size={18} weight="bold" aria-hidden />
+              ) : (
+                <DeviceMobile size={18} weight="bold" aria-hidden />
+              )
+            }
+          >
+            {usingPhone ? "Use email instead" : "Use phone instead"}
+          </Button>
+        </>
+      }
+    >
+      {usingPhone ? (
+        <TextField
+          label="Phone number"
+          type="tel"
+          inputMode="tel"
+          autoComplete="tel"
+          enterKeyHint="go"
+          placeholder="Phone number"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          error={fieldError ?? undefined}
+        />
+      ) : (
+        <TextField
+          label="Email"
+          type="email"
+          inputMode="email"
+          autoComplete="email"
+          enterKeyHint="go"
+          placeholder="you@example.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          error={fieldError ?? undefined}
+        />
+      )}
 
       <SubmitError message={submitError} />
-
-      <Button type="submit" fullWidth loading={lookup.isPending}>
-        Continue
-      </Button>
-    </form>
+    </AuthStep>
   );
 }

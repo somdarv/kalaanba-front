@@ -1,0 +1,11 @@
+key: player.profile.stage_name_max_length
+engine: player-affiliation
+scope: platform
+value_type: integer
+default: "40"
+approval_level: low
+description: |
+  Maximum character length for a player's stage / jersey name — the
+  football-community-facing name shown on cards, lineups and goal alerts
+  (Player & Affiliation engine doc §3). Shorter than the formal name bound
+  because it must fit match graphics and card surfaces.

@@ -17,7 +17,7 @@ import { cn } from "@/lib/cn";
  * files. Stateless w.r.t. the upload itself: consumer drives `value`
  * (an array of `File` objects) and decides what to do on upload.
  *
- * Visual recipe: rounded-card dashed border on `bg-surface-2`, with a
+ * Visual recipe: rounded-card dashed border on `bg-surface-elev`, with a
  * brand-tinted state when files are dragged over it. Selected files
  * list as a vertical stack of rows with size + remove button.
  *
@@ -119,7 +119,7 @@ export function FileUpload({
           htmlFor={fieldId}
           className={cn(
             "mb-1.5 block text-sm font-medium",
-            hasError ? "text-danger" : "text-fg",
+            hasError ? "text-danger-ink" : "text-fg",
           )}
         >
           {label}
@@ -138,17 +138,17 @@ export function FileUpload({
         data-disabled={disabled || undefined}
         className={cn(
           "relative flex flex-col items-center justify-center gap-2 rounded-card px-6 py-10",
-          "border-[1.5px] border-dashed border-border-strong bg-surface-2 text-center",
+          "border-[1.5px] border-dashed border-border-strong bg-surface-elev text-center",
           "transition-[background-color,border-color,box-shadow] duration-quick ease-out",
           "hover:border-fg-muted hover:bg-(--hover-overlay)",
-          "data-dragging:border-primary data-dragging:bg-surface-elev data-dragging:shadow-sm",
-          "data-error:border-danger",
+          "data-dragging:border-primary-ink data-dragging:bg-surface-elev data-dragging:shadow-sm",
+          "data-error:border-danger-ink",
           "data-disabled:cursor-not-allowed data-disabled:opacity-50",
         )}
       >
         <span
           aria-hidden
-          className="grid size-12 place-items-center rounded-full bg-surface-elev text-fg-muted"
+          className="grid size-12 place-items-center rounded-pill bg-surface-elev text-fg-muted"
         >
           <UploadSimple size={22} weight="bold" />
         </span>
@@ -160,7 +160,7 @@ export function FileUpload({
                 disabled={disabled}
                 onClick={() => inputRef.current?.click()}
                 className={cn(
-                  "font-semibold text-primary",
+                  "font-semibold text-primary-ink",
                   "transition-opacity duration-quick ease-out hover:opacity-80",
                   "focus-visible:outline-none focus-visible:underline",
                   "disabled:cursor-not-allowed disabled:opacity-50",
@@ -198,7 +198,7 @@ export function FileUpload({
             <li
               key={`${f.name}-${i}`}
               className={cn(
-                "flex items-center gap-3 rounded-card border-[0.5px] border-border bg-surface-2 px-3 py-2",
+                "flex items-center gap-3 rounded-card border-[0.5px] border-border bg-surface-elev px-3 py-2",
               )}
             >
               <span
@@ -217,10 +217,10 @@ export function FileUpload({
                 disabled={disabled}
                 onClick={() => remove(i)}
                 className={cn(
-                  "grid size-8 shrink-0 place-items-center rounded-full text-fg-muted",
+                  "grid size-8 shrink-0 place-items-center rounded-pill text-fg-muted",
                   "transition-colors duration-quick ease-out",
-                  "hover:bg-(--hover-overlay) hover:text-danger",
-                  "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary",
+                  "hover:bg-(--hover-overlay) hover:text-danger-ink",
+                  "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-focus-ring",
                   "disabled:cursor-not-allowed",
                 )}
               >
@@ -236,7 +236,7 @@ export function FileUpload({
           id={msgId}
           className={cn(
             "mt-1.5 text-xs",
-            hasError ? "text-danger" : "text-fg-muted",
+            hasError ? "text-danger-ink" : "text-fg-muted",
           )}
         >
           {shownError ?? hint}

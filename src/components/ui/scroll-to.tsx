@@ -128,7 +128,7 @@ export function ScrollTo({
       )}
       style={
         visible
-          ? { animation: "kx-pop-in 220ms var(--ease-entrance)" }
+          ? { animation: "kx-pop-in var(--dur-graceful) var(--ease-entrance)" }
           : undefined
       }
     >

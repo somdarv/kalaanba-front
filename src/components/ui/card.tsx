@@ -12,35 +12,43 @@ import { pressableBase } from "./pressable";
 /**
  * `<Card>` — the canonical surface primitive.
  *
- * Verbatim port of the legacy `KxCard tone="surface"` recipe:
- *   `bg-surface  +  shadow-md  +  rounded-card`
- * No border. The surface + shadow define the card; adding a border
- * makes it look like a panel, not a card.
+ * Three real tiers, per DESIGN_LANGUAGE §2.4. Each is a *prescription* —
+ * ground + line + (highlight | blur) — not a loose shadow:
  *
- * The `tone` and `size` props are retained for backwards compatibility,
- * but every tone resolves to this one recipe. There is intentionally only
- * one card.
+ *   flat      inline regions, list rows      surface      + hairline
+ *   raised    cards, panels, sticky bars     surface-elev + hairline + inset highlight
+ *   floating  modals, popovers, dropdowns    surface-overlay + strong line + blur
+ *
+ * The recipes live in globals.css as `.elev-*` so non-Card surfaces
+ * (sheets, popovers) compose the same thing instead of re-deriving it.
+ *
+ * History: v2 declared `flat | raised` and resolved BOTH to one string
+ * (`bg-surface shadow-md`) — the prop was a no-op. It also dropped the
+ * border entirely, inverting §4.3 ("border-strong carries depth before
+ * shadow does"), and never implemented the inset top highlight that §2.4
+ * calls "what separates this from flat web". The underlying ramp couldn't
+ * have carried three tiers anyway: surface→elev was ΔL 0.022. The v3 token
+ * migration made the steps uniform, so the tiers are now expressible.
  */
 
-export type CardTone = "flat" | "raised";
+export type CardTone = "flat" | "raised" | "floating";
 export type CardSize = "md" | "lg";
 
-const CARD_BASE = "bg-surface text-fg shadow-md";
-
 const TONES: Record<CardTone, string> = {
-  flat: CARD_BASE,
-  raised: CARD_BASE,
+  flat: "elev-flat",
+  raised: "elev-raised",
+  floating: "elev-floating",
 };
 
 const SIZES: Record<CardSize, string> = {
-  md: "rounded-[var(--radius-card)] p-5 sm:p-6",
-  lg: "rounded-[var(--radius-card-lg)] p-7 sm:p-8",
+  md: "rounded-card p-5 sm:p-6",
+  lg: "rounded-panel p-7 sm:p-8",
 };
 
 const INTERACTIVE_HOVER = cn(
   "cursor-pointer",
-  "hover:shadow-lg",
-  "active:shadow-[var(--shadow-pressed)]",
+  "hover:border-border-strong hover:bg-[var(--secondary-hover)]",
+  "active:shadow-(--shadow-pressed)",
 );
 
 type DivCardProps = HTMLAttributes<HTMLDivElement> & {
@@ -58,11 +66,11 @@ type ButtonCardProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "type"> & {
 
 export type CardProps = DivCardProps | ButtonCardProps;
 
-function Card(props: DivCardProps, ref: React.Ref<HTMLDivElement>): JSX.Element;
+function Card(props: DivCardProps, ref: React.Ref<HTMLDivElement>): React.JSX.Element;
 function Card(
   props: ButtonCardProps,
   ref: React.Ref<HTMLButtonElement>,
-): JSX.Element;
+): React.JSX.Element;
 function Card(
   {
     tone = "raised",
@@ -74,7 +82,7 @@ function Card(
   }: CardProps,
   ref: React.Ref<HTMLDivElement | HTMLButtonElement>,
 ) {
-  const classes = cn(TONES[tone], SIZES[size], className);
+  const classes = cn("text-fg", TONES[tone], SIZES[size], className);
 
   if (interactive) {
     const { type = "button", ...buttonRest } =
@@ -114,7 +122,7 @@ const CardWithRef = forwardRef(Card) as <T extends CardProps>(
       ? React.Ref<HTMLButtonElement>
       : React.Ref<HTMLDivElement>;
   },
-) => JSX.Element;
+) => React.JSX.Element;
 
 export type CardSectionProps = HTMLAttributes<HTMLDivElement> & {
   children?: ReactNode;

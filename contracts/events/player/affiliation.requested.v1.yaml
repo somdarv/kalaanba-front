@@ -1,0 +1,24 @@
+event_name: affiliation.requested
+schema_version: 1
+engine: player-affiliation
+description: |
+  Emitted when a player requests to join a club (engine doc §8, §11). Consumed
+  by Notification (alert the club's admins), Analytics, and Fan Buzz. No RP or
+  standings effects.
+required:
+  - affiliation_id
+  - player_id
+  - club_id
+  - requested_by_user_id
+  - requested_at
+payload:
+  affiliation_id: { type: uuid }
+  player_id: { type: uuid }
+  club_id:
+    type: uuid
+    description: Club engine reference (cross-engine).
+  requested_by_user_id: { type: uuid }
+  requested_at: { type: string, format: date-time }
+idempotency: |
+  event_id is the affiliation_id (one affiliation per player+club), so a
+  retried request cannot double-emit (Constitution §1.14).

@@ -43,8 +43,10 @@ export const Fab = forwardRef<HTMLButtonElement, FabProps>(function Fab(
         )
       : cn(
           "bg-accent text-on-accent",
-          "hover:bg-[color-mix(in_oklab,var(--accent)_92%,white_8%)]",
-          "active:bg-[color-mix(in_oklab,var(--accent)_88%,black_12%)] active:shadow-[var(--shadow-pressed)]",
+          // Dedicated state tokens rather than a white/black mix — the mix
+          // desaturated the brand and pushed the label under AA (ADR-0006).
+          "hover:bg-accent-hover",
+          "active:bg-accent-pressed active:shadow-(--shadow-pressed)",
         );
 
   return (
@@ -58,7 +60,7 @@ export const Fab = forwardRef<HTMLButtonElement, FabProps>(function Fab(
         "shadow-[var(--shadow-md)]",
         "font-medium",
         "motion-safe:animate-[kx-fab-in_var(--dur-graceful)_var(--ease-entrance)_both]",
-        extended ? "h-14 px-5 gap-2 rounded-full text-base" : "h-14 w-14 rounded-full",
+        extended ? "h-14 px-5 gap-2 rounded-pill text-base" : "h-14 w-14 rounded-pill",
         intentClasses,
         position === "bottom-right" &&
           "fixed right-4 bottom-[max(1rem,env(safe-area-inset-bottom))] z-40 sm:right-6 sm:bottom-6",

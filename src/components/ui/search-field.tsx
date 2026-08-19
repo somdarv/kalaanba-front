@@ -16,7 +16,7 @@ import { cn } from "@/lib/cn";
 
 export type SearchFieldProps = Omit<
   TextFieldProps,
-  "type" | "leftIcon" | "rightSlot"
+  "type" | "leftIcon" | "rightSlot" | "purpose"
 > & {
   /** Called when the × button is clicked. Render only when set. */
   onClear?: () => void;
@@ -24,14 +24,7 @@ export type SearchFieldProps = Omit<
 
 export const SearchField = forwardRef<HTMLInputElement, SearchFieldProps>(
   function SearchField(
-    {
-      placeholder = "Search…",
-      enterKeyHint = "search",
-      autoComplete = "off",
-      value,
-      onClear,
-      ...rest
-    },
+    { value, onClear, ...rest },
     ref,
   ) {
     const showClear =
@@ -42,10 +35,7 @@ export const SearchField = forwardRef<HTMLInputElement, SearchFieldProps>(
     return (
       <TextField
         ref={ref}
-        type="search"
-        placeholder={placeholder}
-        enterKeyHint={enterKeyHint}
-        autoComplete={autoComplete}
+        purpose="search"
         value={value}
         leftIcon={<MagnifyingGlass size={18} weight="bold" />}
         rightSlot={
@@ -56,10 +46,10 @@ export const SearchField = forwardRef<HTMLInputElement, SearchFieldProps>(
               onClick={onClear}
               disabled={rest.disabled}
               className={cn(
-                "mr-1 grid size-9 place-items-center rounded-full text-fg-muted",
+                "mr-1 grid size-9 place-items-center rounded-pill text-fg-muted",
                 "transition-colors duration-quick ease-out",
                 "hover:bg-(--hover-overlay) hover:text-fg",
-                "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary",
+                "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-focus-ring",
                 "disabled:cursor-not-allowed",
               )}
             >

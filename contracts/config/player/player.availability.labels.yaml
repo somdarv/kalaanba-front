@@ -1,0 +1,22 @@
+key: player.availability.labels
+engine: player-affiliation
+scope: platform
+value_type: json
+default: '{"available":"Available to play","limited":"Available with notice","unavailable":"Not available","unknown":"Not sure yet"}'
+approval_level: low
+description: |
+  Display labels for the player availability keys (Player & Affiliation engine
+  doc §12: available | limited | unavailable | unknown). Cosmetic and
+  translatable; the keys carry the logic that feeds club readiness (Constitution
+  Law 4).
+
+  §12 explicitly anticipates relabelling — "Super admin must be able to ... change
+  labels like Available to Ready to Go" — which is precisely what this key is for.
+
+  Served through `GET /api/v1/players/meta` (ADR-0007).
+
+  Locale variants: a suffixed key (`<this key>.<language tag>`, e.g.
+  `player.positions.labels.fr`) overrides this map for that language.
+  Resolution narrows from the full tag to the bare language to this key —
+  `fr-FR` tries `.fr-fr`, then `.fr`, then this one — so a region needs its
+  own map only where it actually differs.

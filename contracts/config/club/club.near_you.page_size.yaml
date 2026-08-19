@@ -1,0 +1,10 @@
+key: club.near_you.page_size
+engine: club
+scope: platform
+value_type: integer
+default: "25"
+approval_level: low
+description: |
+  Maximum number of clubs returned by a single "clubs near you" discovery
+  request (GET /api/v1/clubs), per the Club engine location model (§6). Kept at
+  the platform list default; cursor pagination for deeper browse is deferred.

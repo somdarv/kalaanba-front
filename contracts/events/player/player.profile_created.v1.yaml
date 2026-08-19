@@ -1,0 +1,43 @@
+event_name: player.profile_created
+schema_version: 1
+engine: player-affiliation
+description: |
+  Emitted when a user creates their player profile and becomes a CLAIMED
+  FREE-AGENT player (Player & Affiliation engine doc §4, §22). Consumed by
+  Analytics (onboarding funnel), Notification (welcome / next-step nudges),
+  and Fan Buzz / Discovery (a new free agent may surface in discovery). No
+  RP, stats, or standings effects — those are gated on verified matches.
+required:
+  - player_id
+  - user_id
+  - stage_name
+  - market_status
+  - claim_status
+  - created_at
+payload:
+  player_id:
+    type: uuid
+  user_id:
+    type: uuid
+    description: The Identity account that owns this player (cross-engine link).
+  stage_name:
+    type: string
+  primary_position:
+    type: string
+    description: Stable internal position key, or null.
+  availability_status:
+    type: string
+    description: available | limited | unavailable | unknown.
+  market_status:
+    type: string
+    description: free_agent at creation.
+  claim_status:
+    type: string
+    description: claimed at creation.
+  created_at:
+    type: string
+    format: date-time
+idempotency: |
+  event_id is the player_id (one player per user in V1), so a retried creation
+  cannot double-emit (Constitution §1.14). The application service also returns
+  the existing player without re-emitting when one already exists.

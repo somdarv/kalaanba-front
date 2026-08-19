@@ -1,0 +1,20 @@
+key: player.positions
+engine: player-affiliation
+scope: platform
+value_type: json
+default: '["goalkeeper","defender","midfielder","forward"]'
+approval_level: medium
+description: |
+  The allowed set of primary-position internal keys (stable snake_case)
+  offered at player-profile creation (Player & Affiliation engine doc §6).
+  Logic depends on these keys, never on display strings (Constitution Law 4);
+  the human-facing labels are resolved separately and are translatable.
+  Kept intentionally coarse for V1 — richer position taxonomies (secondary
+  positions, styles) are deferred (engine doc §23). Medium approval because
+  changing the set affects every position selector and any downstream
+  position-based display.
+
+  Order is meaningful and is presentation, not logic: the list runs
+  back-to-front (goalkeeper first, most advanced last). The setup pitch picker
+  renders it reversed so the goalkeeper sits at the bottom of the pitch. Keep
+  new keys in positional order.

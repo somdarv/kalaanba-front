@@ -35,11 +35,11 @@ export type BadgeSize = "sm" | "md";
  * Soft tint avoids overwhelming dense lists while still conveying state.
  */
 const INTENT: Record<BadgeIntent, string> = {
-  neutral: "bg-surface-2 text-fg-muted border border-border",
-  primary: "bg-[color-mix(in_oklab,var(--primary)_15%,transparent)] text-primary",
-  success: "bg-[color-mix(in_oklab,var(--success)_15%,transparent)] text-success",
-  warning: "bg-[color-mix(in_oklab,var(--warning)_20%,transparent)] text-warning",
-  danger:  "bg-[color-mix(in_oklab,var(--danger)_15%,transparent)] text-danger",
+  neutral: "bg-surface-elev text-fg-muted border border-border",
+  primary: "bg-[color-mix(in_oklab,var(--primary)_15%,transparent)] text-primary-ink",
+  success: "bg-[color-mix(in_oklab,var(--success)_15%,transparent)] text-success-ink",
+  warning: "bg-[color-mix(in_oklab,var(--warning)_20%,transparent)] text-warning-ink",
+  danger:  "bg-[color-mix(in_oklab,var(--danger)_15%,transparent)] text-danger-ink",
 };
 
 const SIZE: Record<BadgeSize, string> = {
@@ -61,7 +61,7 @@ export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(function Badge(
       ref={ref}
       className={cn(
         "inline-flex items-center justify-center",
-        "font-medium rounded-full whitespace-nowrap",
+        "font-medium rounded-pill whitespace-nowrap",
         INTENT[intent],
         SIZE[size],
         className,

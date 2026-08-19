@@ -5,6 +5,8 @@ import { useState } from "react";
 import { Button, PasswordField, TextField } from "@/components/ui";
 import { useRegisterEmail } from "@/lib/api/hooks/use-auth";
 import { SubmitError, messageFor } from "../auth-feedback";
+import { AuthLink } from "../auth-link";
+import { AuthStep } from "../auth-step";
 
 /**
  * EmailCreateStep — new email user (ADR-0004).
@@ -63,16 +65,17 @@ export function EmailCreateStep({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-      <header className="space-y-1.5">
-        <h1 className="font-display text-2xl font-bold tracking-tight text-fg lg:text-3xl">
-          First time here, let&rsquo;s start your career
-        </h1>
-        <p className="text-sm text-fg-muted">
-          Create a password and get on the record.
-        </p>
-      </header>
-
+    <AuthStep
+      onSubmit={handleSubmit}
+      title={<>First time here, let&rsquo;s start your career</>}
+      subtitle="Create a password and get on the record."
+      action={
+        <Button type="submit" size="lg" fullWidth loading={register.isPending}>
+          Continue
+        </Button>
+      }
+      footer={<AuthLink onClick={onChangeEmail}>Use a different email</AuthLink>}
+    >
       <TextField
         label="Your name"
         placeholder="e.g. Kojo Mensah"
@@ -102,25 +105,13 @@ export function EmailCreateStep({
         error={errors.confirm}
       />
 
-      <p className="text-xs text-fg-muted">
+      <p className="text-sm text-fg-muted">
         We&rsquo;ll send a link to{" "}
-        <span className="font-medium text-fg">{email}</span> to confirm it&rsquo;s
+        <span className="font-semibold text-fg">{email}</span> to confirm it&rsquo;s
         yours.
       </p>
 
       <SubmitError message={submitError} />
-
-      <Button type="submit" fullWidth loading={register.isPending}>
-        Continue
-      </Button>
-
-      <button
-        type="button"
-        onClick={onChangeEmail}
-        className="mx-auto text-sm text-fg-muted underline-offset-2 hover:text-fg hover:underline"
-      >
-        Use a different email
-      </button>
-    </form>
+    </AuthStep>
   );
 }

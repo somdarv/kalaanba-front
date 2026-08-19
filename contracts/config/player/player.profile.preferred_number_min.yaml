@@ -1,0 +1,10 @@
+key: player.profile.preferred_number_min
+engine: player-affiliation
+scope: platform
+value_type: integer
+default: "1"
+approval_level: low
+description: |
+  Lowest allowed value for a player's preferred shirt number (Player &
+  Affiliation engine doc §3, §6). The preferred number is a profile-level
+  preference and may differ from any competition-assigned squad number.

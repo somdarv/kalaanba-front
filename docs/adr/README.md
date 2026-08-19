@@ -43,3 +43,5 @@ The Architect (Stage 4) proposes an ADR when a Work Packet introduces a new arch
 | ----------------------------------------------- | ---------------------------------------------------------- | -------- | ---------- |
 | [0001](0001-modular-monolith-with-event-bus.md) | Modular monolith with schema-per-engine + outbox event bus | Accepted | 2026-05-12 |
 | [0002](0002-filament-godmode-admin-portal.md)   | Filament v3 as the God Mode developer admin portal         | Accepted | 2026-05-25 |
+| [0006](0006-oklch-design-tokens.md)             | OKLCH design tokens and the fill/ink role split            | Proposed | 2026-08-12 |
+| [0007](0007-config-derived-option-sets-meta-endpoint.md) | Config-derived option sets served by a per-engine `/meta` endpoint | Proposed | 2026-08-19 |

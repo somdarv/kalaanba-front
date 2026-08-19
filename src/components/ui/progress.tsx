@@ -8,7 +8,7 @@ import { cn } from "@/lib/cn";
  * Port of the legacy `KxProgress` recipe (kalaanba-front/src/components/_archive/
  * showcase/primitives.tsx, line 406):
  *
- *   track:       h-2 rounded-full bg-surface-2 overflow-hidden
+ *   track:       h-2 rounded-pill bg-surface-elev overflow-hidden
  *   fill:        bg-primary transition-[width] duration-700 ease-out
  *   indeterminate: a shimmer overlay animated via the `kx-progress` keyframes
  *                  declared in globals.css.
@@ -60,7 +60,7 @@ export function Progress({
   return (
     <div
       className={cn(
-        "relative w-full overflow-hidden rounded-full bg-surface-2",
+        "relative w-full overflow-hidden rounded-pill bg-surface-elev",
         SIZE_HEIGHT[size],
         className,
       )}
@@ -73,7 +73,7 @@ export function Progress({
     >
       <div
         className={cn(
-          "absolute inset-y-0 left-0 rounded-full bg-primary",
+          "absolute inset-y-0 left-0 rounded-pill bg-primary",
           // Smooth fill animation for determinate progress — width transition,
           // not transform. Width is safe; translate is reserved for the
           // indeterminate shimmer below.
@@ -84,7 +84,7 @@ export function Progress({
       {indeterminate ? (
         <div
           aria-hidden
-          className="absolute inset-y-0 w-1/3 rounded-full"
+          className="absolute inset-y-0 w-1/3 rounded-pill"
           style={{
             background:
               "linear-gradient(90deg, transparent, color-mix(in srgb, var(--on-pink) 70%, transparent), transparent)",
