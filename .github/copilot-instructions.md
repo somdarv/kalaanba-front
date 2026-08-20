@@ -24,6 +24,7 @@ You are contributing to **Kalaanba / Seeds of Play**, a multi-engine grassroots 
 12. **Money is integer minor units (pesewas).** Never floats. Booking commission, settlement, refunds — all integer minor units, converted to display currency only at the API boundary.
 13. **Archive, don't delete.** Clubs, players, matches, awards, challenges — all preserve history. Corrections via compensating entries.
 14. **Every user-triggered write is idempotent.** `Idempotency-Key` header + dedupe store (Redis, 24h TTL). Mobile networks retry.
+15. **No dashes in anything a user reads, and one short sentence beats two.** Kalaanba writes plain English a 10 year old gets first time. Full rules in **§8**; they are a refusal trigger, not a style preference.
 
 ## 2. Required Pipeline
 
@@ -102,3 +103,46 @@ This is a multi-root workspace: `kalaanba-front/` (Next.js 15) and `kalaanba-api
 - `Sankofa` (in `.github/agents/sankofa.agent.md`) owns `docs/JOURNAL.md`. Never write to the journal directly.
 - `auto-journal.instructions.md` already runs Sankofa after every substantive turn. Don't duplicate that work in pipeline stages.
 - The Build Plan (`docs/Architecture/Build_Plan.md`) is the **execution tracker**; the pipeline above is the **per-change quality gate**. Both must be satisfied.
+
+---
+
+## 8. Copy Rules (every string a user reads)
+
+Kalaanba is for grassroots football in Ghana. Most players read it on a phone,
+on data they paid for, in English that is not their first language. Write for
+them, not for the design team.
+
+### Hard rules
+
+1. **No em dashes and no en dashes. Anywhere a user can read it.** Use a full
+   stop, a comma, or two sentences. A sentence that needs a dash to work is
+   doing too much. Split it.
+   - Wrong: `Optional — but clubs search on it.`
+   - Right: `Clubs search by position.`
+2. **Write so a 10 year old gets it first time.** Short common words. If a
+   simpler word exists, it wins. The only jargon allowed is football jargon a
+   player already uses on the pitch.
+3. **One sentence where one sentence will do. No over-explanation.** Never two
+   lines when one says it. Cut every word that carries no meaning. If the
+   string explains itself twice, delete the second half.
+4. **Say the thing, not the feeling.** No hype and no filler. Banned: "simply",
+   "just", "easily", "seamless", "unlock", "empower".
+5. **Second person, active voice, present tense.** "Pick your number", not
+   "A number may be selected".
+6. **No ellipsis (...) and no exclamation marks** outside a real celebration.
+
+### Where this applies
+
+Every label, placeholder, hint, helper line, error, empty state, button, toast,
+push message, heading, and any display label served from Admin Configuration.
+
+It does **not** apply to code comments, engine docs, ADRs, contracts, commit
+messages, or the journal. There, full punctuation is fine and precision beats
+brevity.
+
+### Checking it
+
+Read the string out loud. If you run out of breath, it is too long. If you
+would not say it to a player at the side of a pitch, rewrite it.
+
+`grep -n "[—–]"` over the strings you touched is the cheap version of rule 1.

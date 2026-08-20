@@ -98,3 +98,50 @@ export function StepStagger({
     </LazyMotion>
   );
 }
+
+/**
+ * One beat in an orchestrated arrival.
+ *
+ * `StepStagger` above is a micro-stagger: 50ms between siblings, so a step
+ * reads as one object landing. The reveal at the end of setup is a different
+ * job. There, the announcement has to be *read* before the card shows up,
+ * otherwise the player is handed a card and told what it is at the same
+ * moment, and neither registers. `delay` is therefore an explicit time in
+ * seconds rather than a sibling index.
+ *
+ * DESIGN_LANGUAGE §3.3 puts sequences like this in Framer rather than CSS, and
+ * §3.4 limits it to `transform` and `opacity`. Each beat still lasts ≤ 240ms
+ * (§3.2) — it is the gaps between them that carry the pacing, so nothing feels
+ * slow. `prefers-reduced-motion` collapses the whole sequence to nothing (§3.6)
+ * rather than merely speeding it up: a player who asked for no motion should
+ * get the finished screen, not a fast version of the show.
+ */
+export function RevealBeat({
+  children,
+  delay = 0,
+  className,
+}: {
+  children: ReactNode;
+  /** Seconds after mount. */
+  delay?: number;
+  className?: string;
+}) {
+  const reduce = useReducedMotion();
+
+  return (
+    <LazyMotion features={domAnimation} strict>
+      <m.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{
+          duration: reduce ? 0 : DURATION_S,
+          delay: reduce ? 0 : delay,
+          ease: EASE_OUT,
+        }}
+        className={className}
+      >
+        {children}
+      </m.div>
+    </LazyMotion>
+  );
+}

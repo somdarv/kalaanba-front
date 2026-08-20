@@ -3,7 +3,13 @@
 import type { ReactNode } from "react";
 import { CaretLeft } from "@phosphor-icons/react";
 
-import { IconButton, KeyboardFooter, Progress } from "@/components/ui";
+import {
+  IconButton,
+  KeyboardFooter,
+  Progress,
+  flowColumn,
+  flowGutter,
+} from "@/components/ui";
 
 import { StepTransition } from "./step-transition";
 
@@ -16,6 +22,11 @@ import { StepTransition } from "./step-transition";
  * contains its own overscroll (§9.5) so a rubber-band at the end of a step
  * cannot leak into the page behind it. The CTA sits in `<KeyboardFooter>`
  * so it rides above the on-screen keyboard on the typing steps (§9.3).
+ *
+ * Width and rhythm (2026-08-20): the column is `flowGutter` (80% of the
+ * viewport, see `ui/flow-column`) and the step starts well below the bar
+ * rather than tucked under it. One question per screen only reads as one
+ * question if the question has room around it.
  *
  * Presentational only — it holds no wizard state.
  */
@@ -73,16 +84,16 @@ export function WizardShell({
         />
       </header>
 
-      <main className="flex-1 overscroll-contain px-[max(1.25rem,env(safe-area-inset-left))] pt-6 pb-6">
-        <div className="mx-auto w-full max-w-md">
+      <main className={`flex-1 overscroll-contain ${flowGutter} pt-12 pb-6 sm:pt-14`}>
+        <div className={flowColumn}>
           <StepTransition stepKey={stepKey} direction={direction}>
             {children}
           </StepTransition>
         </div>
       </main>
 
-      <KeyboardFooter bordered={false} className="bg-bg/95">
-        <div className="mx-auto w-full max-w-md">{footer}</div>
+      <KeyboardFooter bordered={false} className={`bg-bg/95 ${flowGutter}`}>
+        <div className={flowColumn}>{footer}</div>
       </KeyboardFooter>
     </div>
   );

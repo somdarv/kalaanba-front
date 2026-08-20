@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { PlayerSetupWizard } from "./player-setup-wizard";
+import { ANNOUNCEMENT_HOLD_MS } from "./setup-announcement";
 import { ApiError } from "@/lib/api/envelope";
 import * as playerApi from "@/lib/api/player";
 import type { PlayerMeta } from "@/lib/api/player";
@@ -60,7 +61,8 @@ const CREATED: playerApi.Player = {
 type User = ReturnType<typeof userEvent.setup>;
 
 function renderWizard() {
-  const onDone = vi.fn();
+  const onFindClub = vi.fn();
+  const onGoHome = vi.fn();
   const onExit = vi.fn();
   const qc = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
@@ -71,12 +73,22 @@ function renderWizard() {
         meta={META}
         defaults={{ firstName: "Abdul", lastName: "Rahman" }}
         onExit={onExit}
-        onDone={onDone}
+        onFindClub={onFindClub}
+        onGoHome={onGoHome}
       />
     </QueryClientProvider>,
   );
-  return { onDone, onExit };
+  return { onFindClub, onGoHome, onExit };
 }
+
+/**
+ * The reveal opens on a "Profile created" moment that holds for
+ * ANNOUNCEMENT_HOLD_MS before the profile takes its place, so every assertion
+ * about the payoff has to outwait it. Real timers: userEvent drives these
+ * tests, and swapping to fake ones would mean pumping them by hand through
+ * every await.
+ */
+const REVEAL_TIMEOUT = { timeout: ANNOUNCEMENT_HOLD_MS + 2000 };
 
 const nextStep = () => screen.getByRole("button", { name: /next step/i });
 const skip = () => screen.getByRole("button", { name: /skip for now/i });
@@ -225,7 +237,7 @@ describe("PlayerSetupWizard", () => {
   it("reveals the saved player, labelled from config", async () => {
     createPlayer.mockResolvedValue(CREATED);
     const user = userEvent.setup();
-    const { onDone } = renderWizard();
+    const { onFindClub, onGoHome } = renderWizard();
     await reachNumber(user);
     await user.click(screen.getByRole("button", { name: "10" }));
     await reachPosition();
@@ -234,15 +246,26 @@ describe("PlayerSetupWizard", () => {
     await user.click(await reachAvailability());
     await user.click(screen.getByRole("button", { name: /create my profile/i }));
 
-    expect(await screen.findByText(/you're on the record/i)).toBeInTheDocument();
+    // Act one: the moment lands before anything else does.
+    expect(await screen.findByText(/profile created/i)).toBeInTheDocument();
+    // Act two: it leaves, and the profile takes the space it was using.
+    expect(
+      await screen.findByText(/you're on the record/i, undefined, REVEAL_TIMEOUT),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/profile created/i)).not.toBeInTheDocument();
     // "Winger" and "Free agent" both come from the served label maps.
     expect(screen.getAllByText("Winger").length).toBeGreaterThan(0);
     expect(screen.getByText("Free agent")).toBeInTheDocument();
     // Nothing computed: a brand-new card carries no stats or rating (§13/§14).
     expect(screen.queryByText(/rating/i)).not.toBeInTheDocument();
 
+    // Two ways out, and they go to different places.
+    await user.click(screen.getByRole("button", { name: /^home$/i }));
+    expect(onGoHome).toHaveBeenCalledTimes(1);
+    expect(onFindClub).not.toHaveBeenCalled();
+
     await user.click(screen.getByRole("button", { name: /find a club/i }));
-    expect(onDone).toHaveBeenCalledTimes(1);
+    expect(onFindClub).toHaveBeenCalledTimes(1);
   });
 
   it("clears the draft once the profile exists", async () => {
@@ -262,7 +285,7 @@ describe("PlayerSetupWizard", () => {
     await user.click(await reachAvailability());
     await user.click(screen.getByRole("button", { name: /create my profile/i }));
 
-    await screen.findByText(/you're on the record/i);
+    await screen.findByText(/you're on the record/i, undefined, REVEAL_TIMEOUT);
     expect(window.sessionStorage.getItem("kx:player-setup:draft")).toBeNull();
   });
 });

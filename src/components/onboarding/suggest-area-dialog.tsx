@@ -50,8 +50,8 @@ export function SuggestAreaDialog({
         note: note.trim() || null,
       });
       toast.push({
-        title: "Thanks — we'll review it",
-        description: `“${trimmed}” was sent to the ${hubName} team.`,
+        title: "Sent for review",
+        description: `The ${hubName} team will check “${trimmed}”.`,
         tone: "success",
       });
       onSuggested(trimmed);

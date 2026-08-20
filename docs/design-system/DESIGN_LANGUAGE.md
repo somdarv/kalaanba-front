@@ -358,6 +358,14 @@ would sit over them.
 - Use `100dvh`, **never** `100vh` (fixes iOS Safari URL-bar collapse jitter).
 - Viewport meta: `width=device-width, initial-scale=1, viewport-fit=cover, interactiveWidget=resizes-content`.
 - Container edge padding: `padding-inline: max(1rem, env(safe-area-inset-left/right))`.
+- **Guided flows take a wider gutter.** Onboarding and setup screens (one
+  question per screen, single column) use `padding-inline: max(10%, env(...))`
+  so the content sits on **80% of the viewport** rather than ~89%. The 1rem
+  floor above is the minimum for dense surfaces (feeds, tables, dashboards); it
+  reads as a page bleeding off both edges on a screen that is asking one
+  question. Implemented once as `flowGutter` / `flowColumn` in
+  `src/components/ui/flow-column.ts` — compose it, do not re-derive it. The
+  `max()` keeps the safe-area floor intact. Added 2026-08-20.
 - Sticky bottom bars: `padding-bottom: env(safe-area-inset-bottom)`.
 - Design first at **360 px** width (smallest common Android); breakpoints `sm 640`, `md 768`, `lg 1024`, `xl 1280` are progressive enhancements.
 - Density: mobile = comfortable default; desktop opts into compact via `@media (min-width: 1024px)`.
