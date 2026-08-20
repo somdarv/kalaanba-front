@@ -1,56 +1,44 @@
 #!/usr/bin/env bash
 #
-# Build and restart the Next node. Run from the repo root on the server.
+# Build and restart the Next node. Run on the server, from the repo root.
 #
-#   ./scripts/deploy.sh
+# `~/deploy-kalaanba.sh` fetches and resets to origin/main, then delegates
+# here. The fetch has to stay out there: a script cannot pull the version of
+# itself that is about to run. Everything after the pull lives in git, where it
+# is reviewable and changes with the code that needs it.
 #
-# Lives in the repo, not in ~/deploy-kalaanba.sh, so the deploy steps are
-# reviewable in git and change with the code that needs them. Point the
-# server's forced-command script at this file and it stops drifting.
+# Every line below was already running on the box. This file is where it lives
+# now, not a rewrite of it.
 
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
 echo "==> Installing dependencies"
-npm ci
+# --legacy-peer-deps is load-bearing: the tree has a peer conflict that stops a
+# plain `npm ci` dead. Do not drop it without checking the install still runs.
+npm ci --no-audit --no-fund --legacy-peer-deps
 
 echo "==> Building"
+# `postbuild` (package.json) clears the Next ISR cache in Redis DB 2. That is
+# not decoration: the cache survives both a rebuild and `pm2 reload`, so a
+# cached page keeps pointing at the previous build's content-hashed chunks,
+# those files are gone, and the page paints from the prerender then dies on
+# hydration. It broke /auth/login twice. See scripts/clear-isr-cache.mjs.
 npm run build
 
-# `output: "standalone"` bundles the server and its node_modules and NOTHING
-# else. Next deliberately omits these four, and every one of them has broken a
-# deploy on this box before: no public/ means 404ing images, no .next/static
-# means an unstyled page, no cache-handler.mjs means the ISR handler fails to
-# resolve at boot, no .env.local means the runtime env is empty.
 echo "==> Copying what standalone leaves out"
+# `output: standalone` omits public/ and .next/static on purpose (Next assumes
+# a CDN). We serve them from the same node process, so copy them in. rm -rf
+# first so a rebuild cannot nest public/ inside itself.
+rm -rf .next/standalone/public .next/standalone/.next/static
 cp -r public .next/standalone/public
+mkdir -p .next/standalone/.next
 cp -r .next/static .next/standalone/.next/static
 cp cache-handler.mjs .next/standalone/cache-handler.mjs
-[ -f .env.local ] && cp .env.local .next/standalone/.env.local
-
-# THE STEP THAT IS EASY TO SKIP AND BREAKS PAGES.
-#
-# DB 2 holds the Next ISR cache (`kx:next:*`) and it survives both `pm2 reload`
-# and a fresh build. Once a rebuild changes a content-hashed chunk name, a
-# cached page keeps pointing at the PREVIOUS build's chunks. Those files no
-# longer exist, the browser 404s on them, and Next renders "This page could not
-# load": the page paints from the prerender and then dies on hydration.
-# Re-running the deploy does not fix it, because the rebuild is correct and the
-# cache is not. This happened on /auth/login on 2026-08-19.
-#
-# `flushdb` on DB 2 only. NEVER `flushall`: DB 0 holds the outbox event streams,
-# which have no TTL, and dropping one breaks the event spine (Constitution
-# Law 6).
-echo "==> Clearing the ISR cache (DB 2 only)"
-if command -v redis-cli >/dev/null 2>&1; then
-  redis-cli -n 2 flushdb
-else
-  echo "    redis-cli not found. The ISR cache was NOT cleared." >&2
-  echo "    Expect stale chunk 404s on already-cached routes." >&2
-fi
+cp .env.local        .next/standalone/.env.local
 
 echo "==> Reloading PM2"
 pm2 reload sahara-kalaanba --update-env
 
-echo "==> Done."
+echo "==> kalaanba deploy OK: $(date -u)"
