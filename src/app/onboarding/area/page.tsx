@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 import { AreaOnboarding } from "@/components/onboarding";
-import { Spinner } from "@/components/ui";
+import { Spinner, flowColumn, flowGutter } from "@/components/ui";
 import { useUser } from "@/lib/api/hooks/use-auth";
 
 /**
@@ -36,8 +36,12 @@ export default function AreaOnboardingPage() {
 
   if (showPicker) {
     return (
-      <main className="mx-auto flex min-h-[100dvh] w-full max-w-md flex-col justify-center px-[max(1rem,env(safe-area-inset-left))] py-10">
-        <AreaOnboarding onDone={() => router.replace("/")} />
+      <main
+        className={`flex min-h-[100dvh] w-full flex-col justify-center ${flowGutter} py-10`}
+      >
+        <div className={flowColumn}>
+          <AreaOnboarding onDone={() => router.replace("/")} />
+        </div>
       </main>
     );
   }

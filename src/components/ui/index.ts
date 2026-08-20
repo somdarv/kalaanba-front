@@ -97,6 +97,7 @@ export { BottomNav } from "./bottom-nav";
 export type { BottomNavProps, BottomNavItem } from "./bottom-nav";
 export { KeyboardFooter } from "./keyboard-footer";
 export type { KeyboardFooterProps } from "./keyboard-footer";
+export { flowColumn, flowGutter } from "./flow-column";
 export { Tooltip } from "./tooltip";
 export type { TooltipProps } from "./tooltip";
 export { Dialog } from "./dialog";
