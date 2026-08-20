@@ -58,9 +58,13 @@ export function AuthStep({
     >
       <div
         className={cn(
-          "kx-scroll flex min-h-0 flex-1 flex-col gap-7 overflow-y-auto overscroll-contain",
-          "px-5 pt-2 pb-6",
-          "lg:flex-none lg:overflow-visible lg:px-8 lg:pt-0 lg:pb-0",
+          // Tighter vertical rhythm on a phone than on a desk: the sheet now
+          // hugs its content (see `<AuthShell>`), so this stack IS the
+          // distance between the headline and the CTA. `gap-7` + `pb-6` put
+          // ~68px of nothing between a single field and the button.
+          "kx-scroll flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto overscroll-contain",
+          "px-5 pt-1 pb-3",
+          "lg:flex-none lg:gap-7 lg:overflow-visible lg:px-8 lg:pt-0 lg:pb-0",
         )}
       >
         <header className="space-y-2">
@@ -85,11 +89,11 @@ export function AuthStep({
         className={cn(
           // The sheet's own ground, not the footer bar's — this is the floor
           // of the form, not a separate surface stacked on top of it.
-          "shrink-0 bg-bg px-5 pt-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] backdrop-blur-none",
+          "shrink-0 bg-bg px-5 pt-3 pb-[max(1.25rem,env(safe-area-inset-bottom))] backdrop-blur-none",
           "lg:static lg:bg-transparent lg:px-8 lg:pt-8 lg:pb-0",
         )}
       >
-        <div className="flex flex-col items-center gap-4">
+        <div className="flex flex-col items-center gap-3 lg:gap-4">
           {action}
           {footer}
         </div>

@@ -56,8 +56,24 @@ export const LabelledOptionSchema = z.object({
 
 export type LabelledOption = z.infer<typeof LabelledOptionSchema>;
 
+/**
+ * A position carries two extra display strings: the short form drawn on the
+ * pitch marker, and a line on what the position does. Both are config, not
+ * client-derived — "Goalkeeper" shortens to "GK" in English and "GB" in
+ * French, and no rule in this file gets that right (Law 4).
+ *
+ * `abbreviation` is optional in the schema, not because the API omits it (it
+ * falls back to the label, then the key, so it is always sent) but so a client
+ * on this build keeps working against an API that predates the field.
+ */
+export const PositionOptionSchema = LabelledOptionSchema.extend({
+  abbreviation: z.string().optional(),
+});
+
+export type PositionOption = z.infer<typeof PositionOptionSchema>;
+
 export const PlayerMetaSchema = z.object({
-  positions: z.array(LabelledOptionSchema),
+  positions: z.array(PositionOptionSchema),
   availability: z.array(LabelledOptionSchema),
   availability_default: z.string().optional(),
   market_statuses: z.array(LabelledOptionSchema),

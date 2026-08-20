@@ -49,7 +49,7 @@ export function EmailLoginStep({
         err instanceof ApiError && /verif/i.test(err.message);
       setError(
         unverified
-          ? "Confirm your email first — check your inbox for the link."
+          ? "Confirm your email first. Check your inbox for the link."
           : "That password isn't right. Try again.",
       );
     }

@@ -10,6 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import {
+  FORCED_THEME,
   isTheme,
   THEME_FLIP_CLASS,
   THEME_FLIP_DURATION_MS,
@@ -60,12 +61,20 @@ function flashThemeFlip(): void {
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  // Default to whatever the inline script already chose so SSR + first paint agree.
-  const [theme, setThemeState] = useState<Theme>("auto");
-  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>("dark");
+  // Default to whatever the server / inline script already chose so SSR and
+  // first paint agree. Under the lock that is `FORCED_THEME`, which the root
+  // layout has already stamped on <html>.
+  const [theme, setThemeState] = useState<Theme>(FORCED_THEME ?? "auto");
+  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(
+    FORCED_THEME ?? "dark",
+  );
 
   // Hydrate from storage + DOM on mount.
   useEffect(() => {
+    // Locked: storage and the OS preference are both deliberately ignored, so
+    // a phone set to dark — or a browser that once stored `dark` — still gets
+    // the light product.
+    if (FORCED_THEME) return;
     const stored = readStoredTheme();
     const resolved =
       stored === "auto" ? readSystemTheme() : (stored as ResolvedTheme);
@@ -76,7 +85,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   // Watch OS preference when in auto mode.
   useEffect(() => {
-    if (theme !== "auto") return;
+    if (FORCED_THEME || theme !== "auto") return;
     const media = window.matchMedia("(prefers-color-scheme: light)");
     const handle = (event: MediaQueryListEvent) => {
       const next: ResolvedTheme = event.matches ? "light" : "dark";
@@ -90,11 +99,17 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   const setTheme = useCallback((next: Theme) => {
     const resolved =
-      next === "auto" ? readSystemTheme() : (next as ResolvedTheme);
+      next === "auto"
+        ? (FORCED_THEME ?? readSystemTheme())
+        : (next as ResolvedTheme);
     flashThemeFlip();
     setThemeState(next);
     setResolvedTheme(resolved);
     applyTheme(resolved, next);
+    // Under the lock a flip is a *preview* — how `/showcase` keeps dark
+    // developable — never a preference. Persisting it would ship dark to that
+    // browser on the next visit, which is the one thing the lock forbids.
+    if (FORCED_THEME) return;
     try {
       window.localStorage.setItem(THEME_STORAGE_KEY, next);
     } catch {

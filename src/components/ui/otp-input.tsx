@@ -14,6 +14,12 @@ import { cn } from "@/lib/cn";
  * boxes. Auto-advance on input, backspace returns to the previous
  * box, paste fills boxes left to right, arrow keys navigate.
  *
+ * **One-tap fill is a first-class path, not paste's poor relation.** On a
+ * phone the code is almost never typed: it is tapped off the keyboard
+ * suggestion the moment the SMS lands. That arrives as a normal `change`
+ * carrying all six digits at once, so `handleChange` spreads a multi-character
+ * value across the boxes exactly the way `handlePaste` does.
+ *
  * Visual recipe matches the rest of the input suite: tall rounded-rectangle
  * boxes on `bg-control-surface` that flex to fill the row (so the group is the same
  * width as a full-width button beneath it), hairline border, brand ring on
@@ -76,12 +82,60 @@ export function OtpInput({
     target?.select();
   };
 
+  /**
+   * Spread `text` across the boxes from `start`, keeping only characters that
+   * match `pattern`, and park the caret on the last box written. A code that
+   * arrives whole (an autofill, or a paste of the full thing) always starts
+   * at box 0 no matter which box received it — landing "123456" in box 4
+   * would otherwise keep two digits and drop four.
+   */
+  const fillFrom = (start: number, text: string): string | null => {
+    const accepted = Array.from(text).filter((ch) => pattern.test(ch));
+    if (accepted.length === 0) return null;
+    const from = accepted.length >= length ? 0 : start;
+    const chars = value.padEnd(length, " ").split("");
+    let cursor = from;
+    for (const ch of accepted) {
+      if (cursor >= length) break;
+      chars[cursor] = ch;
+      cursor += 1;
+    }
+    const next = chars.join("").trimEnd();
+    onChange(next);
+    focusBox(Math.min(cursor, length - 1));
+    return next;
+  };
+
   const handleChange = (index: number) => (e: ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value;
+    const current = value[index] ?? "";
+
+    // One-tap SMS autofill — the iOS QuickType bar, Gboard's "from Messages"
+    // suggestion, Android's credential picker — delivers the WHOLE code into
+    // the focused box in a single change event. Taking only the last
+    // character (which is what this did) threw five of the six digits away,
+    // so tapping the code on the keyboard looked like it did nothing.
+    //
+    // Two characters is the ordinary "typed over an existing digit" case —
+    // the browser reports old + new when the caret sits after the digit — and
+    // must NOT be read as a fill.
+    const typedOverExisting =
+      current !== "" && raw.length === 2 && raw.startsWith(current);
+    if (raw.length > 1 && !typedOverExisting) {
+      const next = fillFrom(index, raw);
+      // Each box is controlled to a single character, but React only writes
+      // the DOM when the controlled value actually changes — fill the same
+      // code twice and it skips, leaving all six characters sitting in this
+      // one box. Put the box back to its single character by hand.
+      e.target.value = next?.[index] ?? "";
+      return;
+    }
+
     // Take only the last typed character (handles repeats / IMEs).
     const last = raw.slice(-1);
     if (last && !pattern.test(last)) return;
     setCharAt(index, last);
+    if (raw.length > 1) e.target.value = last;
     if (last && index < length - 1) focusBox(index + 1);
   };
 
@@ -115,17 +169,7 @@ export function OtpInput({
     const pasted = e.clipboardData.getData("text").trim();
     if (!pasted) return;
     e.preventDefault();
-    const chars = value.padEnd(length, " ").split("");
-    let cursor = index;
-    for (const ch of pasted) {
-      if (cursor >= length) break;
-      if (!pattern.test(ch)) continue;
-      chars[cursor] = ch;
-      cursor += 1;
-    }
-    const joined = chars.join("").trimEnd();
-    onChange(joined);
-    focusBox(Math.min(cursor, length - 1));
+    fillFrom(index, pasted);
   };
 
   return (
@@ -159,10 +203,23 @@ export function OtpInput({
               }}
               type="text"
               inputMode={inputMode}
-              autoComplete={index === 0 ? "one-time-code" : "off"}
+              // `one-time-code` on EVERY box, not just the first. The keyboard
+              // only offers the SMS suggestion for the field that has focus,
+              // so putting it on box 0 alone meant the affordance vanished the
+              // moment someone typed a digit and moved on — exactly when the
+              // message tends to land. `handleChange` spreads whatever the
+              // platform drops in, so any box can receive the whole code.
+              autoComplete="one-time-code"
               autoFocus={autoFocus && index === 0}
               disabled={disabled}
-              maxLength={1}
+              // Deliberately the full code length, not 1. `maxlength` is
+              // enforced against autofill and paste as well as typing, so a
+              // 1-char cap silently truncates the six digits the keyboard
+              // hands over — the box would take "1" and drop "23456", which
+              // is the whole reason one-tap fill never worked here. Typing
+              // still yields one character per box: the value is controlled
+              // to a single char and `handleChange` spreads the rest.
+              maxLength={length}
               value={char}
               placeholder={placeholder}
               onChange={handleChange(index)}

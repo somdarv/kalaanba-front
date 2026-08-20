@@ -64,8 +64,16 @@ const SIZE: Record<ButtonSize, string> = {
   // `sm` stays visually compact for inline contexts but keeps a 44px target
   // via `tapExpand` — DESIGN_LANGUAGE §9.1 allows the smaller box, not the
   // smaller hit area. v2 shipped 36px targets on Accept/Decline actions.
-  sm: cn("h-9 min-h-9 px-4 text-sm rounded-pill gap-1.5", tapExpand),
-  md: "h-11 px-5 text-[0.95rem] rounded-pill gap-2",
+  // It still takes the §9.2 density split: 40px in the hand, 36px under a
+  // mouse, where `sm` actually belongs (dense tables, inline row actions).
+  sm: cn(
+    "h-10 min-h-10 lg:h-9 lg:min-h-9 px-4 text-sm rounded-pill gap-1.5",
+    tapExpand,
+  ),
+  // `md` is the everyday action. COMPONENT_INVENTORY §1.1 specs it at `h-12`;
+  // the code shipped `h-11`, the bare §9.1 floor. The doc wins
+  // (design-system-mandatory), and 48px is what §9.1 calls "preferred".
+  md: "h-12 min-h-12 px-5 text-[0.95rem] rounded-pill gap-2",
   // `lg` is the single-purpose form CTA (auth, checkout, OTP). COMPONENT_INVENTORY
   // §1.1 specs it at `h-14`; the code shipped `h-12`. The doc wins
   // (design-system-mandatory) and 56px is the thumb-zone size a login screen

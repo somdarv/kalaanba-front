@@ -11,6 +11,7 @@ import {
 } from "react";
 import { CaretDown, MagnifyingGlass, X } from "@phosphor-icons/react";
 import { cn } from "@/lib/cn";
+import { controlMinHeight } from "./control-scale";
 import { Popover } from "./popover";
 
 /**
@@ -173,7 +174,8 @@ export function Combobox<T extends string>({
           inputRef.current?.focus();
         }}
         className={cn(
-          "group relative flex min-h-12 w-full flex-wrap items-center gap-1.5 rounded-card bg-control-surface py-1.5 pl-3 pr-3",
+          controlMinHeight,
+          "group relative flex w-full flex-wrap items-center gap-1.5 rounded-card bg-control-surface py-1.5 pl-3 pr-3",
           "border border-control-border",
           "transition-[box-shadow,border-color,background-color] duration-quick ease-out",
           "hover:shadow-sm",

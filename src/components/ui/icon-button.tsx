@@ -58,8 +58,14 @@ const SIZE: Record<IconButtonSize, string> = {
    */
   xs: cn("h-7 w-7 min-h-7 min-w-7 rounded-pill [&_svg]:h-3.5 [&_svg]:w-3.5", tapExpand),
   sm: cn("h-9 w-9 min-h-9 min-w-9 rounded-pill", tapExpand),
-  md: "h-11 w-11 rounded-pill",
-  lg: "h-12 w-12 rounded-pill",
+  /**
+   * `md` / `lg` follow COMPONENT_INVENTORY §1.2 — "size (sm 44 / md 48 /
+   * lg 56)". The code shipped 44 / 48, i.e. every icon button one step small,
+   * which is what left toolbar actions feeling fiddly next to a 56px CTA.
+   * The doc wins (design-system-mandatory).
+   */
+  md: "h-12 w-12 rounded-pill",
+  lg: "h-14 w-14 rounded-pill",
 };
 
 export type IconButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Eyebrow } from "@/components/ui";
 import { InputSpecimens } from "./input-specimens";
 import { MatchdaySpecimen } from "./matchday-specimen";
+import { PlayerCardSpecimens } from "./player-card-specimens";
 import { TokenSpecimens } from "./token-specimens";
 
 /**
@@ -39,6 +40,10 @@ export default function DesignPreviewPage() {
         </header>
 
         <TokenSpecimens />
+
+        <hr className="border-divider" />
+
+        <PlayerCardSpecimens />
 
         <hr className="border-divider" />
 

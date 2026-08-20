@@ -58,7 +58,7 @@ export function StepTransition({
           animate="settled"
           exit="exit"
           transition={{ duration, ease: EASE_OUT }}
-          className="flex flex-col gap-6"
+          className="flex flex-col gap-8 sm:gap-9"
         >
           {children}
         </m.div>

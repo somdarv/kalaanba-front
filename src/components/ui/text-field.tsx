@@ -2,6 +2,7 @@
 
 import { forwardRef, useId, type InputHTMLAttributes, type ReactNode } from "react";
 import { cn } from "@/lib/cn";
+import { controlHeight } from "./control-scale";
 import { resolveInputAttributes, type InputPurpose } from "./input-attributes";
 
 /**
@@ -90,8 +91,9 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
           data-disabled={disabled || undefined}
           data-error={hasError || undefined}
           className={cn(
-            // Pill, fluid, comfortable height.
-            "group relative flex h-12 w-full items-center gap-2 rounded-control",
+            // Pill, fluid. Height comes from the shared control scale.
+            controlHeight,
+            "group relative flex w-full items-center gap-2 rounded-control",
             // Distinct surface — sits above page / card.
             "bg-control-surface",
             // Hairline boundary, stepped to strong on hover (pointer only).

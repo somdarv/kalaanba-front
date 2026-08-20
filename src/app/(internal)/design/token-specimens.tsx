@@ -15,7 +15,7 @@ import { Card, Eyebrow, StatValue } from "@/components/ui";
  * prerender fails. `/showcase` is client-side for the same reason.
  */
 
-type Ramp = { name: string; value: string; note?: string };
+type Ramp = { name: string; value: string; note?: string; ink?: string };
 
 const GROUND: Ramp[] = [
   { name: "--bg", value: "oklch(0.165 0.018 264)", note: "canvas" },
@@ -31,11 +31,14 @@ const OLD_GROUND: Ramp[] = [
   { name: "--surface-overlay", value: "#232a39", note: "ΔL +0.041" },
 ];
 
+/* ADR-0010: fills sit back at v2's lightness and carry a DARK label. The ratio
+   in each swatch is measured against that role's own `--on-*`, which is the
+   colour the swatch actually renders its label in. */
 const FILLS: Ramp[] = [
-  { name: "--primary", value: "oklch(0.560 0.210 350)", note: "5.23:1" },
-  { name: "--danger", value: "oklch(0.555 0.200 30)", note: "5.25:1" },
-  { name: "--success", value: "oklch(0.520 0.130 150)", note: "5.18:1" },
-  { name: "--accent", value: "oklch(0.530 0.120 245)", note: "5.23:1" },
+  { name: "--primary", value: "oklch(0.680 0.200 350)", note: "5.72:1", ink: "oklch(0.200 0.030 350)" },
+  { name: "--danger", value: "oklch(0.675 0.180 30)", note: "5.72:1", ink: "oklch(0.200 0.030 30)" },
+  { name: "--success", value: "oklch(0.640 0.150 150)", note: "5.71:1", ink: "oklch(0.200 0.030 150)" },
+  { name: "--accent", value: "oklch(0.655 0.130 245)", note: "5.74:1", ink: "oklch(0.200 0.030 245)" },
 ];
 
 const OLD_FILLS: Ramp[] = [
@@ -88,7 +91,7 @@ function SwatchGrid({ steps, labelOn }: { steps: Ramp[]; labelOn: "fill" | "ink"
             className="flex h-14 items-center justify-center text-xs font-semibold"
             style={
               labelOn === "fill"
-                ? { background: s.value, color: "#fff" }
+                ? { background: s.value, color: s.ink ?? "#fff" }
                 : { background: "oklch(0.205 0.020 264)", color: s.value }
             }
           >
@@ -131,8 +134,10 @@ export function TokenSpecimens() {
             Every label now clears AA
           </h2>
           <p className="text-fg-muted max-w-prose text-sm">
-            Same white label on both rows. The number in each swatch is the
-            measured contrast ratio against it.
+            The number in each swatch is the measured ratio against the label it
+            is actually carrying. v2 kept its brightness and put white on it,
+            which failed. v3 keeps that brightness and darkens the label
+            instead — see ADR-0010.
           </p>
         </header>
         <div className="flex flex-col gap-3">
@@ -141,7 +146,7 @@ export function TokenSpecimens() {
             <SwatchGrid steps={OLD_FILLS} labelOn="fill" />
           </div>
           <div className="flex flex-col gap-2">
-            <Eyebrow>v3 — all pass</Eyebrow>
+            <Eyebrow>v3 — same brightness, dark label</Eyebrow>
             <SwatchGrid steps={FILLS} labelOn="fill" />
           </div>
         </div>

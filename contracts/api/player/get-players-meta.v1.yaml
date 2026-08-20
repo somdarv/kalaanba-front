@@ -93,6 +93,31 @@ components:
           description: |
             Optional one-line consequence copy shown beneath the option.
 
+    PositionOption:
+      type: object
+      additionalProperties: false
+      required: [key, label, abbreviation]
+      description: |
+        A position option. `key` is the stable internal key logic depends on
+        (Constitution Law 4); every other field is a display string and may be
+        relabelled or translated without a deploy.
+      properties:
+        key:
+          type: string
+          example: centre_back
+        label:
+          type: string
+          example: Centre Back
+        abbreviation:
+          type: string
+          description: Short form drawn on the pitch marker. Two or three characters.
+          example: CB
+        description:
+          type: string
+          nullable: true
+          description: One line on what the position does. Null when unwritten.
+          example: You defend the middle and win headers.
+
     PlayerMetaView:
       type: object
       additionalProperties: false
@@ -103,8 +128,14 @@ components:
           description: |
             Primary positions, in `player.positions` order — order is
             presentation and belongs to config, not to the client's sort.
-            Labels from `player.positions.labels`.
-          items: { $ref: "#/components/schemas/LabelledOption" }
+            Labels from `player.positions.labels`, `abbreviation` from
+            `player.positions.abbreviations`, `description` from
+            `player.positions.descriptions`.
+
+            `abbreviation` was added 2026-08-19 and is additive, so it does not
+            break v1 (§7). It falls back to the label, then to the key, so it
+            is always present and never blank.
+          items: { $ref: "#/components/schemas/PositionOption" }
 
         availability:
           type: array

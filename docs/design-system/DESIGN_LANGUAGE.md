@@ -1,8 +1,16 @@
 # Kalaanba — Design Language
 
 > **Tagline**: _Solid. Proactive. Premium._
-> **Status**: Built. Token layer is v3 (OKLCH) per `ADR-0006`.
-> **Last updated**: 2026-08-12 (WP-20260812-oklch-token-migration)
+> **Status**: Built. Token layer is v3 (OKLCH) per `ADR-0006`, amended by `ADR-0010`.
+> **Last updated**: 2026-08-19 - (a) brand and state **fills** return to v2's
+> lightness band and carry a **dark** label (`ADR-0010`): `--primary` is `#ED58A9`,
+> not the plum `#C62685`, and the *pressed* state is now the worst case for
+> contrast rather than the safest. (b) light-theme `--surface` lightened and
+> de-cast,
+> `oklch(0.972 0.005 264)` -> `oklch(0.982 0.002 264)` (#F4F6F9 -> #F8F9FA). Per §8
+> this is a colour tweak, not a token addition: stamp bumped, no ADR. Note that §2.2
+> lists the **dark** ramp only — the light ramp lives solely in `globals.css`.
+> Previously: 2026-08-12 (WP-20260812-oklch-token-migration)
 
 This document is the **source of truth** for how Kalaanba looks, moves, and responds. Every primitive, every screen, every animation must follow these rules — or update them via an ADR.
 
@@ -41,9 +49,41 @@ Tokens live in `src/app/globals.css`. **Code never references colors literally �
 - Semantic, not brand-literal: `--primary` not `--pink`.
 - **Colour is authored in OKLCH** (`oklch(L C H)`). L is perceptually uniform, so an equal ΔL is an equal perceived step — the property that makes a ramp checkable instead of a matter of taste. See `ADR-0006`.
 - **Neutrals are hue-locked to 264.** A neutral that drifts off 264 is a bug.
-- **Fill and ink are separate roles.** A colour tuned to carry a white label (L ≈ 0.55) is too dark to be legible *as text* on a dark surface, and a colour tuned for text (L ≈ 0.76) cannot carry a white label. Every brand and state colour therefore has both: `--primary` (fill) and `--primary-ink` (text/icon).
+- **Fill and ink are separate roles.** A colour tuned as a *fill* and one tuned as *text* want different lightness even at the same hue. Every brand and state colour therefore has both: `--primary` (fill) and `--primary-ink` (text/icon). **Fills carry a dark label** (`--on-*` at L 0.200), not a white one - see `ADR-0010`. A fill's brightness was never the contrast defect; pairing brightness with a white label was.
 - Paired foreground/background: every fillable token gets an `--on-X` partner.
 - Internal-key names are stable; the _value_ may change per theme/season.
+
+
+### 2.1.1 Chroma ceiling on near-white (the "slate" rule)
+
+**Neutrals at L ≥ 0.90 in the light theme carry chroma 0.000. No exceptions
+without an ADR.**
+
+Hue-locking to 264 (§2.1) says *which* hue a neutral carries, never *how much*.
+On a dark ground, carrying a little of it is what stops the greys reading as
+dead — v2's `--fg-muted` at C 0.000 in a blue-black family was correctly called
+a bug. On near-white the same chroma inverts into a defect: the eye has paper
+next to it as a reference, and a few thousandths of blue that is invisible at
+L 0.20 reads unmistakably as **slate** at L 0.98.
+
+Measure it as the sRGB **R−B spread**, not by eye:
+
+| | R−B | verdict |
+| --- | --- | --- |
+| 0 | neutral | correct on paper |
+| −1 to −2 | imperceptible | acceptable |
+| −5 and beyond | visibly cool | slate — a bug |
+
+This was found three times in one day before it was written down: `--surface`
+(#F4F6F9, −5), `--control-surface` (#F6F8FB, −5), and worst, the hover pair
+`--secondary-hover` / `--secondary-active` (#DCE0E8 / #CFD4DE, −12 and −15) —
+which is why every hover on a light surface had a blue-grey cast. All are now
+C 0.000. Three occurrences is not taste, it is a missing rule.
+
+**Where it applies**: any token that lands on paper — control fills, hover and
+pressed surfaces, dividers, hairlines, skeleton bases, disabled fills. It does
+**not** apply to the dark theme, where the ground is the blue-black family and
+the chroma is doing its job.
 
 ### 2.2 Color tokens (the full set)
 
@@ -86,7 +126,7 @@ Hue map: primary 350 · danger 30 · warning 75 · success 150 · live 195 · ac
 
 **Rule:** every color token MUST be registered in `@theme inline` so Tailwind utilities exist (`bg-primary`, `text-primary-ink`, `border-border-strong`, etc.).
 
-**Rule:** a filled control MUST clear 4.5:1 against its own label, in every state.
+**Rule:** a filled control MUST clear 4.5:1 against its own label, in every state. Note the polarity: because labels are dark, the **pressed** state (L -0.050) is the worst case, not the safest. Check pressed, not base.
 
 ### 2.3 Shape tokens
 

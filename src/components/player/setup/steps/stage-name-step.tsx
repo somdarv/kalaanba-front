@@ -38,14 +38,14 @@ export function StageNameStep({ wizard }: StepProps) {
   return (
     <>
       <StepHeading
-        lead="Now the one that matters."
-        note="This leads on your player card, in lineups, and on goal alerts."
+        lead="Step 2 of 5"
+        note="This name shows on your card, in lineups, and when you score."
       >
         What do they call you on the pitch?
       </StepHeading>
 
       <StepStagger index={1}>
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col">
           <TextField
             label="Football name"
             purpose="name"
@@ -55,11 +55,17 @@ export function StageNameStep({ wizard }: StepProps) {
           />
 
           {suggestions.length > 0 ? (
-            <div className="flex flex-wrap items-center gap-2">
+            /* Set apart from the field, not stacked tight against it: these
+               are a shortcut, not part of the input. `intent="neutral"` on
+               purpose â the pressed chip was a solid brand fill, which put
+               the loudest colour on the screen on a convenience control and
+               made a shortcut outrank the answer the player typed. */
+            <div className="mt-5 flex flex-wrap items-center gap-2">
               <span className="text-sm text-fg-muted">Or use</span>
               {suggestions.map((suggestion) => (
                 <ChipToggle
                   key={suggestion}
+                  intent="neutral"
                   pressed={current.trim().toUpperCase() === suggestion}
                   onClick={() =>
                     setValue("stage_name", suggestion, {

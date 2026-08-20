@@ -9,6 +9,7 @@ import {
 } from "react";
 import { CaretDown, MagnifyingGlass } from "@phosphor-icons/react";
 import { cn } from "@/lib/cn";
+import { controlHeight } from "./control-scale";
 import { COUNTRIES, findCountry, type Country } from "@/lib/countries";
 import { Popover } from "./popover";
 
@@ -116,7 +117,8 @@ export function PhoneInput({
         data-disabled={disabled || undefined}
         className={cn(
           // Single pill — identical recipe to TextField (§2.3 radius-pill, §2.4 flat).
-          "group relative flex h-12 w-full items-center rounded-control bg-control-surface",
+          controlHeight,
+          "group relative flex w-full items-center rounded-control bg-control-surface",
           "border border-control-border",
           "transition-[box-shadow,border-color,background-color] duration-quick ease-out",
           "hover:shadow-sm hover:border-border",
