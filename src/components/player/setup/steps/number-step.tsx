@@ -37,54 +37,76 @@ export function NumberStep({ wizard, meta }: StepProps) {
   return (
     <>
       <StepHeading
-        lead="Optional — pick one now or leave it."
-        note="Your preference across clubs. A competition can still assign you a different squad number."
+        lead="Step 3 of 5"
+        note="The number you like. A club can still give you another one."
       >
-        Pick your number.
+        Pick your number
       </StepHeading>
 
       <StepStagger index={1}>
         <div className="flex flex-col gap-3">
-          <div className="grid grid-cols-4 gap-2">
-            {quickPicks.map((pick) => (
-              <NumberTile
-                key={pick}
-                value={pick}
-                selected={String(pick) === current && !showCustom}
+          {/* One mode at a time. The grid and the free-entry field used to sit
+              on screen together, so the player was asked to pick a number and
+              to type a number in the same breath. Choosing "Write your own
+              number" now replaces the grid instead of appending to it. */}
+          {showCustom ? (
+            <>
+              <TextField
+                label="Your number"
+                hint={`Any number from ${min} to ${max}.`}
+                purpose="integer"
+                inputMode="numeric"
+                placeholder={String(min)}
+                maxLength={String(max).length}
+                autoFocus
+                error={errors.preferred_number?.message}
+                {...register("preferred_number")}
+              />
+              <TextTile
+                label="Back to the quick picks"
+                selected={false}
                 onSelect={() => {
                   setShowCustom(false);
-                  wizard.chooseAndAdvance("preferred_number", String(pick));
+                  setValue("preferred_number", "", { shouldValidate: false });
                 }}
+                className="h-12"
               />
-            ))}
-          </div>
+            </>
+          ) : (
+            <>
+              <div className="grid grid-cols-4 gap-2">
+                {quickPicks.map((pick) => (
+                  <NumberTile
+                    key={pick}
+                    value={pick}
+                    selected={String(pick) === current}
+                    onSelect={() => {
+                      setShowCustom(false);
+                      wizard.chooseAndAdvance("preferred_number", String(pick));
+                    }}
+                  />
+                ))}
+              </div>
 
-          <TextTile
-            label="Another number"
-            selected={showCustom}
-            onSelect={() => {
-              setShowCustom(true);
-              if (isQuickPick) {
-                setValue("preferred_number", "", { shouldValidate: false });
-              }
-            }}
-            className="h-12"
-          />
+              <TextTile
+                label="Write your own number"
+                selected={false}
+                onSelect={() => {
+                  setShowCustom(true);
+                  if (isQuickPick) {
+                    setValue("preferred_number", "", { shouldValidate: false });
+                  }
+                }}
+                className="h-12"
+              />
 
-          {showCustom ? (
-            <TextField
-              label={`Your number (${min}–${max})`}
-              purpose="integer"
-              placeholder={String(min)}
-              maxLength={String(max).length}
-              error={errors.preferred_number?.message}
-              {...register("preferred_number")}
-            />
-          ) : errors.preferred_number?.message ? (
-            <p role="alert" className="text-sm text-danger-ink">
-              {errors.preferred_number.message}
-            </p>
-          ) : null}
+              {errors.preferred_number?.message ? (
+                <p role="alert" className="text-sm text-danger-ink">
+                  {errors.preferred_number.message}
+                </p>
+              ) : null}
+            </>
+          )}
         </div>
       </StepStagger>
     </>

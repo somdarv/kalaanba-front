@@ -1,0 +1,22 @@
+key: player.positions.abbreviations
+engine: player-affiliation
+scope: platform
+value_type: json
+default: '{"goalkeeper":"GK","left_back":"LB","centre_back":"CB","right_back":"RB","defensive_midfielder":"DM","left_midfielder":"LM","centre_midfielder":"CM","right_midfielder":"RM","attacking_midfielder":"AM","left_winger":"LW","right_winger":"RW","second_striker":"SS","striker":"ST","defender":"DF","midfielder":"MF","forward":"FW"}'
+approval_level: low
+description: |
+  Short forms for the position keys in `player.positions`, drawn on the marker
+  itself in the setup pitch picker where a full label will not fit.
+
+  These are display strings, not keys: logic never reads them (Constitution
+  Law 4), which is why approval is low and why they are translatable rather
+  than derived in the client from the label. "Goalkeeper" shortens to "GK" in
+  English and "GB" in French, and no client-side rule gets that right.
+
+  Two or three characters. A longer value will not be rejected but will not
+  fit the marker.
+
+  A key present in `player.positions` but absent here falls back to its label,
+  then to the raw key. A marker must never render blank.
+
+  Locale variants follow the same suffix rule as `player.positions.labels`.

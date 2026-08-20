@@ -23,7 +23,7 @@ export function IdentityStep({ wizard }: StepProps) {
 
   return (
     <>
-      <StepHeading lead="Let us put you on the register.">
+      <StepHeading lead="Step 1 of 5">
         First, what&apos;s your name?
       </StepHeading>
 
@@ -32,7 +32,7 @@ export function IdentityStep({ wizard }: StepProps) {
           <TextField
             label="First name"
             purpose="given-name"
-            hint={"From your account — change it if it's not quite right."}
+            hint="From your account. Change it if it is wrong."
             error={errors.first_name?.message}
             {...register("first_name")}
           />

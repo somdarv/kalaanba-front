@@ -15,14 +15,15 @@ import type { StepProps } from "./step-props";
 export function PositionStep({ wizard, meta }: StepProps) {
   const {
     watch,
+    setValue,
     formState: { errors },
   } = wizard.form;
 
   return (
     <>
       <StepHeading
-        lead="Optional — but clubs search on it."
-        note="Where you play most. Secondary positions come later."
+        lead="Step 4 of 5"
+        note="Pick the one spot you play most."
       >
         Where do you play?
       </StepHeading>
@@ -30,11 +31,17 @@ export function PositionStep({ wizard, meta }: StepProps) {
       <StepStagger index={1}>
         <div className="flex flex-col gap-2">
           <PitchPicker
-            legend="Primary position"
+            legend="Your position"
             options={meta.positions}
             value={watch("primary_position")}
+            // Sets the answer and stops there. The other single-tap steps
+            // auto-advance, and that is right when the tap IS the answer, but
+            // here the tap is the start of one: the player wants to read the
+            // line that appears under the pitch and check they picked the
+            // right spot. Yanking the screen away mid-thought is the fastest
+            // way to make a flow feel hostile. "Next step" moves on.
             onChange={(key) =>
-              wizard.chooseAndAdvance("primary_position", key)
+              setValue("primary_position", key, { shouldValidate: true })
             }
           />
           {errors.primary_position?.message ? (

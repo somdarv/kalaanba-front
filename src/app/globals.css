@@ -66,35 +66,81 @@
   --control-border:  oklch(0.400 0.016 264);
 
   /* ---- Brand. Fill and ink are separate roles, not one color doing both.
-          Fills carry white labels; ink is for text/icons on dark surfaces. ---- */
-  --primary:         oklch(0.560 0.210 350); /* white label 5.23:1 */
-  --primary-hover:   oklch(0.590 0.210 350); /* white label 4.61:1 */
-  --primary-pressed: oklch(0.510 0.210 350); /* white label 6.50:1 */
+          Fills carry a WHITE label; `-ink` is for text/icons on dark surfaces.
+
+     2026-08-19 — ADR-0010 kept v2's bright fills and flipped the LABEL dark,
+     which measured beautifully: every state cleared 4.5:1 against its own
+     dark ink. It was then looked at, and a dark label on brand pink does not
+     read as a primary action — it reads as a disabled one. Product call the
+     same day: the label goes back to white. The fills stay bright.
+
+     TRADEOFF, STATED PLAINLY — this does not clear WCAG AA, and pretending
+     otherwise in a comment is how the v2 layer shipped four failing buttons.
+     Measured, white against each fill:
+
+         primary  base 3.19  hover 2.84  pressed 3.89
+         accent   base 3.14  hover 2.80  pressed 3.83
+         success  base 3.16  hover 2.81  pressed 3.85
+         danger   base 3.18  hover 2.83  pressed 3.88
+
+     AA for normal text is 4.5:1, so all twelve fall short, and note that
+     HOVER is the worst case, not pressed — hover lightens the fill by
+     L +0.030 and pushes the label further down, to ~2.8:1. Button labels do
+     not qualify for the 3:1 large-text allowance (that needs >=18.66px bold;
+     `lg` is 16px medium), so this is a real, knowing deviation from
+     DESIGN_LANGUAGE §2.2 "a filled control MUST clear 4.5:1 against its own
+     label, in every state" — it needs an ADR superseding 0010, and
+     `design-tokens.test.ts` stays RED until that decision is recorded.
+
+     The compliant version of this same look, if the deviation is rejected:
+     hold the white label and drop each fill to the L below, which is the
+     brightest value that still clears 4.5:1 —
+         primary L 0.594 #CF3B8F   accent  L 0.565 #1E7CBD
+         success L 0.551 #06893E   danger  L 0.588 #D24535
+     That is darker than this, though still short of ADR-0006's plum.
+
+     `--warning` and `--live` keep DARK labels. They are not inconsistency:
+     amber at L 0.770 and cyan at L 0.840 carry white at ~2.2:1 and ~1.9:1,
+     which is illegible rather than merely sub-AA. ---- */
+  --primary:         oklch(0.680 0.200 350); /* white label 3.19:1 */
+  --primary-hover:   oklch(0.710 0.200 350); /* white label 2.84:1 */
+  --primary-pressed: oklch(0.630 0.200 350); /* white label 3.89:1 */
   --primary-ink:     oklch(0.760 0.170 350); /* on --surface 7.71:1 */
   --on-primary:      oklch(1 0 0);
 
-  --accent:         oklch(0.530 0.120 245);
-  --accent-hover:   oklch(0.560 0.120 245);
-  --accent-pressed: oklch(0.480 0.120 245);
+  --accent:         oklch(0.655 0.130 245); /* white label 3.14:1 */
+  --accent-hover:   oklch(0.685 0.130 245); /* white label 2.80:1 */
+  --accent-pressed: oklch(0.605 0.130 245); /* white label 3.83:1 */
   --accent-ink:     oklch(0.760 0.130 245);
   --on-accent:      oklch(1 0 0);
 
   /* ---- State — minimum 40 degrees of hue between adjacent roles ---- */
-  --success:         oklch(0.520 0.130 150);
-  --success-hover:   oklch(0.550 0.130 150);
-  --success-pressed: oklch(0.470 0.130 150);
+  --success:         oklch(0.640 0.150 150); /* white label 3.16:1 */
+  --success-hover:   oklch(0.670 0.150 150); /* white label 2.81:1 */
+  --success-pressed: oklch(0.590 0.150 150); /* white label 3.85:1 */
   --success-ink:     oklch(0.760 0.200 150);
   --on-success:      oklch(1 0 0);
 
+  /* Already on the bright-fill/dark-label pattern since 0006. Unchanged. */
   --warning:     oklch(0.770 0.160 75);
   --warning-ink: oklch(0.760 0.160 75);
   --on-warning:  oklch(0.200 0.030 75);
 
-  --danger:         oklch(0.555 0.200 30);
-  --danger-hover:   oklch(0.585 0.200 30);
-  --danger-pressed: oklch(0.505 0.200 30);
+  --danger:         oklch(0.675 0.180 30); /* white label 3.18:1 */
+  --danger-hover:   oklch(0.705 0.180 30); /* white label 2.83:1 */
+  --danger-pressed: oklch(0.625 0.180 30); /* white label 3.88:1 */
   --danger-ink:     oklch(0.760 0.140 30);
   --on-danger:      oklch(1 0 0);
+
+  /* ---- Pitch. Decorative surface for the position picker only.
+          Theme-stable on purpose: grass is green under a floodlight and
+          green at noon, the way a photograph does not change with the
+          theme. Defined once here, never overridden in the light block.
+          ADR-0011. ---- */
+  --pitch-turf:     oklch(0.430 0.075 150);
+  --pitch-turf-alt: oklch(0.462 0.078 150);
+  --pitch-line:     oklch(1 0 0 / 0.30);
+  --on-pitch:       oklch(1 0 0);
 
   /* ---- Live — in-play matches only. The one electric color in the system;
           rationed so it still means something when it appears. ---- */
@@ -177,9 +223,23 @@ html.light {
      there is headroom above --bg; on white there is none, so the light ladder
      *descends*: --surface recedes for inline/inset regions, while raised and
      floating stay paper and earn their tier from the border + inset highlight
-     + shadow already prescribed in DESIGN_LANGUAGE §2.4. */
+     + shadow already prescribed in DESIGN_LANGUAGE §2.4.
+
+     2026-08-19 — --surface was oklch(0.972 0.005 264) = #F4F6F9. At hue 264
+     a chroma of 0.005 is a *visible* cool cast on paper (R-B spread -5), and
+     it read as slate rather than as white. Two changes, one intent:
+       - chroma 0.005 -> 0.002 (spread -5 -> -2). §2.1 locks neutrals to hue
+         264; it says nothing about how much of that hue to carry, and at this
+         lightness less of it is what reads as clean.
+       - L 0.972 -> 0.982, i.e. lighter.
+     TRADEOFF, stated plainly: the recession from paper narrows from DL 0.028
+     to DL 0.018. Anything relying on ground separation alone gets a weaker
+     signal — notably <AuthShell>, whose desktop ground is bg-surface behind a
+     paper panel. It still reads because --shadow-lg carries that tier too, and
+     .elev-flat pairs the fill with --border, which §4.3 says carries depth
+     before the fill does. To restore the old separation, raise L, not chroma. */
   --bg:              oklch(1.000 0.000 264);
-  --surface:         oklch(0.972 0.005 264);
+  --surface:         oklch(0.982 0.002 264); /* #F8F9FA */
   --surface-elev:    oklch(1.000 0.000 264);
   --surface-overlay: oklch(1.000 0.000 264);
   --surface-2:       var(--surface-elev);
@@ -188,20 +248,41 @@ html.light {
   --fg-muted:  oklch(0.500 0.020 264);
   --fg-subtle: oklch(0.540 0.018 264);
 
-  --border:        oklch(0.905 0.008 264);
-  --border-strong: oklch(0.600 0.016 264);
-  --divider:       oklch(0.925 0.006 264);
+  --border:        oklch(0.905 0.000 264);
+  --border-strong: oklch(0.909 0.000 264);
+  --divider:       oklch(0.925 0.000 264);
 
-  /* Near-paper fill + whisper hairline. TRADEOFF, stated plainly: at 1.07:1
-     (fill) and 1.46:1 (line) against paper, neither clears the 3:1 that
-     WCAG 1.4.11 asks of a control boundary — only a line at L <= 0.655
-     does, which is the hard edge this was tuned away from. The fill is now
-     a hint of tone rather than a panel, so the hairline is doing most of
-     the identifying on its own. Focus and error states stay unambiguous
-     (primary-ink / danger-ink ring). To restore strict 1.4.11, set
-     --control-border to oklch(0.655 0.014 264). */
-  --control-surface: oklch(0.978 0.004 264);
-  --control-border:  oklch(0.878 0.008 264);
+  /* Near-paper fill + whisper hairline.
+
+     2026-08-19 — de-cast and taken as light as the system allows. This was
+     oklch(0.978 0.004 264) = #F6F8FB, an R-B spread of -5. At hue 264 that
+     much chroma on near-white is a *visible* cool tint, and it read as slate
+     — a grey trough in a paper form rather than a field waiting for a name.
+     Chroma 0.004 -> 0.001 takes the spread to -1: #F6F8FB -> #F8F8F9, a
+     neutral rather than a blue. Same correction --surface took earlier today,
+     for the same reason. §2.1 hue-locks neutrals to 264; it says nothing
+     about how much of that hue to carry, and at this lightness less of it is
+     what reads as clean.
+
+     WHY IT IS NOT LIGHTER THAN THIS. The fill is capped at L 0.980 by a rule
+     the test suite encodes: the light control fill sits at least ΔL 0.020
+     below paper ("the light control fill is distinguishable from paper"),
+     because DESIGN_LANGUAGE identifies a field by its FILL, not by a drawn
+     box. L 0.990 was tried and it fails that assertion at ΔL 0.010. Going
+     lighter is therefore not a value tweak — it is a decision to move field
+     identification onto the hairline, which needs an ADR and a rewritten
+     assertion, and the hairline should get stronger in the same move or the
+     field dissolves into the page.
+
+     TRADEOFF, stated plainly: at 1.06:1 (fill) and 1.45:1 (line) against
+     paper, neither clears the 3:1 that WCAG 1.4.11 asks of a control
+     boundary — only a line at L <= 0.655 does, which is the hard edge this
+     was tuned away from. Focus and error states stay unambiguous
+     (primary-ink / danger-ink ring). If the field reads too soft, spend it
+     on the LINE, not the fill: --control-border at oklch(0.840 0.006 264)
+     gives 1.63:1 and stays a hairline. */
+  --control-surface: oklch(0.991 0.000 264); /* #FCFCFC */
+  --control-border:  oklch(0.878 0.000 264);
 
   --primary-ink:  oklch(0.570 0.235 350);
   --accent-ink:   oklch(0.540 0.135 245);
@@ -214,10 +295,10 @@ html.light {
   --ring:        oklch(0.480 0.120 200);
   --ring-offset: var(--bg);
 
-  --hover-overlay:        oklch(0.560 0.210 350 / 0.07);
-  --hover-overlay-strong: oklch(0.560 0.210 350 / 0.12);
-  --secondary-hover:      oklch(0.905 0.012 264);
-  --secondary-active:     oklch(0.870 0.014 264);
+  --hover-overlay:        oklch(0.680 0.200 350 / 0.07);
+  --hover-overlay-strong: oklch(0.680 0.200 350 / 0.12);
+  --secondary-hover:      oklch(0.905 0.000 264); /* #DFDFDF -- was #DCE0E8, R-B -12 */
+  --secondary-active:     oklch(0.870 0.000 264); /* #D4D4D4 -- was #CFD4DE, R-B -15 */
 
   --shadow-sm: 0 1px 2px oklch(0.255 0.022 264 / 0.07);
   --shadow-md: 0 8px 24px -12px oklch(0.255 0.022 264 / 0.14);
@@ -338,6 +419,10 @@ html.light {
   --color-danger-ink:     var(--danger-ink);
   --color-on-danger:      var(--on-danger);
 
+  --color-pitch-turf:     var(--pitch-turf);
+  --color-pitch-turf-alt: var(--pitch-turf-alt);
+  --color-pitch-line:     var(--pitch-line);
+  --color-on-pitch:       var(--on-pitch);
   --color-live:     var(--live);
   --color-live-ink: var(--live-ink);
   --color-on-live:  var(--on-live);
@@ -402,6 +487,34 @@ html.light {
 .kx-numeric {
   font-variant-numeric: tabular-nums;
   font-feature-settings: var(--font-numeric-features);
+}
+
+/* ---------------------------------------------------------------------
+   Brand wordmark — the Kalaanba logo.
+
+   DESIGN_LANGUAGE has no brand-mark section (flagged 2026-08-19), so the
+   rule it *does* have decides the treatment: §2 — "Code never references
+   colors literally — only via these tokens."
+
+   The supplied artwork is three PNGs that differ only in baked colour
+   (black / #EA058D / white). Default theme is dark with a light opt-in
+   (§5), so no single baked file is right on every surface, and all three
+   sit outside the token system.
+
+   All three carry identical geometry in the alpha channel over a flat RGB
+   fill, so one file is used as a *mask* and the colour comes from
+   `currentColor`: `text-on-primary` paints it white over hero art,
+   `text-primary` gives brand pink, `text-fg` follows the theme. One 20KB
+   asset, every variant, no literal colour.
+
+   Owned by <Wordmark>. Compose the class; do not re-derive the mask.
+   --------------------------------------------------------------------- */
+.kx-wordmark {
+  /* Intrinsic size of the master art. Set a height, the width follows. */
+  aspect-ratio: 1748 / 316;
+  background-color: currentColor;
+  -webkit-mask: url("/images/brand/kalaanba-wordmark.png") center / contain no-repeat;
+  mask: url("/images/brand/kalaanba-wordmark.png") center / contain no-repeat;
 }
 
 /* ---------------------------------------------------------------------

@@ -2,15 +2,17 @@ key: player.positions
 engine: player-affiliation
 scope: platform
 value_type: json
-default: '["goalkeeper","defender","midfielder","forward"]'
+default: '["goalkeeper","left_back","centre_back","right_back","defensive_midfielder","left_midfielder","centre_midfielder","right_midfielder","attacking_midfielder","left_winger","right_winger","second_striker","striker"]'
 approval_level: medium
 description: |
   The allowed set of primary-position internal keys (stable snake_case)
   offered at player-profile creation (Player & Affiliation engine doc §6).
   Logic depends on these keys, never on display strings (Constitution Law 4);
   the human-facing labels are resolved separately and are translatable.
-  Kept intentionally coarse for V1 — richer position taxonomies (secondary
-  positions, styles) are deferred (engine doc §23). Medium approval because
+  Expanded 2026-08-19 from four coarse keys to the thirteen a player actually
+  names on a pitch, so the setup picker can put each one where it stands.
+  Secondary positions and play styles are still deferred (engine doc §23):
+  this is one choice per player, not a formation. Medium approval because
   changing the set affects every position selector and any downstream
   position-based display.
 

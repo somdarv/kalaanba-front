@@ -1,6 +1,7 @@
 "use client";
 
-import { ChoiceCard } from "../choice-controls";
+import { RadioGroup } from "@/components/ui";
+
 import { StepHeading } from "../step-heading";
 import { StepStagger } from "../step-transition";
 import type { StepProps } from "./step-props";
@@ -10,9 +11,16 @@ import type { StepProps } from "./step-props";
  *
  * Each option states its own consequence, because this signal is not for the
  * player: it aggregates into club readiness, and a signal nobody understands
- * is a signal answered carelessly. Both label and consequence line come from
- * config — §12 explicitly anticipates an admin relabelling "Available" to
- * "Ready to Go".
+ * is a signal answered carelessly. Both the label and the consequence line
+ * come from config — §12 explicitly anticipates an admin relabelling
+ * "Available" to "Ready to Go".
+ *
+ * Rendered with the shared `<RadioGroup>` rather than the bespoke
+ * `<ChoiceCard>` stack. It is the same question shape the rest of the app
+ * already answers with radios, and the selected card was a solid brand fill
+ * that shouted louder than the primary CTA underneath it (§4.3: one primary
+ * action per viewport). The radio's tint plus dot says "chosen" without
+ * competing, and the dot means colour is not the only signal (§6).
  *
  * Unlike the earlier single-tap steps this one does not auto-advance. It is
  * the last question, so advancing means submitting, and a write should follow
@@ -29,38 +37,23 @@ export function AvailabilityStep({ wizard, meta }: StepProps) {
 
   return (
     <>
-      <StepHeading
-        lead="Last one."
-        note="Clubs building a squad see this. You can change it any time."
-      >
+      <StepHeading lead="Step 5 of 5" note="Clubs picking a squad see this. You can change it any time.">
         Are you free to play?
       </StepHeading>
 
       <StepStagger index={1}>
-        <div
-          role="group"
-          aria-label="Availability"
-          className="flex flex-col gap-2"
-        >
-          {meta.availability.map((option) => (
-            <ChoiceCard
-              key={option.key}
-              label={option.label}
-              description={option.description}
-              selected={option.key === current}
-              onSelect={() =>
-                setValue("availability_status", option.key, {
-                  shouldValidate: true,
-                })
-              }
-            />
-          ))}
-          {errors.availability_status?.message ? (
-            <p role="alert" className="text-sm text-danger-ink">
-              {errors.availability_status.message}
-            </p>
-          ) : null}
-        </div>
+        <RadioGroup
+          value={current || null}
+          onChange={(key) =>
+            setValue("availability_status", key, { shouldValidate: true })
+          }
+          options={meta.availability.map((option) => ({
+            value: option.key,
+            label: option.label,
+            hint: option.description ?? undefined,
+          }))}
+          error={errors.availability_status?.message}
+        />
       </StepStagger>
     </>
   );

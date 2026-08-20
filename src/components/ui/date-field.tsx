@@ -5,6 +5,7 @@ import { CalendarBlank, CaretDown } from "@phosphor-icons/react";
 import { Popover } from "./popover";
 import { Calendar } from "./calendar";
 import { cn } from "@/lib/cn";
+import { controlHeight } from "./control-scale";
 
 const DEFAULT_FORMATTER = new Intl.DateTimeFormat("en-GB", {
   day: "numeric",
@@ -98,7 +99,8 @@ export function DateField({
           data-error={hasError || undefined}
           data-open={open || undefined}
           className={cn(
-            "relative flex h-12 w-full items-center gap-2 rounded-control bg-control-surface",
+            controlHeight,
+            "relative flex w-full items-center gap-2 rounded-control bg-control-surface",
             "border border-control-border text-input pl-4 pr-3",
             "transition-[box-shadow,border-color,background-color] duration-quick ease-out",
             "hover:shadow-sm hover:border-border",

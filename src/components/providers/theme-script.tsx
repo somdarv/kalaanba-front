@@ -1,18 +1,22 @@
 "use client";
 
-import { THEME_STORAGE_KEY } from "@/lib/theme";
+import { FORCED_THEME, THEME_STORAGE_KEY } from "@/lib/theme";
 import { useEffect } from "react";
 
 /**
- * Inline pre-paint script that resolves the user's theme choice from
- * localStorage (`auto` | `light` | `dark`) and sets `data-theme` +
- * `data-theme-choice` on `<html>` before React hydrates. Prevents a
- * light/dark flash on first paint.
+ * Pre-paint theme resolution: reads the user's choice from localStorage
+ * (`auto` | `light` | `dark`) and sets `data-theme` + `data-theme-choice` on
+ * `<html>`. Prevents a light/dark flash on first paint.
  *
- * Must be rendered inside `<head>` (or at the very top of `<body>`).
+ * While `FORCED_THEME` is set (see `@/lib/theme`) there is nothing to
+ * resolve — the root layout stamps `data-theme` on `<html>` server-side, so
+ * the correct theme is in the very first byte of HTML rather than one
+ * effect late. This component is then a no-op it keeps around for the day
+ * the lock lifts.
  */
 export function ThemeScript() {
   useEffect(() => {
+    if (FORCED_THEME) return;
     try {
       const key = THEME_STORAGE_KEY;
       let stored = null;

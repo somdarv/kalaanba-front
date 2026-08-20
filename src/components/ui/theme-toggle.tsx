@@ -49,6 +49,11 @@ export type ThemeToggleProps = {
  * `<ThemeToggle>` — segmented 3-state control: Light · Auto · Dark.
  * Default is `auto` (follows OS). User choice is persisted to localStorage
  * and synced via `<ThemeProvider>`.
+ *
+ * While `FORCED_THEME` is set (see `@/lib/theme`) this is a **preview**
+ * control, and `/showcase` is the only place it is mounted: the flip applies
+ * for the session so dark keeps being built and reviewed, but nothing is
+ * persisted and no user-facing surface offers it.
  */
 export function ThemeToggle({ className, compact = false }: ThemeToggleProps) {
   const { theme, setTheme } = useTheme();

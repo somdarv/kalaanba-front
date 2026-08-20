@@ -71,3 +71,41 @@ You **MUST refuse** to write UI code that:
 ## Refusal trigger (the meta-rule)
 
 If you find yourself about to write UI code without having opened `docs/design-system/DESIGN_LANGUAGE.md` this turn — **stop**. Open the doc. Then proceed.
+
+## Copy rules (mandatory, applies to every string a user reads)
+
+Kalaanba is for grassroots football in Ghana. Many players are on a phone, on
+data they paid for, reading English that is not their first language. Write for
+them, not for the design team.
+
+### Hard rules
+
+1. **No dashes in UI copy.** No em dash and no en dash. Use a full stop, a
+   comma, or two sentences. If a sentence needs a dash to work, it is doing too
+   much. Split it.
+   - Wrong: `Optional — but clubs search on it.`
+   - Right: `Clubs search by position.`
+2. **Write so a 10 year old gets it first time.** Short common words. If a
+   simpler word exists, it wins. No jargon unless it is football jargon the
+   player already uses on the pitch.
+   - Wrong: `Your preference across clubs.`
+   - Right: `The number you like. Clubs can still give you another one.`
+3. **One sentence where one sentence will do.** Never two lines when one says
+   it. Cut every word that carries no meaning.
+4. **Say the thing, not the feeling.** No hype, no filler, no "simply", "just",
+   "easily", "seamless", "unlock", "empower".
+5. **Second person, active voice, present tense.** "Pick your number", not
+   "A number may be selected".
+6. **No ellipsis (...) and no exclamation marks** outside a real celebration.
+
+### Where this applies
+
+Labels, placeholders, hints, helper text, errors, empty states, buttons, toasts,
+push copy, headings, and any string served from config as a display label. It
+does not apply to code comments, docs, ADRs, or the journal, where full
+punctuation is fine and precision beats brevity.
+
+### Checking it
+
+Read the string out loud. If you run out of breath, it is too long. If you would
+not say it to a player at the side of a pitch, rewrite it.

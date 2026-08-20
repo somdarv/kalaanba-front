@@ -3,6 +3,7 @@
 import { forwardRef, useId, useState, type KeyboardEvent } from "react";
 import { Minus, Plus } from "@phosphor-icons/react";
 import { cn } from "@/lib/cn";
+import { controlHeight } from "./control-scale";
 
 function clamp(value: number, min: number, max: number) {
   if (value < min) return min;
@@ -107,7 +108,8 @@ export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
           data-error={hasError || undefined}
           data-focused={focused || undefined}
           className={cn(
-            "relative flex h-12 w-full items-center gap-1 rounded-control bg-control-surface",
+            controlHeight,
+            "relative flex w-full items-center gap-1 rounded-control bg-control-surface",
             "border border-control-border px-1",
             "transition-[box-shadow,border-color,background-color] duration-quick ease-out",
             "hover:shadow-sm hover:border-border",

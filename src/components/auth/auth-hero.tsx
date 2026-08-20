@@ -1,12 +1,11 @@
 import Image from "next/image";
 import {
   ShieldCheck,
-  SoccerBall,
   Trophy,
   UsersThree,
 } from "@phosphor-icons/react/dist/ssr";
 
-import { Eyebrow } from "@/components/ui/eyebrow";
+import { Wordmark } from "@/components/ui/wordmark";
 import { cn } from "@/lib/cn";
 
 /**
@@ -54,8 +53,6 @@ export type AuthHeroProps = {
   imageAlt?: string;
   /** Short line under the wordmark — the emotional hook. */
   tagline?: string;
-  /** Eyebrow above the proof strip. */
-  proofLabel?: string;
   /** Desktop-only proof strip at the foot of the art. */
   proofPoints?: readonly AuthProofPoint[];
   className?: string;
@@ -79,14 +76,24 @@ export function AuthHero({
   wideImageSrc = AUTH_HERO_WIDE_SRC,
   imageAlt = "A club squad lined up for a team photo under floodlights",
   tagline = "Your game, on the record.",
-  proofLabel = "What the record gives you",
   proofPoints = DEFAULT_PROOF_POINTS,
   className,
 }: AuthHeroProps) {
   return (
     <div
       className={cn(
-        "kx-chrome relative isolate size-full overflow-hidden bg-primary text-on-primary",
+        // `absolute inset-0`, NOT `size-full`. `size-full` is `height: 100%`,
+        // a percentage — and a percentage height only resolves against a
+        // parent with a *definite* height. The mobile slot is now a flex item
+        // that takes its height from `flex-1`, which is indefinite at the
+        // moment the child is sized, so `h-100%` collapsed to 0, this div
+        // went to zero, and `next/image fill` inside it reported "height
+        // value of 0" and rendered nothing. Absolute insets resolve against
+        // the positioned parent's used height instead, definite or not.
+        //
+        // Contract: the parent must be positioned (`relative`) and clip
+        // (`overflow-hidden`). `<AuthShell>` gives it both.
+        "kx-chrome absolute inset-0 isolate overflow-hidden bg-primary text-white",
         className,
       )}
     >
@@ -125,14 +132,17 @@ export function AuthHero({
         className="absolute inset-0 bg-linear-to-b from-black/45 via-black/10 to-black/55"
       />
 
-      {/* Wordmark — centred at the head of the art, clear of system chrome. */}
-      <div className="absolute inset-x-0 top-0 z-10 flex items-center justify-center gap-2.5 px-6 pt-[max(1.25rem,env(safe-area-inset-top))] lg:pt-8">
-        <span className="grid size-9 place-items-center rounded-full bg-on-primary/15 backdrop-blur-sm">
-          <SoccerBall size={20} weight="fill" aria-hidden />
-        </span>
-        <span className="font-display text-lg font-bold tracking-tight">
-          Kalaanba
-        </span>
+      {/* Wordmark — centred at the head of the art, clear of system chrome.
+          No colour prop: <Wordmark> masks `currentColor`, and this surface
+          sets `text-white`, so the mark comes through white over the art.
+          Literal white, not `--on-primary`, even though that token is white
+          again as of the 2026-08-19 label flip. `--on-primary` means "label
+          on a brand fill" and answers to whatever that fill becomes; this
+          type sits on a photograph under a black scrim, so it is white for a
+          reason that has nothing to do with the brand and must not follow it
+          the next time the token moves. */}
+      <div className="absolute inset-x-0 top-0 z-10 flex items-center justify-center px-6 pt-[max(1.25rem,env(safe-area-inset-top))] lg:pt-8">
+        <Wordmark size="md" className="lg:h-8" />
       </div>
 
       {/* Tagline + proof strip. Desktop only — on mobile the sheet covers this
@@ -142,17 +152,19 @@ export function AuthHero({
           {tagline}
         </p>
 
-        <div aria-hidden className="mt-6 h-px w-full bg-on-primary/25" />
+        <div aria-hidden className="mt-6 h-px w-full bg-white/25" />
 
-        <Eyebrow className="mt-5 block text-on-primary/70">{proofLabel}</Eyebrow>
-
-        <ul className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2">
+        {/* No eyebrow over this strip. "What the record gives you" announced a
+            list that announces itself — three plain claims read faster than a
+            label plus three claims, and §1.3 (Premium — restraint) says the
+            calmer of two equally clear options wins. Tagline, rule, proof. */}
+        <ul className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2">
           {proofPoints.map((point) => {
             const Icon = PROOF_ICONS[point.icon];
             return (
               <li
                 key={point.label}
-                className="inline-flex items-center gap-2 text-sm font-medium text-on-primary/90"
+                className="inline-flex items-center gap-2 text-sm font-medium text-white/90"
               >
                 <Icon size={18} weight="bold" aria-hidden />
                 {point.label}

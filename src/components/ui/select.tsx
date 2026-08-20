@@ -13,6 +13,7 @@ import {
 import { CaretDown, MagnifyingGlass } from "@phosphor-icons/react";
 import { Popover } from "./popover";
 import { cn } from "@/lib/cn";
+import { controlHeight } from "./control-scale";
 
 /**
  * Select — custom dropdown with rich option rendering.
@@ -160,7 +161,8 @@ function SelectInner<T extends string>(
           data-error={hasError || undefined}
           data-open={open || undefined}
           className={cn(
-            "relative flex h-12 w-full items-center gap-2 rounded-control bg-control-surface",
+            controlHeight,
+            "relative flex w-full items-center gap-2 rounded-control bg-control-surface",
             "border border-control-border text-input",
             leftIcon ? "pl-4" : "pl-5",
             "pr-3",

@@ -107,11 +107,32 @@ const INKS = [
   "--live",
 ] as const;
 
+/**
+ * ADR-0012 accepted a deviation here, so this assertion changed shape rather
+ * than disappearing.
+ *
+ * DESIGN_LANGUAGE §2.2 asks a filled control to clear 4.5:1 against its own
+ * label in every state. The shipped fills do not: white measures 2.80 to 3.89 (2.7967 at the worst,
+ * `--accent-hover`) across the twelve brand and state fills, with HOVER the
+ * worst case because it lightens the fill by L +0.030. Measured, written into
+ * ADR-0012, and accepted for brand reasons by the product owner.
+ *
+ * Deleting the test would have been the easy move and the wrong one. It now
+ * pins the floor at the level actually shipped, so the fills cannot drift any
+ * further down without failing, and the gap to 4.5 stays visible to anyone
+ * reading the file. Raise this number, never lower it.
+ */
+const ACCEPTED_FILL_CONTRAST_FLOOR = 2.75;
+
 describe("design tokens — WCAG contrast", () => {
   it.each(FILLS)(
-    "%s carries a white label at >= 4.5:1 (DESIGN_LANGUAGE §2.2)",
+    "%s holds its white label at the ADR-0012 floor, below the §2.2 4.5:1",
     (name) => {
-      expect(contrastRatio(token(name), WHITE)).toBeGreaterThanOrEqual(4.5);
+      const ratio = contrastRatio(token(name), WHITE);
+      expect(ratio).toBeGreaterThanOrEqual(ACCEPTED_FILL_CONTRAST_FLOOR);
+      // If this ever passes, the deviation is over: restore the 4.5 floor
+      // above and close ADR-0012.
+      expect(ratio).toBeLessThan(4.5);
     },
   );
 
@@ -229,20 +250,33 @@ describe("design tokens — light theme ground", () => {
  * job again — these tests fail first and say so.
  */
 describe("design tokens — control surface identifies the field", () => {
-  it("the light control fill is distinguishable from paper", () => {
+  /**
+   * 2026-08-19 â this used to require the fill to sit >= 0.020 below paper,
+   * on the rule that a field is identified by its FILL. Product took the fill
+   * to #FCFCFC (delta 0.009) because the heavier tint read as slate. The fill
+   * no longer identifies the field, so the job moved to the hairline, and the
+   * assertion moved with it. Both halves still have to hold: the fill stays
+   * below paper, and the line stays strong enough to draw the box on its own.
+   */
+  it("the light field is carried by its hairline, not its fill", () => {
     const fill = lightToken("--control-surface");
     const bg = lightToken("--bg");
+    const line = lightToken("--control-border");
     expect(fill.L).toBeLessThan(bg.L);
-    expect(bg.L - fill.L).toBeGreaterThanOrEqual(0.02);
+    expect(bg.L - line.L).toBeGreaterThanOrEqual(0.08);
   });
 
   it("the dark control fill lifts off the dark ground", () => {
     expect(token("--surface-elev").L).toBeGreaterThan(token("--bg").L + 0.05);
   });
 
-  it("the control hairline stays quieter than --border-strong", () => {
-    // Light: the line recedes toward paper. Dark: it recedes toward ground.
-    expect(lightToken("--control-border").L).toBeGreaterThan(
+  it("the control hairline is the strongest line in the light theme", () => {
+    // Inverted 2026-08-19 with the assertion above. While the fill carried the
+    // field the line could recede toward paper; now that the fill is nearly
+    // paper itself, the line is the only thing drawing the control and has to
+    // be at least as present as --border-strong. Dark is unchanged: there the
+    // fill still lifts off the ground, so the line recedes toward it.
+    expect(lightToken("--control-border").L).toBeLessThanOrEqual(
       lightToken("--border-strong").L,
     );
     expect(token("--control-border").L).toBeLessThan(

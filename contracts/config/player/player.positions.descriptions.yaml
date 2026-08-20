@@ -1,0 +1,21 @@
+key: player.positions.descriptions
+engine: player-affiliation
+scope: platform
+value_type: json
+default: '{"goalkeeper":"You keep the ball out of the net.","left_back":"You defend the left side and help the attack.","centre_back":"You defend the middle and win headers.","right_back":"You defend the right side and help the attack.","defensive_midfielder":"You sit in front of the defence and win the ball.","left_midfielder":"You run the left side, back and forward.","centre_midfielder":"You run the middle and set the pace.","right_midfielder":"You run the right side, back and forward.","attacking_midfielder":"You create the chances.","left_winger":"You take players on down the left.","right_winger":"You take players on down the right.","second_striker":"You play just behind the striker.","striker":"You score the goals."}'
+approval_level: low
+description: |
+  One line explaining what each position in `player.positions` actually does,
+  shown when a player selects or focuses a marker in the setup pitch picker.
+
+  Mirrors `player.availability.descriptions`. Display strings only, never read
+  by logic (Constitution Law 4).
+
+  Written to the copy rules in `.github/instructions/design-system-mandatory`:
+  one short sentence, second person, no dashes, plain words. A player who has
+  never seen a formation diagram should be able to pick from these.
+
+  A key with no entry here serves `null` and the picker simply shows no line.
+  Optional by design: a new position can ship before its copy is written.
+
+  Locale variants follow the same suffix rule as `player.positions.labels`.

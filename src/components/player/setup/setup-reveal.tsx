@@ -74,7 +74,12 @@ export function SetupReveal({ player, meta, onDone }: SetupRevealProps) {
 
           <StepStagger index={2}>
             <Card tone="raised" size="md">
-              <Eyebrow>Your details</Eyebrow>
+              {/* Not an <Eyebrow>. That primitive is 12px uppercase on 0.14em tracking
+                  (§2.6), which is right for a label announcing a section of a
+                  page and too shouty for a caption on a card the player is
+                  reading for the first time. Normal case, semibold, normal
+                  tracking. */}
+              <h3 className="text-sm font-semibold text-fg">Your details</h3>
               <dl className="mt-3">
                 {rows.map((row, index) => (
                   <div key={row.label}>

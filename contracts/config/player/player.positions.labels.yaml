@@ -2,7 +2,7 @@ key: player.positions.labels
 engine: player-affiliation
 scope: platform
 value_type: json
-default: '{"goalkeeper":"Goalkeeper","defender":"Defender","midfielder":"Midfielder","forward":"Forward"}'
+default: '{"goalkeeper":"Goalkeeper","left_back":"Left Back","centre_back":"Centre Back","right_back":"Right Back","defensive_midfielder":"Defensive Midfielder","left_midfielder":"Left Midfielder","centre_midfielder":"Centre Midfielder","right_midfielder":"Right Midfielder","attacking_midfielder":"Attacking Midfielder","left_winger":"Left Winger","right_winger":"Right Winger","second_striker":"Second Striker","striker":"Striker","defender":"Defender","midfielder":"Midfielder","forward":"Forward"}'
 approval_level: low
 description: |
   Display labels for the primary-position keys in `player.positions`
@@ -22,3 +22,10 @@ description: |
   Resolution narrows from the full tag to the bare language to this key —
   `fr-FR` tries `.fr-fr`, then `.fr`, then this one — so a region needs its
   own map only where it actually differs.
+
+  Retired keys (`defender`, `midfielder`, `forward`) stay in this map after
+  2026-08-19 even though they were removed from `player.positions`. They are no
+  longer offerable, but players who chose one before the expansion still have it
+  stored, and a label map is a lookup rather than an option set. Removing them
+  would make an existing profile render its raw internal key. Deprecate, don't
+  delete (engineering-standards §7).

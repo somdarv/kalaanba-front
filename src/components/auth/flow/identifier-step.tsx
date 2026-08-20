@@ -140,16 +140,22 @@ export function IdentifierStep({
             <Divider className="flex-1" />
           </div>
 
+          {/* `lg`, same as Continue. This is the only other way out of the
+              screen, and at `md` it read as a footnote under the CTA rather
+              than the alternative it is — on a phone the two are a pair, so
+              they take the same 56px box (DESIGN_LANGUAGE §9.1). Rank stays
+              legible through intent, not size: filled brand vs. secondary. */}
           <Button
             type="button"
             intent="secondary"
+            size="lg"
             fullWidth
             onClick={swapChannel}
             leadingIcon={
               usingPhone ? (
-                <EnvelopeSimple size={18} weight="bold" aria-hidden />
+                <EnvelopeSimple size={20} weight="bold" aria-hidden />
               ) : (
-                <DeviceMobile size={18} weight="bold" aria-hidden />
+                <DeviceMobile size={20} weight="bold" aria-hidden />
               )
             }
           >

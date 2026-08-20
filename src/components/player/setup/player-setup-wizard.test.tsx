@@ -100,7 +100,7 @@ async function reachPosition() {
 }
 
 async function reachAvailability() {
-  return screen.findByRole("button", { name: /available to play/i });
+  return screen.findByRole("radio", { name: /available to play/i });
 }
 
 describe("PlayerSetupWizard", () => {
@@ -125,7 +125,12 @@ describe("PlayerSetupWizard", () => {
 
     // The pitch renders every configured position, not a fixed four.
     expect(screen.getAllByRole("radio")).toHaveLength(META.positions.length);
+    // Picking a position does NOT advance. The player needs a moment to read
+    // the position's line under the pitch and check they hit the right spot,
+    // so this step waits for "Next step" like the last one does.
     await user.click(screen.getByRole("radio", { name: /winger/i }));
+    expect(screen.getByRole("radio", { name: /winger/i })).toBeChecked();
+    await user.click(nextStep());
 
     // The last question waits for a deliberate press rather than a timer.
     const available = await reachAvailability();
@@ -165,7 +170,7 @@ describe("PlayerSetupWizard", () => {
     renderWizard();
     await reachNumber(user);
 
-    await user.click(screen.getByRole("button", { name: /another number/i }));
+    await user.click(screen.getByRole("button", { name: /write your own number/i }));
     await user.type(await screen.findByLabelText(/your number/i), "77");
     await user.click(nextStep());
 
@@ -225,6 +230,7 @@ describe("PlayerSetupWizard", () => {
     await user.click(screen.getByRole("button", { name: "10" }));
     await reachPosition();
     await user.click(screen.getByRole("radio", { name: /winger/i }));
+    await user.click(nextStep());
     await user.click(await reachAvailability());
     await user.click(screen.getByRole("button", { name: /create my profile/i }));
 
@@ -252,6 +258,7 @@ describe("PlayerSetupWizard", () => {
     await user.click(screen.getByRole("button", { name: "10" }));
     await reachPosition();
     await user.click(screen.getByRole("radio", { name: /winger/i }));
+    await user.click(nextStep());
     await user.click(await reachAvailability());
     await user.click(screen.getByRole("button", { name: /create my profile/i }));
 

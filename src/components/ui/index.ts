@@ -136,6 +136,8 @@ export type { ScrollToProps, ScrollToTarget, ScrollControlsProps } from "./scrol
 export { AppShell, SiteHeader } from "./app-shell";
 export type { AppShellProps, SiteHeaderProps } from "./app-shell";
 export { VisuallyHidden } from "./visually-hidden";
+export { Wordmark } from "./wordmark";
+export type { WordmarkProps, WordmarkSize } from "./wordmark";
 
 /* ---- Football primitives (WP-20260812-oklch-token-migration, ADR-0006) ----
    The system was strong on generic app furniture and empty on the domain:
