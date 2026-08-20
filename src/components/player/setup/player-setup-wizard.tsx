@@ -55,21 +55,29 @@ export type PlayerSetupWizardProps = {
   defaults?: { firstName?: string; lastName?: string };
   /** Back out of the flow from the first step. */
   onExit: () => void;
-  /** Continue after the profile exists. */
-  onDone: () => void;
+  /** Continue to club discovery once the profile exists. */
+  onFindClub: () => void;
+  /** Leave the flow once the profile exists, without picking a club. */
+  onGoHome: () => void;
 };
 
 export function PlayerSetupWizard({
   meta,
   defaults,
   onExit,
-  onDone,
+  onFindClub,
+  onGoHome,
 }: PlayerSetupWizardProps) {
   const wizard = usePlayerSetupWizard({ meta, defaults });
 
   if (wizard.player) {
     return (
-      <SetupReveal player={wizard.player} meta={meta} onDone={onDone} />
+      <SetupReveal
+        player={wizard.player}
+        meta={meta}
+        onFindClub={onFindClub}
+        onGoHome={onGoHome}
+      />
     );
   }
 

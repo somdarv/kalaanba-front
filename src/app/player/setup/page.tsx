@@ -61,7 +61,8 @@ export default function PlayerSetupPage() {
       meta={meta.data}
       defaults={{ firstName: firstName ?? "", lastName }}
       onExit={() => router.push("/")}
-      onDone={() => router.push("/")}
+      onFindClub={() => router.push("/clubs/near-you")}
+      onGoHome={() => router.push("/")}
     />
   );
 }
