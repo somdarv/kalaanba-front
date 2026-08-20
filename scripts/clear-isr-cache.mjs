@@ -26,16 +26,52 @@
  * the first is much the smaller problem.
  */
 
+import { readFileSync } from "node:fs";
+
 // The DB the cache handler writes to. Keep in step with cache-handler.mjs and
 // with the `-n 2` in scripts/deploy.sh.
 const ISR_CACHE_DB = 2;
 
+// Where Next keeps the runtime env, most specific first.
+const ENV_FILES = [".env.local", ".env.production", ".env"];
+
+/**
+ * Find REDIS_URL, falling back to the env files by hand.
+ *
+ * Next loads `.env.local` for its own build, but this is a separate `node`
+ * process and inherits nothing from that. The first version of this script read
+ * `process.env` alone, ran on the server, found nothing, and silently took the
+ * no-op path — so the deploy reported success and the cache was never touched.
+ * A no-op that looks identical to a success is worse than a failure.
+ */
+function resolveRedisUrl() {
+  if (process.env.REDIS_URL) return process.env.REDIS_URL;
+
+  for (const file of ENV_FILES) {
+    let contents;
+    try {
+      contents = readFileSync(new URL(`../${file}`, import.meta.url), "utf8");
+    } catch {
+      continue; // Not present in this environment. Try the next.
+    }
+    const match = contents.match(/^\s*REDIS_URL\s*=\s*(.+)$/m);
+    if (match) {
+      // Strip surrounding quotes and any trailing comment.
+      return match[1].trim().replace(/^["']|["']$/g, "");
+    }
+  }
+
+  return null;
+}
+
 async function main() {
-  const redisUrl = process.env.REDIS_URL;
+  const redisUrl = resolveRedisUrl();
 
   if (!redisUrl) {
     // Local build, or an environment with no Redis. Nothing is cached, so
-    // there is nothing to clear.
+    // there is nothing to clear. Said out loud, so this is never again
+    // mistaken for a successful flush in a deploy log.
+    console.log("[isr-cache] no REDIS_URL found, skipping (nothing is cached)");
     return;
   }
 
