@@ -120,7 +120,12 @@ export function SetupReveal({
 
       <main className={`flex-1 ${flowGutter} pt-8 pb-6`}>
         <div className={flowColumn}>
-          <AnimatePresence mode="wait" initial={false}>
+          {/* No `initial={false}`. AnimatePresence puts that on
+              PresenceContext, nested motion components read it, and the whole
+              announcement would appear fully formed with the tick already
+              stamped. The entrance IS the point here. It only ever applied to
+              the first render anyway, so dropping it costs the swap nothing. */}
+          <AnimatePresence mode="wait">
             {isAnnouncing ? (
               <SetupAnnouncement key="announcement" />
             ) : (
