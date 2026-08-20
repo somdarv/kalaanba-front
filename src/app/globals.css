@@ -159,6 +159,12 @@
   /* ---- Quiet interaction surfaces ---- */
   --hover-overlay:        oklch(0.980 0.010 264 / 0.07);
   --hover-overlay-strong: oklch(0.980 0.010 264 / 0.12);
+  /* Neutral, and staying that way. ADR-0013 gives secondary a brand-tinted
+     hover in the LIGHT theme only, because that is where --hover-overlay is
+     brand too. Here the overlay is near-white, so a neutral lift is what
+     matches the ghost sitting next to it. Pulling this pair toward --primary
+     also drags the hue 264 -> 313 and lands on plum, which is a colour the
+     product does not have. */
   --secondary-hover:      oklch(0.285 0.024 264);
   --secondary-active:     oklch(0.325 0.026 264);
 
@@ -297,8 +303,23 @@ html.light {
 
   --hover-overlay:        oklch(0.680 0.200 350 / 0.07);
   --hover-overlay-strong: oklch(0.680 0.200 350 / 0.12);
-  --secondary-hover:      oklch(0.905 0.000 264); /* #DFDFDF -- was #DCE0E8, R-B -12 */
-  --secondary-active:     oklch(0.870 0.000 264); /* #D4D4D4 -- was #CFD4DE, R-B -15 */
+  /* Was #DFDFDF / #D4D4D4, flat greys. §2.1.1 de-slated them correctly (they
+     had been #DCE0E8 / #CFD4DE, R-B -12 and -15) but left every secondary
+     button hovering to dead grey while <Button intent="ghost"> right next to
+     it washed brand pink via --hover-overlay. Two philosophies for the same
+     gesture, and the owner spotted it by eye. ADR-0013 unifies them: white
+     pulled 12% / 20% toward --primary, in the same pale pink family as the
+     ghost wash. Hue 350 and deliberate, so the cool cast §2.1.1 was written
+     against cannot come back.
+
+     Written as static oklch(), NOT color-mix(). Lightning CSS compiles a
+     color-mix custom property down to `--secondary-hover: var(--primary)` as
+     the pre-@supports fallback, so a browser without color-mix (pre-Chrome
+     111 / Safari 16.2, which is a real slice of budget Android here) would
+     render SOLID brand pink under dark label text on every press. :active
+     fires on touch, so that is not a hover-only edge case. */
+  --secondary-hover:      oklch(0.962 0.024 350); /* #FFECF5, R-B +10 */
+  --secondary-active:     oklch(0.936 0.040 350); /* #FFE0EE, R-B +17 */
 
   --shadow-sm: 0 1px 2px oklch(0.255 0.022 264 / 0.07);
   --shadow-md: 0 8px 24px -12px oklch(0.255 0.022 264 / 0.14);
