@@ -45,6 +45,9 @@ export function HomeScreen() {
       // No fixtures passed: there is no match endpoint, so the ticker inside
       // renders nothing. It is wired, not fed (Law 3).
       header={<SiteNav />}
+      // Matches the nav's own container so the two line up. The default 5xl
+      // left the content visibly narrower than the bar above it.
+      contentClassName="max-w-6xl"
     >
       <div className="flex flex-col gap-6">
         {/* No loading skeleton, for the same reason the nav has none: the
@@ -54,16 +57,19 @@ export function HomeScreen() {
 
         {isDismissed ? null : (
           <HomeHero
-            ctaHref={isSignedIn ? "/player/setup" : "/auth/signup"}
-            ctaLabel={isSignedIn ? "Create your player card" : "Get started"}
+            ctaHref={isSignedIn ? "/player/setup" : "/auth/login"}
+            ctaLabel={isSignedIn ? "Create your player card" : "Get in"}
             onDismiss={dismiss}
           />
         )}
 
-        {/* The feed slot. Discovery today, Fan Buzz §11.1 items tomorrow. */}
-        <ClubsNearYouRail areaId={user?.area_id} />
-
         <HomeCtaPrompts />
+
+        {/* Clubs, which is real backend data. The seed-backed football feed
+            (<HomeFeed>) is built and parked on the owner's call, 2026-08-21;
+            re-enabling it is one line here. The nav's score strip already
+            reads the same seed layer. */}
+        <ClubsNearYouRail areaId={user?.area_id} />
       </div>
     </AppShell>
   );

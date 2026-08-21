@@ -13,14 +13,19 @@ import { cn } from "@/lib/cn";
 /**
  * "Me" — the signed-in half of the nav's right cluster.
  *
- * Replaces Sign in / Get started rather than joining them. A nav that offers
- * both an account and a sign-up is a nav that does not know who it is talking
- * to, and it is the single clearest signal that the session is real.
+ * Replaces the "Get in" entry rather than joining it. One control in that slot
+ * at a time is the single clearest signal that the session is real.
  *
  * Only destinations that exist are listed. A menu is a promise that the thing
  * you tap is there, and the account surfaces the product will eventually want
  * (settings, my matches, RP wallet) have no routes yet. They get added when
  * they are built, not before.
+ *
+ * The trigger and the panel share a `relative` wrapper: `<Popover>` is
+ * absolutely positioned and anchors to the nearest positioned ancestor, so
+ * without one it pinned itself to the page and opened against the left edge
+ * of the window. It is also right-aligned, because this control sits at the
+ * right end of the bar and a left-aligned panel would run off screen.
  *
  * Sign out clears the token and drops the cached user (`useLogout`), then
  * sends the browser home. Home is the right landing because it is open: there
@@ -58,7 +63,7 @@ export function AccountMenu({ user }: { user: CurrentUser }) {
   const firstName = (user.name ?? "").trim().split(/\s+/)[0] || "You";
 
   return (
-    <>
+    <span className="relative inline-flex">
       <button
         ref={triggerRef}
         type="button"
@@ -69,14 +74,20 @@ export function AccountMenu({ user }: { user: CurrentUser }) {
           "kx-chrome inline-flex min-h-11 items-center gap-2 rounded-pill pr-1 pl-1",
           "transition-colors duration-quick ease-out",
           "hover:bg-[var(--hover-overlay)]",
-          "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus-ring)]",
+          "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring",
         )}
       >
+        {/* Brand fill, not the default. `bg-surface-elev` is pure white in
+            the light theme, so a photoless avatar was a white circle on a
+            white bar: invisible, and the initial floated with nothing under
+            it. Pink reads as an avatar at a glance and is what a user without
+            a photo should see. */}
         <Avatar
           src={user.avatar_url}
           name={user.name}
           size="sm"
           alt=""
+          className="bg-primary text-on-primary"
         />
         <span className="hidden max-w-24 truncate text-sm font-medium text-fg sm:inline">
           {firstName}
@@ -94,7 +105,7 @@ export function AccountMenu({ user }: { user: CurrentUser }) {
         onClose={() => setIsOpen(false)}
         anchorRef={triggerRef}
         matchTriggerWidth={false}
-        className="min-w-56 p-1"
+        className="left-auto right-0 min-w-56 p-1"
       >
         <div className="px-3 py-2">
           <p className="truncate text-sm font-semibold text-fg">{user.name}</p>
@@ -127,6 +138,6 @@ export function AccountMenu({ user }: { user: CurrentUser }) {
           {logout.isPending ? "Signing out" : "Sign out"}
         </button>
       </Popover>
-    </>
+    </span>
   );
 }

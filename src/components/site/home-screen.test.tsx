@@ -90,12 +90,12 @@ describe("<HomeScreen> — the open home (JOURNAL 2026-06-26)", () => {
     renderHome();
 
     // The decision this guards: login is a personalisation layer, never a
-    // front door. A signed-out visitor gets the pitch and a way in, and is
-    // never bounced to /auth.
+    // front door. A signed-out visitor gets the pitch and one neutral way in,
+    // and is never bounced to /auth.
     expect(
       screen.getByRole("heading", { name: /your game, on the record/i }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /sign in/i })).toBeInTheDocument();
+    expect(screen.getAllByRole("link", { name: "Get in" }).length).toBeGreaterThan(0);
   });
 
   it("does not ask a stranger to set an area", () => {

@@ -196,7 +196,22 @@ export const Avatar = forwardRef<HTMLSpanElement | HTMLButtonElement, AvatarProp
       );
     }
 
-    const { interactive: _ia, ...spanRest } = props as NonInteractiveProps;
+    // Strip every base prop, not just `interactive`. Spreading the rest onto
+    // the span put `src`, `name`, `initials`, `size` and `ring` on the DOM as
+    // invalid attributes, and — worse — re-applied `className` AFTER the
+    // computed one, so any caller passing a class silently wiped the shape,
+    // the fill and the size off the avatar.
+    const {
+      interactive: _ia,
+      src: _src,
+      alt: _alt,
+      name: _name,
+      initials: _initials,
+      size: _size,
+      ring: _ring,
+      className: _cls,
+      ...spanRest
+    } = props as NonInteractiveProps;
 
     return (
       <span

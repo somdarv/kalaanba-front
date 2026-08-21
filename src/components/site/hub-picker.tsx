@@ -29,6 +29,11 @@ import { useLocalPreference } from "./local-preference";
  * `<SiteNav>` mounts two of these, one per breakpoint row, and the hidden one
  * is `display:none` rather than merely invisible, so exactly one is ever in
  * the accessibility tree. They share a storage key, so the two never disagree.
+ *
+ * The trigger and the panel share a `relative` wrapper because `<Popover>` is
+ * `position: absolute` and anchors to the nearest positioned ancestor. Without
+ * the wrapper it walked up the tree and pinned itself to the page, which put
+ * the hub list against the left edge of the window.
  */
 
 const KEY = "kx:browsing-hub";
@@ -49,7 +54,7 @@ export function HubPicker({ className }: { className?: string }) {
   const active = hubs.find((hub) => hub.id === storedHubId) ?? hubs[0];
 
   return (
-    <>
+    <span className={cn("relative inline-flex", className)}>
       <button
         ref={triggerRef}
         type="button"
@@ -62,8 +67,7 @@ export function HubPicker({ className }: { className?: string }) {
           "text-sm font-medium text-fg",
           "transition-colors duration-quick ease-out",
           "hover:border-border-strong hover:bg-[var(--secondary-hover)]",
-          "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus-ring)]",
-          className,
+          "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring",
         )}
       >
         <MapPin size={15} weight="fill" aria-hidden className="text-primary" />
@@ -116,6 +120,6 @@ export function HubPicker({ className }: { className?: string }) {
           })}
         </ul>
       </Popover>
-    </>
+    </span>
   );
 }

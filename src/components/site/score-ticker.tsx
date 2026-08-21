@@ -5,23 +5,32 @@ import { Fragment } from "react";
 import { cn } from "@/lib/cn";
 
 /**
- * The live-score strip under the nav.
+ * The live-score strip under the nav, moving.
  *
- * It takes its fixtures as a prop and renders nothing when there are none.
- * That is the whole safety story: there is no match or fixture endpoint yet,
- * so on `/` the array is empty and the strip is simply absent, and it cannot
- * be made to show a score the backend did not produce (Law 3). When
- * Match/Fixture ships, this gets a hook and nothing else here changes.
+ * It takes its fixtures as a prop and renders nothing when there are none, so
+ * a page with no football on it simply has a two-row nav.
  *
- * Presentational only, per engineering-standards §5 — it formats and displays.
- * The minute, the status label and the scores all arrive computed.
+ * MOTION. The track holds the list twice and slides exactly -50%, so the loop
+ * has no seam and needs no JS (see `.kx-ticker` in globals.css). Duration is
+ * derived from the number of fixtures rather than fixed, because a fixed
+ * duration means six scores crawl and twenty scores sprint; per-item seconds
+ * keeps the reading speed constant whatever the matchday holds.
  *
- * Scrolls horizontally by hand rather than auto-marquee. An auto-scrolling
- * ticker moves text out from under the reader, is unreadable on a phone, and
- * needs a `prefers-reduced-motion` escape hatch to be accessible at all
- * (§3.6). A swipeable strip has none of those problems and is the gesture the
- * user already knows from every other rail in the product.
+ * It pauses on hover and on focus inside it, and `prefers-reduced-motion`
+ * stops it entirely and gives the reader an ordinary scroller instead (§3.6).
+ * A ticker is unreadable to anyone with vestibular sensitivity while it runs,
+ * so that path is the accessible one rather than a degraded one.
+ *
+ * ACCESSIBILITY. The second copy of the list is `aria-hidden`: it exists only
+ * to make the loop seamless, and a screen reader announcing every score twice
+ * would be the cost of a purely visual trick.
+ *
+ * Presentational only (engineering-standards §5) — the minute, the status
+ * label and the scores all arrive computed.
  */
+
+/** Seconds each fixture spends crossing. Tuned so a score stays readable. */
+const SECONDS_PER_FIXTURE = 6;
 
 export type TickerFixture = {
   id: string;
@@ -29,12 +38,10 @@ export type TickerFixture = {
   away: string;
   homeScore: number | null;
   awayScore: number | null;
-  /** Short status: "FT", "HT", or null while a minute is showing. */
+  /** Short status: "FT", "HT". Null while a minute is showing. */
   statusLabel: string | null;
   /** Live minute, e.g. "67'". Present only while the match is running. */
   minute: string | null;
-  /** Where the row goes. Null until the match route exists. */
-  href?: string | null;
 };
 
 export type ScoreTickerProps = {
@@ -45,60 +52,81 @@ export type ScoreTickerProps = {
 export function ScoreTicker({ fixtures, className }: ScoreTickerProps) {
   if (fixtures.length === 0) return null;
 
+  const duration = `${fixtures.length * SECONDS_PER_FIXTURE}s`;
+
   return (
     <div
       className={cn(
-        "border-b border-divider bg-surface",
+        // --brand-wash: the brand hue at 4%, which lands around #FEF8FB on
+        // paper. Nearly white with a hint of pink in it, so the strip belongs
+        // to the brand without becoming a third coloured bar under the other
+        // two. --hover-overlay (7%) was tried first and read as a panel.
+        "border-b border-divider bg-brand-wash",
         className,
       )}
     >
       <div
-        // A named region rather than an anonymous scroller: it is a list of
-        // results, and a screen reader user needs to be able to find or skip
-        // it as one thing.
         role="region"
         aria-label="Latest scores"
-        className="kx-scroll mx-auto flex w-full max-w-5xl items-center gap-0 overflow-x-auto overscroll-x-contain px-4 sm:px-6"
+        className="kx-ticker mx-auto w-full max-w-6xl"
+        style={{ ["--kx-ticker-duration" as string]: duration }}
       >
-        {fixtures.map((fixture, index) => (
-          <Fragment key={fixture.id}>
-            {index > 0 ? (
-              <span
-                aria-hidden
-                className="mx-1 h-5 w-px shrink-0 bg-divider"
-              />
-            ) : null}
-            <TickerRow fixture={fixture} />
-          </Fragment>
-        ))}
+        <div className="kx-ticker-track">
+          <TickerRun fixtures={fixtures} />
+          <TickerRun fixtures={fixtures} aria-hidden />
+        </div>
       </div>
     </div>
   );
 }
 
+/** One pass of the list. Rendered twice so the loop closes on itself. */
+function TickerRun({
+  fixtures,
+  "aria-hidden": ariaHidden,
+}: {
+  fixtures: readonly TickerFixture[];
+  "aria-hidden"?: boolean;
+}) {
+  return (
+    <div className="flex shrink-0 items-center" aria-hidden={ariaHidden}>
+      {fixtures.map((fixture, index) => (
+        <Fragment key={fixture.id}>
+          {index > 0 ? (
+            <span aria-hidden className="h-5 w-px shrink-0 bg-divider" />
+          ) : null}
+          <TickerRow fixture={fixture} />
+        </Fragment>
+      ))}
+      {/* Closes the gap between the last fixture of one pass and the first of
+          the next, so the rhythm does not stutter at the seam. */}
+      <span aria-hidden className="h-5 w-px shrink-0 bg-divider" />
+    </div>
+  );
+}
+
 function TickerRow({ fixture }: { fixture: TickerFixture }) {
-  const hasScore =
-    fixture.homeScore !== null && fixture.awayScore !== null;
+  const hasScore = fixture.homeScore !== null && fixture.awayScore !== null;
   const isLive = fixture.minute !== null;
 
   return (
-    <div className="flex shrink-0 items-center gap-2 py-2 pr-2 pl-1 text-sm whitespace-nowrap">
+    <div className="flex shrink-0 items-center gap-2.5 px-5 py-2.5 text-[0.9375rem] whitespace-nowrap">
       <span className="text-fg-muted">{fixture.home}</span>
       {hasScore ? (
-        <span className="kx-numeric rounded-row bg-surface-elev px-2 py-0.5 font-semibold text-fg">
+        <span className="kx-numeric rounded-row bg-bg px-2.5 py-1 font-semibold text-fg">
           {fixture.homeScore}&nbsp;-&nbsp;{fixture.awayScore}
         </span>
       ) : null}
       <span className="text-fg-muted">{fixture.away}</span>
       {isLive ? (
-        // Brand ink on the minute, matching the reference. It is the one
-        // thing in the strip that is changing, so it is the one thing that
-        // gets colour. Never colour alone: the apostrophe reads as a minute.
-        <span className="kx-numeric text-xs font-semibold text-primary-ink">
+        /* Brand ink on the minute: it is the one thing in the strip that is
+           changing, so it is the one thing that gets colour. Not colour alone
+           either, since the apostrophe already reads as a minute. */
+        <span className="kx-numeric text-sm font-semibold text-primary-ink">
           {fixture.minute}
         </span>
       ) : fixture.statusLabel ? (
-        <span className="text-xs font-semibold text-fg-subtle">
+        <span className="text-sm font-semibold text-fg-subtle">
           {fixture.statusLabel}
         </span>
       ) : null}

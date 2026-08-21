@@ -73,7 +73,7 @@ export function ClubsNearYouRail({ areaId }: ClubsNearYouRailProps) {
             <li key={club.id} className="w-44 shrink-0 snap-start">
               <Link
                 href="/clubs/near-you"
-                className="block h-full rounded-card focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus-ring)]"
+                className="block h-full rounded-card focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
               >
                 <Card tone="raised" size="md" className="h-full">
                   <Crest name={club.name} src={club.crest_url} size="lg" />

@@ -20,9 +20,12 @@ import { PRIMARY_NAV, UTILITY_NAV } from "./nav-items";
  * focus trap, Escape handling and swipe-to-dismiss.
  *
  * Order is deliberate: the hub first (it scopes everything below it), then
- * the football, then the audience doors, then the way in. Sign-up sits at the
- * bottom because it is the one thing here a signed-out visitor is most likely
- * to want and the thumb reaches the bottom first.
+ * the football, then the audience doors, then the way in. The way in sits at
+ * the bottom because the thumb reaches the bottom first.
+ *
+ * One button, matching the bar. See `<SiteNav>` for why there is no separate
+ * sign-in: ADR-0004 made the entry screen neutral, so a split here would put
+ * the new-vs-returning question back.
  */
 
 export type MobileNavSheetProps = {
@@ -66,20 +69,9 @@ export function MobileNavSheet({
         </nav>
 
         {isSignedIn ? null : (
-          <div className="flex flex-col gap-2">
-            <ButtonLink href="/auth/signup" size="lg" fullWidth onClick={close}>
-              Get started
-            </ButtonLink>
-            <ButtonLink
-              href="/auth/login"
-              intent="secondary"
-              size="lg"
-              fullWidth
-              onClick={close}
-            >
-              Sign in
-            </ButtonLink>
-          </div>
+          <ButtonLink href="/auth/login" size="lg" fullWidth onClick={close}>
+            Get in
+          </ButtonLink>
         )}
       </div>
     </BottomSheet>

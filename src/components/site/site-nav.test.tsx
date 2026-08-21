@@ -8,9 +8,11 @@ import { PRIMARY_NAV } from "./nav-items";
 import type { TickerFixture } from "./score-ticker";
 import * as useAuth from "@/lib/api/hooks/use-auth";
 import * as useZone from "@/lib/api/hooks/use-zone";
+import * as useFixtures from "@/lib/api/hooks/use-fixtures";
 
 vi.mock("@/lib/api/hooks/use-auth");
 vi.mock("@/lib/api/hooks/use-zone");
+vi.mock("@/lib/api/hooks/use-fixtures");
 vi.mock("next/navigation", () => ({
   usePathname: () => "/",
   useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }),
@@ -53,12 +55,22 @@ describe("<SiteNav>", () => {
       isLoading: false,
       isError: false,
     } as unknown as ReturnType<typeof useZone.useHubs>);
+    // Stubbed empty so a test that does not care about the strip does not get
+    // one from the seed. The two ticker tests below pass fixtures explicitly.
+    vi.mocked(useFixtures.useTickerFixtures).mockReturnValue({
+      data: [],
+      isLoading: false,
+      isError: false,
+    } as unknown as ReturnType<typeof useFixtures.useTickerFixtures>);
   });
 
-  it("offers a way in when signed out, and an account when signed in", async () => {
+  it("offers ONE way in when signed out, and an account when signed in", async () => {
     stubSession(null);
     const { unmount } = renderNav();
-    expect(screen.getByRole("link", { name: "Get started" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Get in" })).toBeInTheDocument();
+    // ADR-0004 made the entry screen neutral, so a separate "Sign in" would
+    // put the new-vs-returning question back at the front door.
+    expect(screen.queryByRole("link", { name: /^sign in$/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /abdul/i })).not.toBeInTheDocument();
     unmount();
 
@@ -66,7 +78,7 @@ describe("<SiteNav>", () => {
     renderNav();
     // Never both: a nav offering an account and a sign-up at once does not
     // know who it is talking to.
-    expect(screen.queryByRole("link", { name: "Get started" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Get in" })).not.toBeInTheDocument();
     expect(await screen.findByRole("button", { name: /abdul/i })).toBeInTheDocument();
   });
 
@@ -123,8 +135,11 @@ describe("<SiteNav>", () => {
     ]);
 
     const ticker = screen.getByRole("region", { name: /latest scores/i });
-    expect(within(ticker).getByText(/3\s*-\s*1/)).toBeInTheDocument();
-    expect(within(ticker).getByText("FT")).toBeInTheDocument();
+    // The list is rendered twice on purpose: the track slides exactly -50%, so
+    // the second copy is what makes the loop close without a seam. The copy is
+    // aria-hidden, so a screen reader still hears each score once.
+    expect(within(ticker).getAllByText(/3\s*-\s*1/)).toHaveLength(2);
+    expect(within(ticker).getAllByText("FT")).toHaveLength(2);
   });
 
   it("lets a visitor change the hub they are browsing", async () => {
