@@ -58,6 +58,14 @@ export function AreaOnboarding({ onDone }: AreaOnboardingProps) {
   const hubName =
     hubOptions.find((o) => o.value === hubId)?.label ?? "your hub";
 
+  // A hub with nothing under it is the normal case outside the launch market,
+  // not an error. Google has no localities for four of the thirteen hubs and
+  // thin coverage for most of the rest, so the list fills through suggestions
+  // (Zone §5). Showing an empty dropdown there would read as broken; the ask
+  // is the point.
+  const hasNoAreas =
+    Boolean(hubId) && !areas.isLoading && (areas.data?.length ?? 0) === 0;
+
   const save = async () => {
     if (!areaId) return;
     try {
@@ -117,30 +125,46 @@ export function AreaOnboarding({ onDone }: AreaOnboardingProps) {
         }}
       />
 
-      <Select
-        label="Area"
-        placeholder={hubId ? "Find your area" : "Choose a hub first"}
-        searchable
-        disabled={!hubId || areas.isLoading}
-        options={areaOptions}
-        value={areaId}
-        onChange={setAreaId}
-        hint={
-          hubId
-            ? "Your locality, suburb, or quarter."
-            : undefined
-        }
-      />
+      {hasNoAreas ? (
+        <div className="rounded-card border border-border bg-surface p-4">
+          <p className="text-sm font-medium text-fg">
+            No areas in {hubName} yet.
+          </p>
+          <p className="mt-1 text-sm text-fg-muted">
+            Tell us yours and we will add it.
+          </p>
+          <Button
+            className="mt-3"
+            intent="secondary"
+            onClick={() => setSuggestOpen(true)}
+          >
+            Add your area
+          </Button>
+        </div>
+      ) : (
+        <>
+          <Select
+            label="Area"
+            placeholder={hubId ? "Find your area" : "Choose a hub first"}
+            searchable
+            disabled={!hubId || areas.isLoading}
+            options={areaOptions}
+            value={areaId}
+            onChange={setAreaId}
+            hint={hubId ? "Your locality, suburb, or quarter." : undefined}
+          />
 
-      {hubId ? (
-        <button
-          type="button"
-          onClick={() => setSuggestOpen(true)}
-          className="self-start text-left text-sm font-medium text-primary underline-offset-2 hover:underline"
-        >
-          Can&rsquo;t find your area? Suggest it
-        </button>
-      ) : null}
+          {hubId ? (
+            <button
+              type="button"
+              onClick={() => setSuggestOpen(true)}
+              className="self-start text-left text-sm font-medium text-primary underline-offset-2 hover:underline"
+            >
+              Can&rsquo;t find your area? Suggest it
+            </button>
+          ) : null}
+        </>
+      )}
 
       <div className="mt-2 flex flex-col gap-3">
         <Button

@@ -90,7 +90,7 @@ export function HubPicker({ className }: { className?: string }) {
         onClose={() => setIsOpen(false)}
         anchorRef={triggerRef}
         matchTriggerWidth={false}
-        className="min-w-52 p-1"
+        className="min-w-[19rem] p-1"
       >
         <ul role="listbox" aria-label="City Hub">
           {hubs.map((hub) => {
@@ -113,11 +113,17 @@ export function HubPicker({ className }: { className?: string }) {
                     isActive && "bg-[var(--hover-overlay)]",
                   )}
                 >
-                  <span className="text-sm font-medium text-fg">
+                  <span className="truncate text-sm font-medium text-fg">
                     {hub.name}
                   </span>
                   {hub.region ? (
-                    <span className="text-xs text-fg-subtle">{hub.region}</span>
+                    // Never wraps. "Greater Accra Region" and "Upper East
+                    // Region" both broke onto a second line in a 13rem panel,
+                    // which turned a flat list into a ragged one where some
+                    // rows were twice the height of their neighbours.
+                    <span className="shrink-0 text-xs whitespace-nowrap text-fg-subtle">
+                      {hub.region}
+                    </span>
                   ) : null}
                 </button>
               </li>
