@@ -71,7 +71,13 @@ export function ScoreTicker({ fixtures, className }: ScoreTickerProps) {
         className="kx-ticker mx-auto w-full max-w-6xl"
         style={{ ["--kx-ticker-duration" as string]: duration }}
       >
-        <div className="kx-ticker-track">
+        {/* Layout in utilities, motion in CSS. `.kx-ticker-track` used to
+            carry `display:flex` and `width:max-content` too, and when that
+            single class lost for any reason the two runs fell back to block
+            and stacked into two rows. Tailwind's `flex w-max flex-nowrap` is
+            the same layout expressed where it cannot silently go missing, and
+            the custom class is now only the animation. */}
+        <div className="kx-ticker-track flex w-max flex-nowrap">
           <TickerRun fixtures={fixtures} />
           <TickerRun fixtures={fixtures} aria-hidden />
         </div>

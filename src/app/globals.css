@@ -695,9 +695,9 @@ button:disabled,
 .kx-ticker {
   overflow: hidden;
 }
+/* Motion only. The row itself is `flex w-max flex-nowrap` on the element, so
+   a failure here can never turn the strip into two stacked rows. */
 .kx-ticker-track {
-  display: flex;
-  width: max-content;
   animation: kx-ticker-scroll var(--kx-ticker-duration, 60s) linear infinite;
   will-change: transform;
 }
@@ -716,7 +716,6 @@ button:disabled,
   }
   .kx-ticker-track {
     animation: none;
-    width: auto;
     will-change: auto;
   }
 }
