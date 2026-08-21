@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { CaretDown, MapPin } from "@phosphor-icons/react";
 
-import { Popover, Skeleton } from "@/components/ui";
+import { Popover, Skeleton, tapExpand } from "@/components/ui";
 import { useHubs } from "@/lib/api/hooks/use-zone";
 import { cn } from "@/lib/cn";
 
@@ -45,7 +45,7 @@ export function HubPicker({ className }: { className?: string }) {
   const triggerRef = useRef<HTMLButtonElement>(null);
 
   if (isLoading) {
-    return <Skeleton className={cn("h-9 w-28 rounded-pill", className)} />;
+    return <Skeleton className={cn("h-8 w-24 rounded-pill", className)} />;
   }
   if (!hubs || hubs.length === 0) return null;
 
@@ -62,18 +62,23 @@ export function HubPicker({ className }: { className?: string }) {
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         className={cn(
-          "kx-chrome inline-flex min-h-9 items-center gap-1.5 rounded-pill",
-          "border border-border bg-surface-elev px-3",
-          "text-sm font-medium text-fg",
+          // 32px box, 44px target. DESIGN_LANGUAGE §9.1 allows the smaller
+          // visual box and requires `tapExpand` to grow the POINTER target
+          // with a pseudo-element, never a lowered min-h on its own. The
+          // control wraps nothing interactive, so the pseudo is safe here.
+          "kx-chrome inline-flex min-h-8 items-center gap-1.5 rounded-pill",
+          tapExpand,
+          "border border-border bg-surface-elev px-2.5",
+          "text-xs font-medium text-fg",
           "transition-colors duration-quick ease-out",
           "hover:border-border-strong hover:bg-[var(--secondary-hover)]",
           "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring",
         )}
       >
-        <MapPin size={15} weight="fill" aria-hidden className="text-primary" />
-        <span className="max-w-32 truncate">{active.name}</span>
+        <MapPin size={13} weight="fill" aria-hidden className="text-primary" />
+        <span className="max-w-28 truncate">{active.name}</span>
         <CaretDown
-          size={13}
+          size={11}
           weight="bold"
           aria-hidden
           className="text-fg-muted"

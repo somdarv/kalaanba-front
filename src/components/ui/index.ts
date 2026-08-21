@@ -34,7 +34,7 @@ export { NotificationBell } from "./notification-bell";
 export type { NotificationBellProps } from "./notification-bell";
 export { LinkButton } from "./link-button";
 export type { LinkButtonProps } from "./link-button";
-export { Pressable, pressableBase } from "./pressable";
+export { Pressable, pressableBase, tapExpand } from "./pressable";
 export type { PressableProps } from "./pressable";
 export { Skeleton } from "./skeleton";
 export type { SkeletonProps } from "./skeleton";

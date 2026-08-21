@@ -71,7 +71,9 @@ describe("<SiteNav>", () => {
     // ADR-0004 made the entry screen neutral, so a separate "Sign in" would
     // put the new-vs-returning question back at the front door.
     expect(screen.queryByRole("link", { name: /^sign in$/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /abdul/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /your account/i }),
+    ).not.toBeInTheDocument();
     unmount();
 
     stubSession({ id: "u1", name: "Abdul Rahman" });
@@ -79,7 +81,37 @@ describe("<SiteNav>", () => {
     // Never both: a nav offering an account and a sign-up at once does not
     // know who it is talking to.
     expect(screen.queryByRole("link", { name: "Get in" })).not.toBeInTheDocument();
-    expect(await screen.findByRole("button", { name: /abdul/i })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("button", { name: /your account, abdul/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("keeps the phone bar to four controls, with the menu on the right", () => {
+    stubSession({ id: "u1", name: "Abdul Rahman" });
+    renderNav();
+
+    // The hub picker and the account are NOT in the bar on a phone; both live
+    // in the sheet, so 360px is spent on navigation rather than identity.
+    // Everything the bar still holds is here, and the menu button is last in
+    // DOM order, which is what puts it under the thumb on the right.
+    const bar = screen.getByRole("banner");
+    const controls = within(bar).getAllByRole("button");
+    expect(controls[controls.length - 1]).toHaveAccessibleName(/open menu/i);
+  });
+
+  it("puts the account in the sheet, not the phone bar", async () => {
+    const user = userEvent.setup();
+    stubSession({ id: "u1", name: "Abdul Rahman" });
+    renderNav();
+
+    await user.click(screen.getByRole("button", { name: /open menu/i }));
+    const sheet = await screen.findByRole("dialog");
+
+    expect(within(sheet).getByText("Abdul Rahman")).toBeInTheDocument();
+    expect(within(sheet).getByText("Player profile")).toBeInTheDocument();
+    expect(
+      within(sheet).getByRole("button", { name: /sign out/i }),
+    ).toBeInTheDocument();
   });
 
   it("renders unbuilt destinations as inert text, never as dead links", () => {
@@ -172,5 +204,9 @@ describe("<SiteNav>", () => {
     for (const item of PRIMARY_NAV) {
       expect(within(sheet).getByText(item.label)).toBeInTheDocument();
     }
+    // Signed out, the sheet offers the way in rather than an account.
+    expect(
+      within(sheet).getByRole("link", { name: "Get in" }),
+    ).toBeInTheDocument();
   });
 });

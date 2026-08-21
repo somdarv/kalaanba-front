@@ -25,10 +25,14 @@ import { ScoreTicker, type TickerFixture } from "./score-ticker";
  *
  * DESKTOP keeps all three, as designed.
  *
- * PHONE drops row 1 and moves the hub picker up into row 2, because a 40px
- * strip carrying one pill is 40px a phone does not have, and the six primary
- * destinations move into a sheet. What survives in the bar is what a thumb
- * needs: the way back home, where you are, search, and you.
+ * PHONE drops row 1 entirely and keeps row 2 to four things: the logo, search,
+ * the way in, and the button that opens the sheet. The hub picker and the
+ * account are NOT in the bar — a 360px row carrying five controls carries none
+ * of them well, and both are one tap away inside the menu.
+ *
+ * The menu button sits on the RIGHT. It is the most-used control in the mobile
+ * bar and the right side is where a thumb rests; the logo keeps the left, where
+ * a reader starts.
  *
  * The right cluster is the session made visible: one way in when signed out,
  * the account when signed in, never both.
@@ -86,22 +90,23 @@ export function SiteNav({ fixtures, className }: SiteNavProps) {
     }));
 
   return (
-    <div className={cn("bg-bg", className)}>
+    // A <header> rather than a <div>: this is the site's banner landmark, and
+    // it is how a screen reader user skips past the whole nav in one move
+    // instead of arrowing through three rows of it.
+    <header className={cn("bg-bg", className)}>
       {/* Row 1 — utility. Desktop only. */}
       <div className="hidden border-b border-divider md:block">
-        <div className="mx-auto flex w-full max-w-6xl items-center gap-4 px-4 py-2.5 sm:px-6">
+        <div className="mx-auto flex w-full max-w-6xl items-center gap-4 px-4 py-1.5 sm:px-6">
           <HubPicker />
           {/* `ml-auto` rather than `justify-between` on the row: the hub picker
               renders null when the hub read fails, and a justified row would
               then drag these to the left edge where they read as primary nav.
               Pinned right, they stay put whether or not it is there. */}
           <nav aria-label="More" className="ml-auto">
-            <ul className="flex items-center gap-6">
+            <ul className="flex items-center gap-5">
               {UTILITY_NAV.map((item) => (
                 <li key={item.key}>
-                  <span className="text-xs">
-                    <NavLink item={item} />
-                  </span>
+                  <NavLink item={item} variant="utility" />
                 </li>
               ))}
             </ul>
@@ -112,20 +117,7 @@ export function SiteNav({ fixtures, className }: SiteNavProps) {
       {/* Row 2 — main. */}
       <div className="border-b border-divider">
         <div className="mx-auto flex w-full max-w-6xl items-center gap-3 px-4 py-3 sm:px-6">
-          <div className="flex min-w-0 items-center gap-2">
-            <IconButton
-              className="md:hidden"
-              intent="ghost"
-              size="sm"
-              label="Open menu"
-              icon={<List size={20} weight="bold" />}
-              onClick={() => setIsMenuOpen(true)}
-            />
-            <BrandLock />
-          </div>
-
-          {/* The hub picker rides here instead of row 1 on a phone. */}
-          <HubPicker className="md:hidden" />
+          <BrandLock />
 
           <nav
             aria-label="Primary"
@@ -166,13 +158,26 @@ export function SiteNav({ fixtures, className }: SiteNavProps) {
               Search
             </button>
 
+            {/* The account is desktop-only. On a phone it is in the sheet, so
+                the bar keeps its width for navigation. */}
             {isSignedIn && user ? (
-              <AccountMenu user={user} />
+              <span className="hidden md:inline-flex">
+                <AccountMenu user={user} />
+              </span>
             ) : (
               <ButtonLink href="/auth/login" size="md" className="min-h-11 px-5">
                 Get in
               </ButtonLink>
             )}
+
+            <IconButton
+              className="md:hidden"
+              intent="ghost"
+              size="sm"
+              label="Open menu"
+              icon={<List size={20} weight="bold" />}
+              onClick={() => setIsMenuOpen(true)}
+            />
           </div>
         </div>
       </div>
@@ -183,8 +188,8 @@ export function SiteNav({ fixtures, className }: SiteNavProps) {
       <MobileNavSheet
         open={isMenuOpen}
         onOpenChange={setIsMenuOpen}
-        isSignedIn={isSignedIn}
+        user={user}
       />
-    </div>
+    </header>
   );
 }

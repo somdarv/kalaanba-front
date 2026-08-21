@@ -2,63 +2,36 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { CaretDown, SignOut } from "@phosphor-icons/react";
+import { SignOut } from "@phosphor-icons/react";
 
 import { Avatar, Divider, Popover } from "@/components/ui";
-import { useLogout } from "@/lib/api/hooks/use-auth";
 import type { CurrentUser } from "@/lib/api/auth";
 import { cn } from "@/lib/cn";
 
+import { ACCOUNT_LINKS, useSignOut } from "./account-actions";
+
 /**
- * "Me" — the signed-in half of the nav's right cluster.
+ * "Me" — the signed-in half of the nav's right cluster, on desktop.
  *
- * Replaces the "Get in" entry rather than joining it. One control in that slot
- * at a time is the single clearest signal that the session is real.
+ * The phone does not render this at all. Its bar carries the logo, search and
+ * the menu, and the account lives inside the sheet, so a 360px bar spends its
+ * width on navigation rather than on identity.
  *
- * Only destinations that exist are listed. A menu is a promise that the thing
- * you tap is there, and the account surfaces the product will eventually want
- * (settings, my matches, RP wallet) have no routes yet. They get added when
- * they are built, not before.
+ * No chevron. The avatar is the affordance: a face or a coloured initial in the
+ * top corner is already read as "you, tap for your account", and a caret beside
+ * it is a second hint for something nobody was unsure about. It also spent a
+ * third element in the tightest cluster on the bar to say nothing.
  *
  * The trigger and the panel share a `relative` wrapper: `<Popover>` is
  * absolutely positioned and anchors to the nearest positioned ancestor, so
- * without one it pinned itself to the page and opened against the left edge
- * of the window. It is also right-aligned, because this control sits at the
- * right end of the bar and a left-aligned panel would run off screen.
- *
- * Sign out clears the token and drops the cached user (`useLogout`), then
- * sends the browser home. Home is the right landing because it is open: there
- * is nothing to be locked out of, so signing out is a change of state rather
- * than an ejection.
+ * without one it pins itself to the page and opens against the left edge of
+ * the window. It is right-aligned because this sits at the right end of the bar.
  */
-
-type AccountLink = { href: string; label: string };
-
-/** Live routes only. See the note above before adding to this. */
-const ACCOUNT_LINKS: readonly AccountLink[] = [
-  { href: "/player/setup", label: "Player profile" },
-  { href: "/clubs/manage", label: "My clubs" },
-  { href: "/onboarding/area", label: "Your area" },
-];
 
 export function AccountMenu({ user }: { user: CurrentUser }) {
   const [isOpen, setIsOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
-  const logout = useLogout();
-  const router = useRouter();
-
-  const signOut = async () => {
-    setIsOpen(false);
-    try {
-      await logout.mutateAsync();
-    } catch {
-      // The token is cleared locally either way, so a failed round trip must
-      // not strand the user in a half-signed-out nav.
-    }
-    router.push("/");
-    router.refresh();
-  };
+  const { signOut, isPending } = useSignOut();
 
   const firstName = (user.name ?? "").trim().split(/\s+/)[0] || "You";
 
@@ -70,18 +43,16 @@ export function AccountMenu({ user }: { user: CurrentUser }) {
         onClick={() => setIsOpen((open) => !open)}
         aria-haspopup="menu"
         aria-expanded={isOpen}
+        aria-label={`Your account, ${firstName}`}
         className={cn(
-          "kx-chrome inline-flex min-h-11 items-center gap-2 rounded-pill pr-1 pl-1",
-          "transition-colors duration-quick ease-out",
+          "kx-chrome duration-quick ease-out inline-flex min-h-11 items-center gap-2 rounded-pill px-1 transition-colors",
           "hover:bg-[var(--hover-overlay)]",
           "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring",
         )}
       >
-        {/* Brand fill, not the default. `bg-surface-elev` is pure white in
-            the light theme, so a photoless avatar was a white circle on a
-            white bar: invisible, and the initial floated with nothing under
-            it. Pink reads as an avatar at a glance and is what a user without
-            a photo should see. */}
+        {/* Brand fill, not the default. `bg-surface-elev` is pure white in the
+            light theme, so a photoless avatar was a white circle on a white
+            bar: invisible, with the initial floating on nothing. */}
         <Avatar
           src={user.avatar_url}
           name={user.name}
@@ -89,15 +60,12 @@ export function AccountMenu({ user }: { user: CurrentUser }) {
           alt=""
           className="bg-primary text-on-primary"
         />
-        <span className="hidden max-w-24 truncate text-sm font-medium text-fg sm:inline">
+        <span
+          aria-hidden
+          className="hidden max-w-24 truncate text-sm font-medium text-fg sm:inline"
+        >
           {firstName}
         </span>
-        <CaretDown
-          size={13}
-          weight="bold"
-          aria-hidden
-          className="text-fg-muted"
-        />
       </button>
 
       <Popover
@@ -105,7 +73,7 @@ export function AccountMenu({ user }: { user: CurrentUser }) {
         onClose={() => setIsOpen(false)}
         anchorRef={triggerRef}
         matchTriggerWidth={false}
-        className="left-auto right-0 min-w-56 p-1"
+        className="right-0 left-auto min-w-56 p-1"
       >
         <div className="px-3 py-2">
           <p className="truncate text-sm font-semibold text-fg">{user.name}</p>
@@ -119,7 +87,7 @@ export function AccountMenu({ user }: { user: CurrentUser }) {
                 role="menuitem"
                 href={link.href}
                 onClick={() => setIsOpen(false)}
-                className="flex min-h-11 items-center rounded-row px-3 text-sm font-medium text-fg transition-colors duration-quick ease-out hover:bg-[var(--hover-overlay)]"
+                className="rounded-row duration-quick ease-out flex min-h-11 items-center px-3 text-sm font-medium text-fg transition-colors hover:bg-[var(--hover-overlay)]"
               >
                 {link.label}
               </Link>
@@ -130,12 +98,15 @@ export function AccountMenu({ user }: { user: CurrentUser }) {
         <button
           type="button"
           role="menuitem"
-          onClick={signOut}
-          disabled={logout.isPending}
-          className="flex min-h-11 w-full items-center gap-2 rounded-row px-3 text-left text-sm font-medium text-fg transition-colors duration-quick ease-out hover:bg-[var(--hover-overlay)] disabled:opacity-50"
+          onClick={() => {
+            setIsOpen(false);
+            void signOut();
+          }}
+          disabled={isPending}
+          className="rounded-row duration-quick ease-out flex min-h-11 w-full items-center gap-2 px-3 text-left text-sm font-medium text-fg transition-colors hover:bg-[var(--hover-overlay)] disabled:opacity-50"
         >
           <SignOut size={16} weight="bold" aria-hidden />
-          {logout.isPending ? "Signing out" : "Sign out"}
+          {isPending ? "Signing out" : "Sign out"}
         </button>
       </Popover>
     </span>
