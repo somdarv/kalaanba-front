@@ -6,9 +6,17 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HomeScreen } from "./home-screen";
 import * as useAuth from "@/lib/api/hooks/use-auth";
 import * as useClubs from "@/lib/api/hooks/use-clubs";
+import * as useZone from "@/lib/api/hooks/use-zone";
 
 vi.mock("@/lib/api/hooks/use-auth");
 vi.mock("@/lib/api/hooks/use-clubs");
+vi.mock("@/lib/api/hooks/use-zone");
+
+// The nav renders inside the home, so the router hooks it uses have to exist.
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/",
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }),
+}));
 
 const CLUBS = [
   {
@@ -40,6 +48,23 @@ function stubClubs(clubs: typeof CLUBS | undefined) {
   } as unknown as ReturnType<typeof useClubs.useClubsNearby>);
 }
 
+function stubHubs() {
+  vi.mocked(useZone.useHubs).mockReturnValue({
+    data: [{ id: "hub-1", name: "Tamale", region: "Northern Region" }],
+    isLoading: false,
+    isError: false,
+  } as unknown as ReturnType<typeof useZone.useHubs>);
+}
+
+// Auto-mocking the whole use-auth module stubs useLogout to undefined, and the
+// account menu reads `.isPending` off it the moment a session exists.
+function stubLogout() {
+  vi.mocked(useAuth.useLogout).mockReturnValue({
+    mutateAsync: vi.fn().mockResolvedValue(undefined),
+    isPending: false,
+  } as unknown as ReturnType<typeof useAuth.useLogout>);
+}
+
 function renderHome() {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false } },
@@ -56,6 +81,8 @@ describe("<HomeScreen> — the open home (JOURNAL 2026-06-26)", () => {
     vi.clearAllMocks();
     window.localStorage.clear();
     stubClubs(CLUBS);
+    stubHubs();
+    stubLogout();
   });
 
   it("serves a signed-out visitor the page, not a login wall", () => {

@@ -1,18 +1,13 @@
 "use client";
 
-import {
-  AppShell,
-  ButtonLink,
-  SiteHeader,
-  Skeleton,
-  Wordmark,
-} from "@/components/ui";
+import { AppShell } from "@/components/ui";
 import { useUser } from "@/lib/api/hooks/use-auth";
 
 import { AreaPill } from "./area-pill";
 import { ClubsNearYouRail } from "./clubs-near-you-rail";
 import { HomeCtaPrompts } from "./home-cta-prompts";
 import { HomeHero } from "./home-hero";
+import { SiteNav } from "./site-nav";
 import { useHeroDismissed } from "./use-hero-dismissed";
 
 /**
@@ -39,7 +34,7 @@ import { useHeroDismissed } from "./use-hero-dismissed";
  */
 
 export function HomeScreen() {
-  const { data: user, isLoading } = useUser();
+  const { data: user } = useUser();
   const isSignedIn = Boolean(user);
   // Dismissing the pitch is a presentation preference, so it lives in the
   // browser. Identity does not own a column for it.
@@ -47,27 +42,15 @@ export function HomeScreen() {
 
   return (
     <AppShell
-      header={
-        <SiteHeader
-          brand={
-            <Wordmark size="sm" className="text-fg" label="Kalaanba, home" />
-          }
-          actions={
-            isSignedIn ? undefined : (
-              <ButtonLink href="/auth/login" intent="secondary" size="sm">
-                Sign in
-              </ButtonLink>
-            )
-          }
-        />
-      }
+      // No fixtures passed: there is no match endpoint, so the ticker inside
+      // renders nothing. It is wired, not fed (Law 3).
+      header={<SiteNav />}
     >
       <div className="flex flex-col gap-6">
-        {isLoading ? (
-          <Skeleton className="h-5 w-48" />
-        ) : (
-          <AreaPill isSignedIn={isSignedIn} hasArea={Boolean(user?.area_id)} />
-        )}
+        {/* No loading skeleton, for the same reason the nav has none: the
+            signed-out render of this is nothing at all, which is exactly what
+            a first-time visitor should get in the prerendered HTML. */}
+        <AreaPill isSignedIn={isSignedIn} hasArea={Boolean(user?.area_id)} />
 
         {isDismissed ? null : (
           <HomeHero

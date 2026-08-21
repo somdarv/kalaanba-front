@@ -38,10 +38,13 @@ import {
   StatValue,
 } from "@/components/ui";
 
+import { ScoreTicker } from "@/components/site";
+
 import {
   HERO_FIXTURE,
   LIVE_FIXTURE,
   RECENT_RESULTS,
+  TICKER_FIXTURES,
   TOP_SCORERS,
   ZONE_PULSE,
   ZONE_TABLE,
@@ -62,6 +65,14 @@ export function HomeFeedSpecimen() {
           invented and must never reach a public surface.
         </p>
       </header>
+
+      {/* The nav's third row, which is absent everywhere else because there
+          is no match endpoint to fill it. Full width: on a phone it is the one
+          part of the nav that is allowed to run past the content column,
+          because a strip you swipe wants every pixel it can get. */}
+      <div className="rounded-card overflow-hidden border border-divider">
+        <ScoreTicker fixtures={TICKER_FIXTURES} />
+      </div>
 
       {/* Phone column. The whole point is what survives at 360px. */}
       <div className="bg-surface rounded-card elev-flat mx-auto w-full max-w-md p-4">

@@ -136,3 +136,17 @@ export const ZONE_PULSE: BuzzRow[] = [
     detail: "6 bookings in the last two days",
   },
 ];
+
+/**
+ * The nav's score strip, with football in it. On every live page today
+ * `<SiteNav>` is passed nothing and the strip renders nothing; this is the
+ * only place it has fixtures, and they are invented like everything else here.
+ */
+export const TICKER_FIXTURES = [
+  { id: "t-1", home: "Sakasaka", away: "Choggu", homeScore: 2, awayScore: 2, statusLabel: "HT", minute: null },
+  { id: "t-2", home: "Aboabo", away: "Gumani", homeScore: 3, awayScore: 1, statusLabel: "FT", minute: null },
+  { id: "t-3", home: "Bantama", away: "Sagnarigu", homeScore: 1, awayScore: 1, statusLabel: null, minute: "82'" },
+  { id: "t-4", home: "Tishigu", away: "Kakpagyili", homeScore: 4, awayScore: 2, statusLabel: "FT", minute: null },
+  { id: "t-5", home: "Nyohini", away: "Kalpohini", homeScore: 0, awayScore: 1, statusLabel: null, minute: "23'" },
+  { id: "t-6", home: "Lamashegu", away: "Vittin", homeScore: 2, awayScore: 1, statusLabel: null, minute: "67'" },
+] as const;
