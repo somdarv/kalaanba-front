@@ -165,7 +165,18 @@ export function SiteNav({ fixtures, className }: SiteNavProps) {
                 <AccountMenu user={user} />
               </span>
             ) : (
-              <ButtonLink href="/auth/login" size="md" className="min-h-11 px-5">
+              /* `sm`, not `md`. `md` is h-12 and `min-h-11` does not undo an
+                 explicit height, so it kept rendering 48px and swallowed a
+                 mobile bar that is only a little taller than that. `sm` is a
+                 40px box that already carries `tapExpand`, so the pointer
+                 target stays at the §9.1 44px floor while the box gets out of
+                 the way. Desktop takes the height back at `lg`, where the bar
+                 is roomy and this is the primary entry to the product. */
+              <ButtonLink
+                href="/auth/login"
+                size="sm"
+                className="px-4 lg:h-11 lg:min-h-11 lg:px-5"
+              >
                 Get in
               </ButtonLink>
             )}
