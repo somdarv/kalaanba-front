@@ -101,6 +101,37 @@ export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   fullWidth?: boolean;
 };
 
+/**
+ * The button's visual recipe, in one place so a control that is semantically a
+ * link can wear it without re-deriving it.
+ *
+ * DESIGN_LANGUAGE §4.2 says compose the class, never restate it, and
+ * engineering-standards §5 says internal navigation is `next/link` and never a
+ * click handler. Those two rules together mean a filled CTA that navigates
+ * needs the recipe as a value. `<ButtonLink>` is the only consumer; everything
+ * that is actually a button keeps using `<Button>`.
+ */
+export function buttonRecipe({
+  intent = "primary",
+  size = "md",
+  fullWidth,
+  className,
+}: {
+  intent?: ButtonIntent;
+  size?: ButtonSize;
+  fullWidth?: boolean;
+  className?: string;
+} = {}) {
+  return cn(
+    pressableBase,
+    "group font-medium whitespace-nowrap",
+    INTENT[intent],
+    SIZE[size],
+    fullWidth && "w-full",
+    className,
+  );
+}
+
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
   {
     intent = "primary",
@@ -127,14 +158,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       disabled={isDisabled}
       aria-busy={loading || undefined}
       data-loading={loading || undefined}
-      className={cn(
-        pressableBase,
-        "group font-medium whitespace-nowrap",
-        INTENT[intent],
-        SIZE[size],
-        fullWidth && "w-full",
-        className,
-      )}
+      className={buttonRecipe({ intent, size, fullWidth, className })}
       {...rest}
     >
       {/* Overlay spinner: only when loading and no loadingText was supplied. */}

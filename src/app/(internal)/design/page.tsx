@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Eyebrow } from "@/components/ui";
+import { HomeFeedSpecimen } from "./home-feed-specimen";
 import { InputSpecimens } from "./input-specimens";
 import { MatchdaySpecimen } from "./matchday-specimen";
 import { PlayerCardSpecimens } from "./player-card-specimens";
@@ -52,6 +53,10 @@ export default function DesignPreviewPage() {
         <hr className="border-divider" />
 
         <MatchdaySpecimen />
+
+        <hr className="border-divider" />
+
+        <HomeFeedSpecimen />
 
         <footer className="border-divider text-fg-subtle border-t pt-6 text-xs">
           <p>

@@ -85,6 +85,13 @@ pressed surfaces, dividers, hairlines, skeleton bases, disabled fills. It does
 **not** apply to the dark theme, where the ground is the blue-black family and
 the chroma is doing its job.
 
+**What it does not govern (ADR-0013, 2026-08-20)**: an interaction surface that
+carries the brand *on purpose*. `--hover-overlay` (brand hue at 7%) and
+`--secondary-hover` / `--secondary-active` (the control's own fill mixed 12% /
+20% toward `--primary`) are deliberate warm tints at hue 350 with a positive
+R−B spread, not the accidental cool cast at hue 264 this rule was written
+against. Every neutral above still answers to it.
+
 ### 2.2 Color tokens (the full set)
 
 ```

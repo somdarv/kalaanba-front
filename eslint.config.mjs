@@ -18,6 +18,25 @@ const eslintConfig = defineConfig([
     // Generated code.
     "src/lib/api/generated/**",
   ]),
+  {
+    // `_`-prefixed means "destructured only to omit it". The codebase already
+    // uses this to strip component props off a rest spread before it reaches
+    // the DOM (Avatar, Select) and to swallow a caught error nobody reads
+    // (theme-script). It is the convention ESLint documents for the rule, and
+    // without the pattern every deliberate use reports as an accident, which
+    // is how a warning list stops being read.
+    rules: {
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+          ignoreRestSiblings: true,
+        },
+      ],
+    },
+  },
 ]);
 
 export default eslintConfig;

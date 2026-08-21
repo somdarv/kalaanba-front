@@ -1,0 +1,76 @@
+"use client";
+
+import { AppShell } from "@/components/ui";
+import { useUser } from "@/lib/api/hooks/use-auth";
+
+import { AreaPill } from "./area-pill";
+import { ClubsNearYouRail } from "./clubs-near-you-rail";
+import { HomeCtaPrompts } from "./home-cta-prompts";
+import { HomeHero } from "./home-hero";
+import { SiteNav } from "./site-nav";
+import { useHeroDismissed } from "./use-hero-dismissed";
+
+/**
+ * `/` — the open home (JOURNAL 2026-06-26).
+ *
+ * Kalaanba is not a walled dashboard. A signed-out visitor gets the same shell
+ * as a signed-in one, and signing in adds layers (an area, clubs near it,
+ * an inbox) rather than opening a door. Nothing here redirects on session
+ * state, which is the whole point: a redirect would make login a front door
+ * again.
+ *
+ * What this deliberately is NOT yet: the feed. Fan Buzz §11.1 specifies nine
+ * card types for the home feed (hot challenges, tracked matches, followed club
+ * updates, verified results, fixtures nearby, competition updates, player
+ * moments, venue suggestions, zone pulse) and the API can serve none of them —
+ * there is no match, fixture, competition, challenge or buzz endpoint yet. So
+ * the feed slot below carries discovery instead of activity, and the shell it
+ * sits in is the shell the feed will use unchanged. See the home-feed specimen
+ * at /design for what that slot becomes.
+ *
+ * The one thing it must never do is show invented football. Synthetic
+ * standings on a live surface are indistinguishable from real ones, and Law 3
+ * exists because that is how a record loses its meaning.
+ */
+
+export function HomeScreen() {
+  const { data: user } = useUser();
+  const isSignedIn = Boolean(user);
+  // Dismissing the pitch is a presentation preference, so it lives in the
+  // browser. Identity does not own a column for it.
+  const { isDismissed, dismiss } = useHeroDismissed();
+
+  return (
+    <AppShell
+      // No fixtures passed: there is no match endpoint, so the ticker inside
+      // renders nothing. It is wired, not fed (Law 3).
+      header={<SiteNav />}
+      // Matches the nav's own container so the two line up. The default 5xl
+      // left the content visibly narrower than the bar above it.
+      contentClassName="max-w-6xl"
+    >
+      <div className="flex flex-col gap-6">
+        {/* No loading skeleton, for the same reason the nav has none: the
+            signed-out render of this is nothing at all, which is exactly what
+            a first-time visitor should get in the prerendered HTML. */}
+        <AreaPill isSignedIn={isSignedIn} hasArea={Boolean(user?.area_id)} />
+
+        {isDismissed ? null : (
+          <HomeHero
+            ctaHref={isSignedIn ? "/player/setup" : "/auth/login"}
+            ctaLabel={isSignedIn ? "Create your player card" : "Get in"}
+            onDismiss={dismiss}
+          />
+        )}
+
+        <HomeCtaPrompts />
+
+        {/* Clubs, which is real backend data. The seed-backed football feed
+            (<HomeFeed>) is built and parked on the owner's call, 2026-08-21;
+            re-enabling it is one line here. The nav's score strip already
+            reads the same seed layer. */}
+        <ClubsNearYouRail areaId={user?.area_id} />
+      </div>
+    </AppShell>
+  );
+}
