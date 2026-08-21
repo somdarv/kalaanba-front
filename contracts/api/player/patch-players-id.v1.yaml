@@ -1,0 +1,191 @@
+openapi: 3.1.0
+info:
+  title: "Player & Affiliation — Update a player profile"
+  version: "1.0.0"
+  description: |
+    Partial update of a player profile by its owner.
+
+    Covers two jobs on the `/me` surface with one contract:
+
+      1. **Availability**, changed often and with a consequence beyond the page.
+         §12 feeds a player's availability into the club readiness summary, so
+         this is the field that earns a live control rather than a form row.
+      2. **Identity details** — football name, legal names, number, position —
+         changed rarely, edited in a sheet.
+
+    They share a contract because they are the same resource and the same
+    authorization. Splitting them would put two endpoints on one row of the
+    §6 field list and leave the next editable field with nowhere obvious to go.
+
+    **What is NOT patchable here.** `market_status`, `claim_status`, verified
+    stats and card confidence are all backend-derived (Constitution Law 3).
+    A request carrying them is rejected rather than ignored, because silently
+    dropping a field a client believed it set is how truth drifts.
+
+    **Bounds are config, not schema.** Number range, name lengths and the
+    allowed position/availability key sets all come from Admin Configuration
+    (`player.profile.*`, `player.positions`, `player.availability.*`) and are
+    published to clients through `GET /players/meta` (ADR-0007). The literals
+    are deliberately absent below; the Form Request is the authority.
+
+    Idempotent per Constitution Law 14 — mobile networks retry.
+
+paths:
+  /api/v1/players/{playerId}:
+    patch:
+      summary: Update your own player profile
+      operationId: updatePlayer
+      tags: [player]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: playerId
+          required: true
+          schema: { type: string, format: uuid }
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema: { type: string }
+          description: |
+            Required on every user-triggered write (Law 14). Deduped 24h.
+            A replay returns the same body with `meta.idempotent_replay: true`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePlayerRequest"
+            examples:
+              availabilityOnly:
+                summary: The common write — one field, from the /me control
+                value:
+                  availability_status: "weekends_only"
+              details:
+                summary: Edited in the details sheet
+                value:
+                  stage_name: "Baba"
+                  preferred_number: 10
+                  primary_position: "striker"
+      responses:
+        "200":
+          description: |
+            The updated player. Returns the same shape as `GET /players/me` so
+            the caller can replace its cache entry outright rather than merging
+            a partial into it.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    $ref: "./get-players-me.v1.yaml#/components/schemas/MyPlayer"
+                  meta:
+                    type: object
+                    required: [request_id, api_version]
+                    properties:
+                      request_id: { type: string }
+                      api_version: { type: string, const: "v1" }
+                      idempotent_replay: { type: boolean }
+        "400":
+          description: Missing `Idempotency-Key` (`auth.idempotency_key_required`).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "401":
+          description: No session.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "403":
+          description: |
+            The player exists but is not yours. Player identity integrity (§17)
+            — nobody edits another player's record through this route, not even
+            a club admin. Club-side changes go through affiliation (§11).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "404":
+          description: No such player, or it is archived.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "422":
+          description: |
+            Validation failed against the effective config bounds. `details` is
+            keyed by field so the client can route the message back to the
+            control that owns it.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+              examples:
+                numberTaken:
+                  value:
+                    error:
+                      code: "player.validation_failed"
+                      message: "Check the highlighted fields."
+                      details:
+                        preferred_number: ["Pick a number between 1 and 99."]
+                      request_id: "01J9X..."
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+
+  schemas:
+    UpdatePlayerRequest:
+      type: object
+      minProperties: 1
+      additionalProperties: false
+      description: |
+        Every property optional; at least one required. Absent means "leave
+        alone". An explicit `null` clears a nullable field.
+      properties:
+        first_name:
+          type: string
+          description: Max length is `player.profile.name_max_length`.
+        last_name:
+          type: string
+        stage_name:
+          type: string
+          description: |
+            The football name (§3). Max length is
+            `player.profile.stage_name_max_length`.
+        preferred_number:
+          type: [integer, "null"]
+          description: |
+            Range is `player.profile.preferred_number_min` /
+            `_max`. Null clears it.
+        primary_position:
+          type: [string, "null"]
+          description: |
+            Must be a key in the `player.positions` set. Sending a display
+            label is a 422, not a lookup (Law 4).
+        availability_status:
+          type: string
+          description: |
+            Must be a key in the `player.availability` set. §12 — a change here
+            propagates to the owning club's readiness summary through an event,
+            never through a cross-engine write (Law 1).
+        headshot_url:
+          type: [string, "null"]
+          format: uri
+          description: |
+            Set by the media-upload flow rather than typed. Player media, not
+            the account avatar (§7).
+
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message, request_id]
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details: { type: object }
+            request_id: { type: string }
