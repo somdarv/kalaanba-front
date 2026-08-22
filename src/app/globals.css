@@ -251,6 +251,18 @@
   --font-sans:    var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-display: var(--font-sora),  var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-input:   max(16px, 1rem); /* iOS zoom trap — DESIGN_LANGUAGE §9.3 */
+  /* Handwriting, for the signature on a player card and nothing else
+     (ADR-0016). Falls back to cursive rather than to the sans: a signature
+     that renders in the body face is not a quieter signature, it is a mistake
+     the reader can see.
+
+     Note the fallback INSIDE the var(). Without it, an undefined
+     --font-signature-face makes the whole declaration invalid at computed-value
+     time, so `font-family` inherits and the signature renders in Inter — which
+     is exactly the failure this stack exists to prevent, and it looks like a
+     design choice rather than a missing font. With it, the same failure lands
+     on a script face and is obvious. */
+  --font-signature: var(--font-signature-face, "Segoe Script"), "Snell Roundhand", cursive;
   /* Numerals are the product on a football platform. §2.6 specified this in
      May; nothing implemented it, and ten components reached for Tailwind's
      `tabular-nums` independently. One token, one owner (<StatValue>). */
@@ -521,6 +533,7 @@ html.light {
   /* Type */
   --font-sans:    var(--font-sans);
   --font-display: var(--font-display);
+  --font-signature: var(--font-signature);
   --text-input:   var(--font-input);
 
   --animate-live-pulse: kx-pulse 2.4s ease-in-out infinite;

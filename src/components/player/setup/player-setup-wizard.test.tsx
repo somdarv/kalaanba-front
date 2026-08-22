@@ -269,12 +269,11 @@ describe("PlayerSetupWizard", () => {
       ),
     ).toBeInTheDocument();
     expect(screen.queryByText(/profile created/i)).not.toBeInTheDocument();
-    // The position comes from the served label maps, never compiled in.
-    // Market status and availability are deliberately NOT on the card: §15
-    // lists neither, and they bloated the name block with facts nobody reads
-    // off a card.
+    // Both come from the served label maps, never compiled in. A card fresh
+    // out of setup has no record, so it leads on the two facts it does have:
+    // the position written out, and whether the player is looking.
     expect(screen.getAllByText("Winger").length).toBeGreaterThan(0);
-    expect(screen.queryByText("Free agent")).not.toBeInTheDocument();
+    expect(screen.getAllByText("Free agent").length).toBeGreaterThan(0);
     // Nothing computed: a brand-new card carries no stats or rating (§13/§14).
     expect(screen.queryByText(/rating/i)).not.toBeInTheDocument();
 

@@ -21,6 +21,13 @@
  * **Failure is not fatal.** If the browser cannot decode the file, the original
  * is returned untouched and the server decides. A photo upload that refuses to
  * start because an optimisation failed is worse than a slow one.
+ *
+ * **This no longer decides the framing.** It used to centre-crop with a bias a
+ * sixth down, on the theory that people put their faces in the upper half of a
+ * portrait shot. That was right often enough to be worse than nothing: when it
+ * was wrong it silently put a player's chest on a team sheet. `<PhotoCropper>`
+ * now hands over an already-framed square, and the crop below survives only as
+ * a fallback for any future caller that does not frame first.
  */
 
 /**
@@ -34,15 +41,6 @@ const TARGET_EDGE = 512;
 
 /** JPEG quality. Above ~0.85 the file grows fast and the face does not. */
 const QUALITY = 0.82;
-
-/**
- * Where the square is cut from a portrait photo.
- *
- * Not the middle. People frame themselves in the upper half of a portrait
- * photo, so a centred crop of a waist-up shot reliably returns a chest. One
- * sixth down puts the usual face position near the centre of the square.
- */
-const PORTRAIT_CROP_BIAS = 1 / 6;
 
 export type PreparedPhoto = {
   blob: Blob;
@@ -71,12 +69,16 @@ export async function preparePhoto(file: File | Blob): Promise<PreparedPhoto> {
 
   try {
     const edge = Math.min(bitmap.width, bitmap.height);
-    const isPortrait = bitmap.height > bitmap.width;
+
+    // Already framed and already within budget: hand it back untouched. A
+    // second JPEG pass over a crop the player just approved costs quality and
+    // buys nothing, and this is the ordinary path now that the cropper exists.
+    if (bitmap.width === bitmap.height && edge <= TARGET_EDGE) {
+      return { blob: file, size: edge };
+    }
 
     const sourceX = (bitmap.width - edge) / 2;
-    const sourceY = isPortrait
-      ? Math.min(bitmap.height - edge, bitmap.height * PORTRAIT_CROP_BIAS)
-      : (bitmap.height - edge) / 2;
+    const sourceY = (bitmap.height - edge) / 2;
 
     // Never upscale. A 200px photo blown up to 512 is a bigger file that looks
     // worse than the one it replaced.

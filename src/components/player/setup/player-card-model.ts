@@ -14,6 +14,8 @@
 
 import {
   abbreviationFor,
+  labelFor,
+  type LabelledOption,
   type Player,
   type PositionOption,
   type VerifiedRecord,
@@ -34,6 +36,11 @@ export type PlayerCardModelInput = {
   player: Player;
   positions: ReadonlyArray<PositionOption>;
   record?: VerifiedRecord | null;
+  /**
+   * Market-status labels. Only an EMPTY card renders one — see
+   * `marketStatusLabel` below.
+   */
+  marketStatuses?: ReadonlyArray<LabelledOption>;
   featuredStats?: Record<string, ReadonlyArray<string>>;
   statLabels?: Record<string, Partial<CardStatLabel>>;
   variant?: PlayerCardVariant;
@@ -45,6 +52,20 @@ export type PlayerCardModel = {
   texture: PlayerCardPattern;
   /** Short position form for the chip beside the name. */
   positionAbbreviation: string | null;
+  /**
+   * The position written out. Only an empty card shows it: "LW" is a chip
+   * nobody outside the game parses on sight, and a card with no record has the
+   * room to say the word.
+   */
+  positionLabel: string | null;
+  /**
+   * Market status, for an empty card only.
+   *
+   * It came off the full card because it bloated the name block next to a
+   * record. On a card with no record it is not bloat, it is the content: it is
+   * the first thing a club reads off a new player.
+   */
+  marketStatusLabel: string | null;
   lead: ReadonlyArray<CardStatKey>;
   secondary: ReadonlyArray<CardStatKey>;
   /** False when the record is absent or entirely zero — the card shows the gate. */
@@ -56,6 +77,7 @@ export function buildPlayerCardModel({
   player,
   positions,
   record,
+  marketStatuses,
   featuredStats,
   variant,
   pattern,
@@ -72,6 +94,10 @@ export function buildPlayerCardModel({
     look,
     texture: pattern ?? look.pattern,
     positionAbbreviation: abbreviationFor(positions, player.primary_position),
+    positionLabel: labelFor(positions, player.primary_position),
+    marketStatusLabel: marketStatuses
+      ? labelFor(marketStatuses, player.market_status)
+      : null,
     lead,
     secondary: record ? secondaryStatsFor(priority, lead, record) : [],
     hasRecord: hasAnyStat(record),

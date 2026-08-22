@@ -61,6 +61,7 @@ export async function renderShareImage(input: ShareImageInput): Promise<Blob> {
     faint: withAlpha(onCard, 0.62),
     display: tokenFont("--font-sora", "system-ui, sans-serif"),
     sans: tokenFont("--font-inter", "system-ui, sans-serif"),
+    signature: tokenFont("--font-signature-face", "cursive"),
   };
 
   await paintGround(context, input.model, onCard);

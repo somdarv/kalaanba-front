@@ -6,15 +6,21 @@
 // Everything else on this page would render fine on the server; the preview of
 // an interactive control is what makes it interactive.
 
+import {
+  Allura,
+  Great_Vibes,
+  Ms_Madi,
+  Satisfy,
+  Style_Script,
+  Yellowtail,
+} from "next/font/google";
+
 import { Eyebrow } from "@/components/ui";
 import { PlayerCard } from "@/components/player/setup/player-card";
+import { PlayerCardSignature } from "@/components/player/setup/player-card-signature";
 import { ALL_PATTERNS } from "@/components/player/setup/player-card-patterns";
 import { PLAYER_CARD_VARIANTS } from "@/components/player/setup/player-card-variants";
-import type {
-  Player,
-  PositionOption,
-  VerifiedRecord,
-} from "@/lib/api/player";
+import type { Player, PositionOption, VerifiedRecord } from "@/lib/api/player";
 
 /**
  * The player card, across the axes it varies on.
@@ -27,6 +33,96 @@ import type {
  * Three sections, each isolating one variable: gradient, pattern, and the state
  * of the record. Everything else is held constant inside a section.
  */
+
+/**
+ * Signature candidates, loaded on this route only.
+ *
+ * Six faces is six font files, which is exactly the sort of thing that must
+ * never reach a player. They are imported here rather than in the root layout
+ * so they ship with `/design` and nowhere else — `next/font` scopes each family
+ * to the modules that import it.
+ *
+ * Each loader is called at module scope and assigned to its own `const`,
+ * because `next/font` requires it: the loaders are compiled away at build time,
+ * so a call nested inside an object literal is not something the compiler can
+ * resolve. The build refuses rather than shipping a broken font, which is the
+ * right failure.
+ *
+ * Every one is a single weight. Script faces on Google Fonts almost all ship
+ * 400 alone, which is itself part of the decision: there is no heavier cut to
+ * fall back on if a face turns out too faint against the card.
+ */
+const satisfy = Satisfy({
+  subsets: ["latin"],
+  weight: ["400"],
+  display: "swap",
+});
+const yellowtail = Yellowtail({
+  subsets: ["latin"],
+  weight: ["400"],
+  display: "swap",
+});
+const styleScript = Style_Script({
+  subsets: ["latin"],
+  weight: ["400"],
+  display: "swap",
+});
+const msMadi = Ms_Madi({
+  subsets: ["latin"],
+  weight: ["400"],
+  display: "swap",
+});
+const allura = Allura({ subsets: ["latin"], weight: ["400"], display: "swap" });
+const greatVibes = Great_Vibes({
+  subsets: ["latin"],
+  weight: ["400"],
+  display: "swap",
+});
+
+const SIGNATURE_CANDIDATES = [
+  {
+    // Not loaded here: it is the shipped face, so the root layout already has
+    // it and this reads the same token the card does. Loading it a second time
+    // would put two copies of one font on the page.
+    name: "Chic Budapest",
+    note: "Supplied by the team, self-hosted. The current default.",
+    font: { style: { fontFamily: "var(--font-signature)" } },
+  },
+  {
+    name: "Satisfy",
+    note: "Penned Google script. Keeps its strokes at low opacity.",
+    font: satisfy,
+  },
+  {
+    name: "Yellowtail",
+    note: "Brush, the heaviest here. Reads sporty rather than formal.",
+    font: yellowtail,
+  },
+  {
+    name: "Style Script",
+    note: "Signature-shaped and still legible on a long name.",
+    font: styleScript,
+  },
+  {
+    name: "Ms Madi",
+    note: "Closest to a real handwritten signature. Thin.",
+    font: msMadi,
+  },
+  {
+    name: "Allura",
+    note: "Flowing calligraphy. Elegant, and faint on a saturated ground.",
+    font: allura,
+  },
+  {
+    name: "Great Vibes",
+    note: "Formal calligraphy. Hairline strokes, hardest to read small.",
+    font: greatVibes,
+  },
+] as const satisfies ReadonlyArray<{
+  name: string;
+  note: string;
+  font: { style: { fontFamily: string } };
+}>;
 
 const POSITIONS: PositionOption[] = [
   { key: "left_winger", label: "Left Winger", abbreviation: "LW" },
@@ -223,6 +319,88 @@ export function PlayerCardSpecimens() {
               <Caption>
                 {texture.name} · <code>{texture.key}</code> · {texture.size}
               </Caption>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-4">
+        <Eyebrow>Signature faces, on the ground they actually sit on</Eyebrow>
+        <p className="text-fg-muted max-w-prose text-sm leading-relaxed">
+          Judge these at 60% opacity over a card gradient, not as black on
+          white, because that is the only place the signature renders and it is
+          what rules half of them out. The calligraphic faces are hairline by
+          construction and go faint against the pink; the brush faces hold. Long
+          name on the right is the real test: a signature that loses
+          &ldquo;Vindalinde&rdquo; is decoration, not a name.
+        </p>
+        <div className="border-border bg-surface-elev rounded-card flex flex-col gap-5 border p-6">
+          {SIGNATURE_CANDIDATES.map((candidate) => (
+            <div key={candidate.name} className="flex flex-col gap-1.5">
+              <div className="flex items-baseline gap-3">
+                <code className="text-fg text-xs font-semibold">
+                  {candidate.name}
+                </code>
+                <span className="text-fg-subtle text-xs">{candidate.note}</span>
+              </div>
+              <div className="flex gap-3">
+                {[0, 2].map((look) => (
+                  <span
+                    key={look}
+                    className="rounded-row flex flex-1 items-center justify-center overflow-hidden px-4 py-4"
+                    style={{
+                      backgroundImage: PLAYER_CARD_VARIANTS[look]!.background,
+                    }}
+                  >
+                    <span
+                      className="text-on-card/60 truncate text-4xl leading-tight"
+                      style={{
+                        fontFamily: candidate.font.style.fontFamily,
+                        transform: "rotate(-7deg)",
+                      }}
+                    >
+                      {look === 0 ? "KOKO" : "Kwame Vindalinde"}
+                    </span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-4">
+        <Eyebrow>The signature, across the angles it could take</Eyebrow>
+        <p className="text-fg-muted max-w-prose text-sm leading-relaxed">
+          A card with no confirmed match yet carries the player&apos;s own name
+          signed across it, the way a signed card has always paired the printed
+          name with the autograph. It is true by construction and says nothing
+          the card has to defend, which is more than any tagline managed: every
+          candidate was either hype (§8 rule 4 bans it), false for a free agent,
+          or a caption apologising for the empty space. The face is Caveat, one
+          weight, latin only (ADR-0016) — a marker, not a quill, because those
+          calligraphic scripts lose a name like Vindalinde at card size.
+        </p>
+        <div className="border-border bg-surface-elev rounded-card flex flex-col gap-6 border p-6">
+          {[-12, -7, -3, 0].map((angle) => (
+            <div key={angle} className="flex items-center gap-6">
+              <code className="text-fg-subtle w-16 shrink-0 text-xs">
+                {angle}deg
+              </code>
+              {/* On the card ground, since that is the only place it renders
+                  and `--on-card` is what it is tuned against. */}
+              <span
+                className="rounded-row flex flex-1 justify-center overflow-hidden px-4 py-3"
+                style={{ backgroundImage: PLAYER_CARD_VARIANTS[0]!.background }}
+              >
+                <PlayerCardSignature name="KOKO" angle={angle} />
+              </span>
+              <span
+                className="rounded-row flex flex-1 justify-center overflow-hidden px-4 py-3"
+                style={{ backgroundImage: PLAYER_CARD_VARIANTS[2]!.background }}
+              >
+                <PlayerCardSignature name="Kwame Vindalinde" angle={angle} />
+              </span>
             </div>
           ))}
         </div>

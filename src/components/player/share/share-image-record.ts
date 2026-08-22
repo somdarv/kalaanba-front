@@ -37,15 +37,7 @@ export function paintRecord(
   const { model, record, statLabels } = input;
 
   if (!model.hasRecord || !record) {
-    context.font = `400 32px ${ink.sans}`;
-    context.textAlign = "center";
-    context.fillStyle = ink.soft;
-    context.fillText(
-      "Stats show up when a match is confirmed.",
-      WIDTH / 2,
-      940,
-    );
-    context.textAlign = "left";
+    paintEmptyRecord(context, input, ink);
     return;
   }
 
@@ -72,6 +64,56 @@ export function paintRecord(
 
   context.textAlign = "left";
   paintStrip(context, input, record, ink);
+}
+
+/**
+ * A card with no verified football on it, at poster scale.
+ *
+ * The same three things the screen card shows, for the same reasons: the
+ * position written out, whether the player is looking, and the player's own
+ * name signed across the space. No line apologising for the absence, and no row
+ * of zeroes — three zeroes at display scale reads as a verdict on the player
+ * rather than as a season that has not started.
+ */
+function paintEmptyRecord(
+  context: CanvasRenderingContext2D,
+  { player, model }: ShareImageInput,
+  ink: Ink,
+): void {
+  context.textAlign = "center";
+  context.textBaseline = "top";
+
+  let cursor = 862;
+
+  if (model.positionLabel) {
+    context.font = `700 58px ${ink.display}`;
+    context.fillStyle = ink.strong;
+    context.fillText(model.positionLabel.toUpperCase(), WIDTH / 2, cursor);
+    cursor += 78;
+  }
+
+  if (model.marketStatusLabel) {
+    context.font = `600 24px ${ink.sans}`;
+    context.letterSpacing = "3.5px";
+    context.fillStyle = ink.faint;
+    context.fillText(model.marketStatusLabel.toUpperCase(), WIDTH / 2, cursor);
+    context.letterSpacing = "0px";
+    cursor += 104;
+  }
+
+  // Signed. Rotated about the centre of where the text will sit, so the
+  // baseline tilts the way a hand does rather than sliding sideways.
+  context.save();
+  context.translate(WIDTH / 2, cursor + 40);
+  context.rotate((-7 * Math.PI) / 180);
+  context.font = `400 92px ${ink.signature}`;
+  context.textBaseline = "middle";
+  context.fillStyle = withAlpha(ink.strong, 0.6);
+  context.fillText(player.stage_name, 0, 0);
+  context.restore();
+
+  context.textAlign = "left";
+  context.textBaseline = "top";
 }
 
 function paintStrip(

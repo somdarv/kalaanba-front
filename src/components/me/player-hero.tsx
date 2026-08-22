@@ -6,8 +6,9 @@ import { PlayerCard } from "@/components/player/setup/player-card";
 import { buildPlayerCardModel } from "@/components/player/setup/player-card-model";
 import { ShareCardButton } from "@/components/player/share/share-card-button";
 
+import { PhotoCropper } from "./photo-cropper";
 import { PhotoSheet } from "./photo-sheet";
-import { Button, ButtonLink, Card } from "@/components/ui";
+import { Button, ButtonLink, Card, flowGutter } from "@/components/ui";
 import {
   useUpdatePlayer,
   useUploadPlayerPhoto,
@@ -68,6 +69,9 @@ export function PlayerHero({
   onPickingPhotoChange,
 }: PlayerHeroProps) {
   const [photoFailed, setPhotoFailed] = useState(false);
+  // The picked file, held while the player frames it. Cleared on confirm or
+  // cancel, which is also what closes the cropper.
+  const [pickedPhoto, setPickedPhoto] = useState<File | null>(null);
   const photo = useUploadPlayerPhoto(player);
   const update = useUpdatePlayer(player);
 
@@ -91,6 +95,7 @@ export function PlayerHero({
   const model = buildPlayerCardModel({
     player,
     positions: meta.positions,
+    marketStatuses: meta.market_statuses,
     record: player.record,
     featuredStats: meta.card_featured_stats,
     statLabels: meta.card_stat_labels,
@@ -98,7 +103,15 @@ export function PlayerHero({
 
   function onPick(file: File) {
     setPhotoFailed(false);
-    photo.mutate(file, { onError: () => setPhotoFailed(true) });
+    // Framed before it is sent. The card crops a headshot to a circle, so
+    // whatever the player did not choose gets cut by a rule, and a rule that
+    // guesses puts a chest on a team sheet with no way to correct it.
+    setPickedPhoto(file);
+  }
+
+  function onFramed(blob: Blob) {
+    setPickedPhoto(null);
+    photo.mutate(blob, { onError: () => setPhotoFailed(true) });
   }
 
   /**
@@ -125,15 +138,28 @@ export function PlayerHero({
           visually-hidden <h1> is what gives the document one. */}
       <h1 className="sr-only">{player.stage_name}, your player card</h1>
 
-      <PlayerCard
-        player={player}
-        positions={meta.positions}
-        record={player.record}
-        featuredStats={meta.card_featured_stats}
-        statLabels={meta.card_stat_labels}
-        onEditPhoto={() => onPickingPhotoChange(true)}
-        isPhotoPending={photo.isPending}
-      />
+      {/* The card takes the guided-flow gutter on a phone, and only on a phone.
+          `flowGutter` is 10% each side, so the card sits on 80% of the viewport
+          the way the setup screens do — at the §9.2 floor it filled ~89% and
+          read as a page bleeding off both edges rather than an object being
+          handed over.
+
+          Reset at `sm` on purpose. Percentage padding resolves against the
+          CONTAINING BLOCK, and on desktop this card lives in a 380px column, so
+          leaving the gutter on would shave 76px off a card whose length is the
+          thing that works there. */}
+      <div className={`${flowGutter} sm:pr-0 sm:pl-0`}>
+        <PlayerCard
+          player={player}
+          positions={meta.positions}
+          marketStatuses={meta.market_statuses}
+          record={player.record}
+          featuredStats={meta.card_featured_stats}
+          statLabels={meta.card_stat_labels}
+          onEditPhoto={() => onPickingPhotoChange(true)}
+          isPhotoPending={photo.isPending}
+        />
+      </div>
 
       <PhotoSheet
         open={isPickingPhoto}
@@ -141,6 +167,14 @@ export function PlayerHero({
         hasPhoto={Boolean(player.headshot_url)}
         onPick={onPick}
         onRemove={onRemove}
+        isPending={photo.isPending}
+      />
+
+      <PhotoCropper
+        open={pickedPhoto !== null}
+        file={pickedPhoto}
+        onCancel={() => setPickedPhoto(null)}
+        onConfirm={onFramed}
         isPending={photo.isPending}
       />
 

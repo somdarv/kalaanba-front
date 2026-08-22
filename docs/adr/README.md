@@ -46,3 +46,4 @@ The Architect (Stage 4) proposes an ADR when a Work Packet introduces a new arch
 | [0006](0006-oklch-design-tokens.md)             | OKLCH design tokens and the fill/ink role split            | Proposed | 2026-08-12 |
 | [0007](0007-config-derived-option-sets-meta-endpoint.md) | Config-derived option sets served by a per-engine `/meta` endpoint | Proposed | 2026-08-19 |
 | [0015](0015-owner-rendered-share-graphic.md) | The share graphic ships before the §16 minor-privacy work | Accepted | 2026-08-22 |
+| [0016](0016-signature-typeface-on-the-player-card.md) | A third typeface, for the signature on a player card | Accepted | 2026-08-22 |

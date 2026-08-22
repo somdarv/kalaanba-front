@@ -3,6 +3,7 @@
 import Image from "next/image";
 
 import {
+  type LabelledOption,
   type Player,
   type PositionOption,
   type VerifiedRecord,
@@ -14,6 +15,7 @@ import { PlayerCardAward, PlayerCardIdentity } from "./player-card-identity";
 import { buildPlayerCardModel } from "./player-card-model";
 import { CARD_GRAIN, type PlayerCardPattern } from "./player-card-patterns";
 import { PlayerCardRecord } from "./player-card-record";
+import { PlayerCardSignature } from "./player-card-signature";
 import type { CardStatLabel } from "./player-card-stats";
 import type { PlayerCardVariant } from "./player-card-variants";
 
@@ -46,6 +48,13 @@ import type { PlayerCardVariant } from "./player-card-variants";
  * the half-body portrait for "player card front"), and it is the shape a share
  * image wants — a 4:5 still is the tallest a chat client will show without
  * cropping it to a tap-to-open thumbnail.
+ *
+ * **The floor is taller on a phone than the breakpoint suggests.** A card is
+ * full-bleed on a 360px screen and sits in a 380px column on desktop, so the
+ * same minimum height reads long in the column and stout in the hand: at that
+ * width the card is close to square before its content pushes it. The mobile
+ * floor is therefore raised more than the desktop one, which is the opposite of
+ * how most of the system scales and is deliberate.
  *
  * **`min-h`, not `aspect-[4/5]`.** The ratio was the first attempt and it
  * clipped the meta bar off the bottom of every card. `min-height: auto` only
@@ -81,6 +90,12 @@ import type { PlayerCardVariant } from "./player-card-variants";
 export type PlayerCardProps = {
   player: Player;
   positions: ReadonlyArray<PositionOption>;
+  /**
+   * Market-status labels. Only an EMPTY card renders one: with no record to
+   * show, "Free agent" is the first thing a club reads, and next to a full
+   * record it was bloat. Omit and the empty card simply drops that line.
+   */
+  marketStatuses?: ReadonlyArray<LabelledOption>;
   /**
    * Verified counters (§13). Every figure comes from a match with
    * `result_confirmed = true`. Omit on surfaces that have not read them; pass
@@ -131,6 +146,7 @@ export function PlayerCard({
   player,
   positions,
   record,
+  marketStatuses,
   featuredStats,
   statLabels,
   portraitUrl,
@@ -144,6 +160,8 @@ export function PlayerCard({
     look,
     texture,
     positionAbbreviation,
+    positionLabel,
+    marketStatusLabel,
     lead,
     secondary,
     // A record of zeroes is the absence of a record, not a record of nothing.
@@ -153,6 +171,7 @@ export function PlayerCard({
     player,
     positions,
     record,
+    marketStatuses,
     featuredStats,
     variant,
     pattern,
@@ -161,7 +180,7 @@ export function PlayerCard({
   return (
     <article
       className={cn(
-        "group text-on-card rounded-card relative isolate flex min-h-[29rem] flex-col overflow-hidden sm:min-h-[32rem]",
+        "group text-on-card rounded-card relative isolate flex min-h-[32rem] flex-col overflow-hidden sm:min-h-[34rem]",
         "shadow-[var(--shadow-md)]",
         // Deepens on hover, never moves. §3.5 is explicit that surfaces stay
         // anchored, and a shadow change says "alive" without the 1px jump that
@@ -236,7 +255,7 @@ export function PlayerCard({
         </span>
       ) : null}
 
-      <div className="relative flex  flex-1 flex-col px-5 pt-2 pb-7 sm:px-6 sm:pt-7">
+      <div className="relative flex flex-1 flex-col px-5 pt-2 pb-7 sm:px-6 sm:pt-7">
         <PlayerCardIdentity
           player={player}
           positionAbbreviation={positionAbbreviation}
@@ -271,9 +290,48 @@ export function PlayerCard({
             labelClassName={CARD_LABEL}
           />
         ) : (
-          <p className="text-on-card/75 text-center text-sm">
-            Your stats show up when a match you played in is confirmed.
-          </p>
+          /* No record yet, and the card does not apologise for it.
+       
+             It used to carry a line explaining when stats would appear, which
+             made the absence the subject of an object built to be shared. The
+             explanation belongs off the card, and already lives directly under
+             it in `<CardConfidenceBlock>`.
+       
+             What stands here instead are the two true things a club reads off a
+             new player: the position written out, and whether they are looking.
+             Both are config-served labels (Law 4), neither is invented (Law 3),
+             and a row of zeroes is deliberately NOT among them — three zeroes at
+             display scale reads as a verdict on the player rather than as a
+             season that has not started, which is the §13 error one level
+             down. */
+          <div className="flex flex-col items-center gap-3 text-center">
+            {positionLabel ? (
+              <p className="text-on-card font-display text-2xl leading-none font-bold tracking-tight">
+                {positionLabel}
+              </p>
+            ) : null}
+            {marketStatusLabel ? (
+              <p
+                className={cn(CARD_LABEL, "text-on-card/70 tracking-[0.16em]")}
+              >
+                {marketStatusLabel}
+              </p>
+            ) : null}
+
+            {/* Signed, the way a card with nothing printed on the back yet
+                still has the player's hand on it. Last and lightest, so it
+                reads as tone rather than as a third fact. */}
+            <PlayerCardSignature
+              name={player.stage_name}
+              // Pushed well clear of the status line above it. The block is
+              // anchored to the foot of the card, so opening this gap lifts
+              // the position and status rather than dropping the signature:
+              // the two facts move up into the space, and the signature reads
+              // as something added afterwards rather than as a third line of
+              // the same statement.
+              className="mt-10 sm:mt-12"
+            />
+          </div>
         )}
       </div>
 
