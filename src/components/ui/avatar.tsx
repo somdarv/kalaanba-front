@@ -22,10 +22,15 @@
  */
 
 import Image from "next/image";
-import { forwardRef, type ButtonHTMLAttributes, type HTMLAttributes } from "react";
+import { ImageBoundary } from "./image-boundary";
+import {
+  forwardRef,
+  type ButtonHTMLAttributes,
+  type HTMLAttributes,
+} from "react";
 import { cn } from "@/lib/cn";
 
-export type AvatarSize = "sm" | "md" | "lg" | "xl" | "2xl";
+export type AvatarSize = "sm" | "md" | "lg" | "xl" | "2xl" | "3xl";
 
 /** Pixel sizes map — 1:1 with the tailwind classes below so `next/image` gets exact px. */
 const SIZE_PX: Record<AvatarSize, number> = {
@@ -37,6 +42,10 @@ const SIZE_PX: Record<AvatarSize, number> = {
      small avatars, not to a card front), so this size is the anchor the whole
      composition hangs on. */
   "2xl": 96,
+  /* The same card with no verified football on it yet. Identity is all such a
+     card has, so it takes the space the record would have used rather than
+     leaving a hole where the numbers go. */
+  "3xl": 128,
 };
 
 const SIZE_CLASS: Record<AvatarSize, string> = {
@@ -45,6 +54,7 @@ const SIZE_CLASS: Record<AvatarSize, string> = {
   lg: "size-12 text-base",
   xl: "size-16 text-lg",
   "2xl": "size-24 text-2xl",
+  "3xl": "size-32 text-3xl",
 };
 
 /** Derive 1–2 character initials from a display name. */
@@ -127,30 +137,43 @@ function AvatarInner({
   size: AvatarSize;
 }) {
   const px = SIZE_PX[size];
+  const text = initials ?? (name ? deriveInitials(name) : "");
 
   if (src) {
+    // Wrapped, because `next/image` throws during render for a src whose host
+    // is not in `images.remotePatterns` — it does not fire `onError`, and the
+    // throw takes down the route. A stored photo can outlive the host it was
+    // stored on (a driver switch, a bucket domain change), and when it does the
+    // player should see their initials and their record, not a crashed page.
     return (
-      <Image
+      <ImageBoundary
         src={src}
-        alt={alt ?? name ?? "avatar"}
-        width={px}
-        height={px}
-        className="size-full object-cover"
-        aria-hidden={!alt && !name ? true : undefined}
-      />
+        fallback={<AvatarText text={text} size={size} />}
+      >
+        <Image
+          src={src}
+          alt={alt ?? name ?? "avatar"}
+          width={px}
+          height={px}
+          className="size-full object-cover"
+          aria-hidden={!alt && !name ? true : undefined}
+        />
+      </ImageBoundary>
     );
   }
 
-  const text = initials ?? (name ? deriveInitials(name) : "");
-  if (text) {
-    return (
-      <span aria-hidden="true" className="font-semibold leading-none select-none">
-        {text}
-      </span>
-    );
-  }
+  return <AvatarText text={text} size={size} />;
+}
 
-  return <PlaceholderIcon size={size} />;
+/** Initials when there is a name to derive them from, the neutral icon when not. */
+function AvatarText({ text, size }: { text: string; size: AvatarSize }) {
+  if (!text) return <PlaceholderIcon size={size} />;
+
+  return (
+    <span aria-hidden="true" className="leading-none font-semibold select-none">
+      {text}
+    </span>
+  );
 }
 
 const sharedClasses = (size: AvatarSize, ring: boolean) =>
@@ -162,70 +185,90 @@ const sharedClasses = (size: AvatarSize, ring: boolean) =>
     SIZE_CLASS[size],
   );
 
-export const Avatar = forwardRef<HTMLSpanElement | HTMLButtonElement, AvatarProps>(
-  function Avatar(props, ref) {
-    const { src, alt, name, initials, size = "md", ring = false, className } = props;
+export const Avatar = forwardRef<
+  HTMLSpanElement | HTMLButtonElement,
+  AvatarProps
+>(function Avatar(props, ref) {
+  const {
+    src,
+    alt,
+    name,
+    initials,
+    size = "md",
+    ring = false,
+    className,
+  } = props;
 
-    const innerEl = (
-      <AvatarInner src={src} alt={alt} name={name} initials={initials} size={size} />
-    );
+  const innerEl = (
+    <AvatarInner
+      src={src}
+      alt={alt}
+      name={name}
+      initials={initials}
+      size={size}
+    />
+  );
 
-    if (props.interactive === true) {
-      const {
-        // strip base props
-        src: _src, alt: _alt, name: _name, initials: _initials,
-        size: _size, ring: _ring, interactive: _ia,
-        className: _cls,
-        ...buttonRest
-      } = props;
-
-      return (
-        <button
-          ref={ref as React.Ref<HTMLButtonElement>}
-          type="button"
-          className={cn(
-            sharedClasses(size, ring),
-            // 44 px min hit target on all sizes (§3.7 — DESIGN_LANGUAGE)
-            "min-h-11 min-w-11",
-            // Hover ring step — desktop only via plain hover: (consistent with
-            // Button/Card; no @media guard needed in the CSS for this use case)
-            "hover:ring-2 hover:ring-primary",
-            "transition-[box-shadow] duration-[var(--dur-quick)] ease-[var(--ease-out)]",
-            "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring",
-            className,
-          )}
-          {...buttonRest}
-        >
-          {innerEl}
-        </button>
-      );
-    }
-
-    // Strip every base prop, not just `interactive`. Spreading the rest onto
-    // the span put `src`, `name`, `initials`, `size` and `ring` on the DOM as
-    // invalid attributes, and — worse — re-applied `className` AFTER the
-    // computed one, so any caller passing a class silently wiped the shape,
-    // the fill and the size off the avatar.
+  if (props.interactive === true) {
     const {
-      interactive: _ia,
+      // strip base props
       src: _src,
       alt: _alt,
       name: _name,
       initials: _initials,
       size: _size,
       ring: _ring,
+      interactive: _ia,
       className: _cls,
-      ...spanRest
-    } = props as NonInteractiveProps;
+      ...buttonRest
+    } = props;
 
     return (
-      <span
-        ref={ref as React.Ref<HTMLSpanElement>}
-        className={cn(sharedClasses(size, ring), className)}
-        {...(spanRest as HTMLAttributes<HTMLSpanElement>)}
+      <button
+        ref={ref as React.Ref<HTMLButtonElement>}
+        type="button"
+        className={cn(
+          sharedClasses(size, ring),
+          // 44 px min hit target on all sizes (§3.7 — DESIGN_LANGUAGE)
+          "min-h-11 min-w-11",
+          // Hover ring step — desktop only via plain hover: (consistent with
+          // Button/Card; no @media guard needed in the CSS for this use case)
+          "hover:ring-primary hover:ring-2",
+          "transition-[box-shadow] duration-[var(--dur-quick)] ease-[var(--ease-out)]",
+          "focus-visible:outline-focus-ring focus-visible:outline-2 focus-visible:outline-offset-2",
+          className,
+        )}
+        {...buttonRest}
       >
         {innerEl}
-      </span>
+      </button>
     );
-  },
-);
+  }
+
+  // Strip every base prop, not just `interactive`. Spreading the rest onto
+  // the span put `src`, `name`, `initials`, `size` and `ring` on the DOM as
+  // invalid attributes, and — worse — re-applied `className` AFTER the
+  // computed one, so any caller passing a class silently wiped the shape,
+  // the fill and the size off the avatar.
+  const {
+    interactive: _ia,
+    src: _src,
+    alt: _alt,
+    name: _name,
+    initials: _initials,
+    size: _size,
+    ring: _ring,
+    className: _cls,
+    ...spanRest
+  } = props as NonInteractiveProps;
+
+  return (
+    <span
+      ref={ref as React.Ref<HTMLSpanElement>}
+      className={cn(sharedClasses(size, ring), className)}
+      {...(spanRest as HTMLAttributes<HTMLSpanElement>)}
+    >
+      {innerEl}
+    </span>
+  );
+});

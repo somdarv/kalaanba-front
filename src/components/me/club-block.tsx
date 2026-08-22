@@ -53,7 +53,7 @@ export function ClubBlock({ player, meta }: ClubBlockProps) {
     <MeSection
       title="Your club"
       note={
-        <span className="text-sm text-fg-muted">
+        <span className="text-fg-muted text-sm">
           {labelFor(meta.market_statuses, player.market_status)}
         </span>
       }
@@ -67,14 +67,14 @@ export function ClubBlock({ player, meta }: ClubBlockProps) {
               {index > 0 ? <Divider /> : null}
               <Link
                 href="/clubs/manage"
-                className="rounded-row duration-quick ease-out flex min-h-14 items-center gap-3 px-1 transition-colors hover:bg-[var(--hover-overlay)]"
+                className="rounded-row duration-quick flex min-h-14 items-center gap-3 px-1 transition-colors ease-out hover:bg-[var(--hover-overlay)]"
               >
                 <Crest name={club.name} src={club.crest_url} size="md" />
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-semibold text-fg">
+                  <span className="text-fg block truncate text-sm font-semibold">
                     {club.name}
                   </span>
-                  <span className="block truncate text-xs text-fg-subtle">
+                  <span className="text-fg-subtle block truncate text-xs">
                     {CLUB_TYPE_LABELS[club.club_type] ?? club.club_type}
                   </span>
                 </span>
@@ -85,7 +85,7 @@ export function ClubBlock({ player, meta }: ClubBlockProps) {
       ) : (
         // Not a free agent, but the club read gave us nothing. Say only what is
         // certain rather than inventing a club name to fill the row.
-        <p className="text-sm text-fg-muted">
+        <p className="text-fg-muted text-sm">
           We could not load your club just now.
         </p>
       )}

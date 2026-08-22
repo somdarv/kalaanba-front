@@ -1,8 +1,20 @@
+"use client";
+
+// A client component, and only because of the last specimen. The owner's card
+// takes an `onEditPhoto` callback, and a function cannot cross a server
+// component boundary — the build refuses it rather than serialising it away.
+// Everything else on this page would render fine on the server; the preview of
+// an interactive control is what makes it interactive.
+
 import { Eyebrow } from "@/components/ui";
 import { PlayerCard } from "@/components/player/setup/player-card";
 import { ALL_PATTERNS } from "@/components/player/setup/player-card-patterns";
 import { PLAYER_CARD_VARIANTS } from "@/components/player/setup/player-card-variants";
-import type { LabelledOption, Player, VerifiedRecord } from "@/lib/api/player";
+import type {
+  Player,
+  PositionOption,
+  VerifiedRecord,
+} from "@/lib/api/player";
 
 /**
  * The player card, across the axes it varies on.
@@ -16,20 +28,10 @@ import type { LabelledOption, Player, VerifiedRecord } from "@/lib/api/player";
  * of the record. Everything else is held constant inside a section.
  */
 
-const POSITIONS: LabelledOption[] = [
-  { key: "left_winger", label: "Left Winger" },
-  { key: "goalkeeper", label: "Goalkeeper" },
-  { key: "centre_back", label: "Centre Back" },
-];
-
-const MARKET_STATUSES: LabelledOption[] = [
-  { key: "free_agent", label: "Free agent" },
-  { key: "affiliated", label: "Signed" },
-];
-
-const AVAILABILITY: LabelledOption[] = [
-  { key: "available", label: "Available" },
-  { key: "injured", label: "Injured" },
+const POSITIONS: PositionOption[] = [
+  { key: "left_winger", label: "Left Winger", abbreviation: "LW" },
+  { key: "goalkeeper", label: "Goalkeeper", abbreviation: "GK" },
+  { key: "centre_back", label: "Centre Back", abbreviation: "CB" },
 ];
 
 /** Dev only. Shows where a half-body portrait lands and how the mask fades it
@@ -52,11 +54,49 @@ const FULL_RECORD: VerifiedRecord = {
  * Mirrors the `player.card.featured_stats` default for the three positions
  * these samples use. Real cards read it from `/players/meta` (Law 2); this is
  * a fixture so the preview shows what the shipped config does.
+ *
+ * Full priority orders, not trios: the card bills the first three the player
+ * has something in, so the tail is what a card falls back to rather than
+ * leading with a zero.
  */
 const FEATURED: Record<string, ReadonlyArray<string>> = {
-  left_winger: ["appearances", "goals", "assists"],
-  goalkeeper: ["appearances", "clean_sheets", "minutes"],
-  centre_back: ["appearances", "clean_sheets", "goals"],
+  left_winger: [
+    "appearances",
+    "goals",
+    "assists",
+    "minutes",
+    "starts",
+    "clean_sheets",
+  ],
+  goalkeeper: [
+    "appearances",
+    "clean_sheets",
+    "minutes",
+    "starts",
+    "assists",
+    "goals",
+  ],
+  centre_back: [
+    "appearances",
+    "clean_sheets",
+    "goals",
+    "starts",
+    "minutes",
+    "assists",
+  ],
+};
+
+/** A winger four games into a season, with nothing in the column he is billed on. */
+const DRY_SPELL: VerifiedRecord = {
+  appearances: 4,
+  goals: 0,
+  assists: 1,
+  minutes: 214,
+  yellow_cards: 1,
+  red_cards: 0,
+  starts: 2,
+  clean_sheets: 0,
+  player_of_the_match: 0,
 };
 
 const EMPTY_RECORD: VerifiedRecord = {
@@ -132,12 +172,12 @@ export function PlayerCardSpecimens() {
         <p className="text-fg-muted max-w-prose text-sm leading-relaxed">
           A player never chooses their card. The gradient is hashed from their
           own key, and each gradient wears one artwork chosen for it rather than
-          hashed separately. Colours are the theme-stable{" "}
-          <code>--card-*</code> set (ADR-0014): a card in a WhatsApp thread must
-          not depend on the sender&apos;s theme. Each ground clears 4.5:1
-          against white <em>through</em> its pattern, which is why the grounds
-          sit darker than the brand fills. No state colour appears here, since a
-          green card would read as a status the player has not earned (§4.3).
+          hashed separately. Colours are the theme-stable <code>--card-*</code>{" "}
+          set (ADR-0014): a card in a WhatsApp thread must not depend on the
+          sender&apos;s theme. Each ground clears 4.5:1 against white{" "}
+          <em>through</em> its pattern, which is why the grounds sit darker than
+          the brand fills. No state colour appears here, since a green card
+          would read as a status the player has not earned (§4.3).
         </p>
       </header>
 
@@ -149,8 +189,6 @@ export function PlayerCardSpecimens() {
               <PlayerCard
                 player={SAMPLES[index]! as Player}
                 positions={POSITIONS}
-                marketStatuses={MARKET_STATUSES}
-                availability={AVAILABILITY}
                 record={FULL_RECORD}
                 featuredStats={FEATURED}
                 variant={variant}
@@ -177,8 +215,6 @@ export function PlayerCardSpecimens() {
               <PlayerCard
                 player={SAMPLES[0]! as Player}
                 positions={POSITIONS}
-                marketStatuses={MARKET_STATUSES}
-                availability={AVAILABILITY}
                 record={FULL_RECORD}
                 featuredStats={FEATURED}
                 variant={PLAYER_CARD_VARIANTS[2]}
@@ -199,8 +235,6 @@ export function PlayerCardSpecimens() {
             <PlayerCard
               player={SAMPLES[2]! as Player}
               positions={POSITIONS}
-              marketStatuses={MARKET_STATUSES}
-              availability={AVAILABILITY}
               record={EMPTY_RECORD}
               featuredStats={FEATURED}
             />
@@ -214,8 +248,6 @@ export function PlayerCardSpecimens() {
             <PlayerCard
               player={SAMPLES[1]! as Player}
               positions={POSITIONS}
-              marketStatuses={MARKET_STATUSES}
-              availability={AVAILABILITY}
               record={FULL_RECORD}
               featuredStats={FEATURED}
             />
@@ -230,8 +262,6 @@ export function PlayerCardSpecimens() {
             <PlayerCard
               player={SAMPLES[1]! as Player}
               positions={POSITIONS}
-              marketStatuses={MARKET_STATUSES}
-              availability={AVAILABILITY}
               record={FULL_RECORD}
               featuredStats={FEATURED}
               portraitUrl={PORTRAIT_PLACEHOLDER}
@@ -240,6 +270,38 @@ export function PlayerCardSpecimens() {
               The same card with a half-body portrait (§7). The figure is a dev
               placeholder. Note the layout does not move: the portrait is a
               masked layer, not a column.
+            </Caption>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <PlayerCard
+              player={SAMPLES[0]! as Player}
+              positions={POSITIONS}
+              record={DRY_SPELL}
+              featuredStats={FEATURED}
+            />
+            <Caption>
+              A winger who has not scored yet. Config bills goals second, but
+              the lead row skips an empty counter and promotes minutes: a
+              &ldquo;0&rdquo; at display scale reads as a verdict rather than as
+              a season that has not started. Goals is still on the card, in the
+              strip.
+            </Caption>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <PlayerCard
+              player={SAMPLES[2]! as Player}
+              positions={POSITIONS}
+              record={FULL_RECORD}
+              featuredStats={FEATURED}
+              onEditPhoto={() => undefined}
+            />
+            <Caption>
+              The owner&apos;s view. The photo becomes a button with a camera
+              badge; every other surface renders the same component with no
+              control attached. Availability is omitted here, as it is on
+              <code>/me</code>, where the control sits below the card.
             </Caption>
           </div>
         </div>

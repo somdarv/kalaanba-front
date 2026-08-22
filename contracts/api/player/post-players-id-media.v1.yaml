@@ -8,9 +8,18 @@ paths:
     post:
       summary: Upload a player image and receive its resolvable URL
       description: |
-        Two-step, matching `POST /api/v1/users/me/avatar`: upload returns a URL,
-        the caller then PATCHes `/players/{id}` with `headshot_url`. Upload stays
-        idempotent and isolated from the profile patch.
+        Upload returns a resolvable URL. For `kind=headshot` the endpoint ALSO
+        writes `players.headshot_url` itself, in the same transaction as the
+        moderation event.
+
+        That last part changed during implementation (2026-08-22) and the reason
+        is worth recording. The original design had the client PATCH the URL
+        back, matching `POST /api/v1/users/me/avatar`. On a Ghanaian mobile
+        connection the gap between those two calls is exactly where the network
+        drops, and the failure it produces is the worst kind: the bytes are in
+        the bucket, the player was charged for the upload, and their card still
+        shows initials. The server writes the field because the server is the
+        only party guaranteed to still be there.
 
         **Separate from the account avatar on purpose.** §7 splits the two:
         `users.avatar_url` is the person behind the account, `player.headshot_url`
@@ -28,7 +37,9 @@ paths:
                       graphic.
 
         Only `headshot` is required at V1 and only `headshot` is written back to
-        `headshot_url` today. The other two are accepted now so the model does
+        `headshot_url` today. The other two are accepted and stored, but touch
+        no column: a waist-up shot written into the headshot field would land in
+        every team sheet in the country. They are accepted now so the model does
         not have to change when the card gains its portrait slot — §7 is explicit
         that "the data model should support all types from the start".
 
@@ -48,9 +59,19 @@ paths:
         may hold it. A held image resolves but is not served on public surfaces
         until cleared — the owner sees it, a stranger does not (Law 10).
 
+        The verdict is therefore ASYNCHRONOUS, and the 201 says so: it reports
+        `moderation_status: pending`, never `cleared`. At the instant the
+        response is written no consumer has seen the event yet, and this engine
+        claiming a Moderation verdict would be asserting another engine's truth.
+
         Minor-related restrictions are deferred to the §16 privacy work and are
-        NOT enforced here yet. That gap is the reason the public card page and
-        the share graphic are still fenced off.
+        NOT enforced here yet. That gap still fences off the PUBLIC card page.
+
+        It no longer fences off the share graphic. Shipped 2026-08-22 by an
+        explicit product decision (ADR-0015): the graphic is rendered in the
+        owner's own browser from the record they already hold, and the owner
+        pressing share is not the platform publishing a child's data. The
+        residual risk and the follow-up are recorded in that ADR.
       operationId: uploadPlayerMedia
       security:
         - bearerAuth: []
@@ -151,6 +172,15 @@ components:
             Stable internal key from Moderation & Safety. `cleared` is servable
             on public surfaces; anything else is owner-visible only until the
             hold resolves.
+
+            On THIS response it is always `pending`. Moderation consumes
+            `player.media_uploaded` asynchronously through the outbox (Law 6),
+            so no verdict exists yet when the 201 is written. A client that
+            treats `pending` as "blocked" is reading it wrong: the owner sees
+            their own upload immediately. It is a PUBLIC surface that must
+            consult the current verdict before serving the image to a stranger,
+            and it must read it fresh rather than trusting this field, which is
+            a snapshot from upload time.
 
     ResponseMeta:
       type: object

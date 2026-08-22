@@ -1,0 +1,56 @@
+key: player.card.stat_labels
+engine: player-affiliation
+scope: platform
+value_type: json
+default: >-
+  {
+    "appearances":  { "label": "Games",        "short": "GAMES" },
+    "starts":       { "label": "Starts",       "short": "STARTS" },
+    "goals":        { "label": "Goals",        "short": "GOALS" },
+    "assists":      { "label": "Assists",      "short": "ASSISTS" },
+    "minutes":      { "label": "Minutes",      "short": "MINS" },
+    "clean_sheets": { "label": "Clean sheets", "short": "CLN SHTS" }
+  }
+approval_level: low
+description: |
+  The words the player card puts under its numbers, per counter key, in the two
+  lengths the card sets them at.
+
+  These are display strings, not keys: logic never reads them (Constitution
+  Law 4), which is why approval is low and why they are translatable rather
+  than derived in the client from the key. The precedent is
+  `player.positions.abbreviations` — "Goalkeeper" shortens to "GK" in English
+  and "GB" in French, and no client-side rule gets that right. The same is true
+  of "Clean sheets".
+
+  ## Two lengths, and why both are needed
+
+  `short` is the lead row: 10px uppercase, under a display-size figure, in a
+  column a third of a 360px card wide. `label` is the strip below it: 12px
+  beside its own value, with a whole column to sit in.
+
+  "Clean sheets" is the reason the value is a pair rather than one string. At
+  10px in a third of a card it wraps to two lines and pulls its column out of
+  alignment with the two beside it, which on the object a player screenshots
+  reads as a rendering fault. "CLN SHTS" holds the line. In the strip, where
+  there is room, spelling it out is both clearer and kinder.
+
+  Keep `short` to roughly eight characters. Longer will not be rejected but
+  will not fit the column.
+
+  ## Register
+
+  `label` is sentence case ("Clean sheets"), because the strip sets it as
+  ordinary text. `short` is written upper case here rather than left to CSS, so
+  a locale whose abbreviation is not simply the uppercase of its label can say
+  so.
+
+  Both follow the copy rules: the words a player already uses on a pitch.
+  "Games", not "Appearances".
+
+  A counter present in the card's record but absent here falls back to the
+  card's own defaults, per field — an entry that supplies `label` and forgets
+  `short` still gets a lead row rather than a blank one. A label slot must
+  never render empty.
+
+  Locale variants follow the same suffix rule as `player.positions.labels`.

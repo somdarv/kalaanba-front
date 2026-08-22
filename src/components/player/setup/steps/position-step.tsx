@@ -21,10 +21,7 @@ export function PositionStep({ wizard, meta }: StepProps) {
 
   return (
     <>
-      <StepHeading
-        lead="Step 4 of 5"
-        note="Pick the one spot you play most."
-      >
+      <StepHeading lead="Step 4 of 5" note="Pick the one spot you play most.">
         Where do you play?
       </StepHeading>
 
@@ -45,7 +42,7 @@ export function PositionStep({ wizard, meta }: StepProps) {
             }
           />
           {errors.primary_position?.message ? (
-            <p role="alert" className="text-sm text-danger-ink">
+            <p role="alert" className="text-danger-ink text-sm">
               {errors.primary_position.message}
             </p>
           ) : null}

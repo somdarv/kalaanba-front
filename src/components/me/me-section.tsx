@@ -49,7 +49,7 @@ export function MeSection({
     <Card tone="raised" size="md" className={cn("w-full", className)} id={id}>
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
         <div className="flex min-w-0 items-center gap-2">
-          <h2 className="font-display text-base font-bold tracking-tight text-fg">
+          <h2 className="font-display text-fg text-base font-bold tracking-tight">
             {title}
           </h2>
           {note}
@@ -58,7 +58,7 @@ export function MeSection({
       </div>
 
       {description ? (
-        <p className="mt-1.5 text-sm text-fg-muted">{description}</p>
+        <p className="text-fg-muted mt-1.5 text-sm">{description}</p>
       ) : null}
 
       <div className="mt-4">{children}</div>
@@ -84,8 +84,8 @@ export function MeRow({
 }) {
   return (
     <div className="flex items-baseline justify-between gap-4 py-2.5">
-      <dt className="shrink-0 text-sm text-fg-muted">{label}</dt>
-      <dd className="flex min-w-0 items-baseline gap-2 text-right text-sm font-medium text-fg">
+      <dt className="text-fg-muted shrink-0 text-sm">{label}</dt>
+      <dd className="text-fg flex min-w-0 items-baseline gap-2 text-right text-sm font-medium">
         <span className="min-w-0 break-words">{value}</span>
         {trailing}
       </dd>

@@ -15,10 +15,7 @@ import {
 import { labelFor, type Player, type PlayerMeta } from "@/lib/api/player";
 
 import { PlayerCard } from "./player-card";
-import {
-  ANNOUNCEMENT_HOLD_MS,
-  SetupAnnouncement,
-} from "./setup-announcement";
+import { ANNOUNCEMENT_HOLD_MS, SetupAnnouncement } from "./setup-announcement";
 import { RevealBeat } from "./step-transition";
 
 /**
@@ -89,9 +86,10 @@ export function SetupReveal({
     { label: "Football name", value: player.stage_name },
     {
       label: "Preferred number",
-      value: player.preferred_number != null
-        ? String(player.preferred_number)
-        : "Not set",
+      value:
+        player.preferred_number != null
+          ? String(player.preferred_number)
+          : "Not set",
     },
     {
       label: "Primary position",
@@ -105,14 +103,14 @@ export function SetupReveal({
   ];
 
   return (
-    <div className="flex min-h-dvh flex-col bg-bg">
+    <div className="bg-bg flex min-h-dvh flex-col">
       {/* The flow's other screens carry a top bar; the payoff had none, so the
           brand dropped out exactly where the player is being handed something.
           Pink, not theme ink: this is the one screen in the flow that is a
           celebration, and <Wordmark> masks `currentColor` so the brand hue is
           a token away (ADR-0010). No back control — the profile exists, and
           there is nothing behind this screen to go back to. */}
-      <header className="kx-chrome sticky top-0 z-20 bg-bg/95 backdrop-blur-md">
+      <header className="kx-chrome bg-bg/95 sticky top-0 z-20 backdrop-blur-md">
         <div className="flex min-h-14 items-center justify-center px-2">
           <Wordmark size="sm" className="text-primary" />
         </div>
@@ -132,13 +130,13 @@ export function SetupReveal({
               <div key="profile" className="flex flex-col gap-6">
                 <header className="space-y-2">
                   <RevealBeat delay={BEAT.headline}>
-                    <h1 className="font-display text-3xl leading-tight font-bold tracking-tight text-fg sm:text-4xl">
+                    <h1 className="font-display text-fg text-3xl leading-tight font-bold tracking-tight sm:text-4xl">
                       You&apos;re on the record.
                     </h1>
                   </RevealBeat>
 
                   <RevealBeat delay={BEAT.note}>
-                    <p className="text-sm text-fg-muted">
+                    <p className="text-fg-muted text-sm">
                       This is your card. It grows as you play. Only verified
                       matches count, so every number on it is one you earned.
                     </p>
@@ -149,9 +147,8 @@ export function SetupReveal({
                   <PlayerCard
                     player={player}
                     positions={meta.positions}
-                    marketStatuses={meta.market_statuses}
-                    availability={meta.availability}
                     featuredStats={meta.card_featured_stats}
+                    statLabels={meta.card_stat_labels}
                   />
                 </RevealBeat>
 
@@ -162,7 +159,7 @@ export function SetupReveal({
                         section of a page and too shouty for a caption on a card
                         the player is reading for the first time. Normal case,
                         semibold, normal tracking. */}
-                    <h3 className="text-sm font-semibold text-fg">
+                    <h3 className="text-fg text-sm font-semibold">
                       Your details
                     </h3>
                     <dl className="mt-3">
@@ -170,10 +167,10 @@ export function SetupReveal({
                         <div key={row.label}>
                           {index > 0 ? <Divider /> : null}
                           <div className="flex items-baseline justify-between gap-4 py-2.5">
-                            <dt className="text-sm text-fg-muted">
+                            <dt className="text-fg-muted text-sm">
                               {row.label}
                             </dt>
-                            <dd className="text-right text-sm font-medium text-fg">
+                            <dd className="text-fg text-right text-sm font-medium">
                               {row.value}
                             </dd>
                           </div>

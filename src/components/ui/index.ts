@@ -82,6 +82,8 @@ export { Combobox } from "./combobox";
 export type { ComboboxProps, ComboboxOption } from "./combobox";
 export { FileUpload } from "./file-upload";
 export type { FileUploadProps } from "./file-upload";
+export { ImageBoundary } from "./image-boundary";
+export type { ImageBoundaryProps } from "./image-boundary";
 export { ImageUploader } from "./image-uploader";
 export type { ImageUploaderProps } from "./image-uploader";
 export { ThemeToggle } from "./theme-toggle";

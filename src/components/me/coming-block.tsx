@@ -43,8 +43,8 @@ export function ComingBlock() {
           <li key={item.key} className="opacity-55">
             {index > 0 ? <Divider /> : null}
             <div className="flex items-baseline justify-between gap-4 py-2.5">
-              <span className="text-sm font-medium text-fg">{item.label}</span>
-              <span className="text-xs text-fg-subtle">{item.note}</span>
+              <span className="text-fg text-sm font-medium">{item.label}</span>
+              <span className="text-fg-subtle text-xs">{item.note}</span>
             </div>
           </li>
         ))}

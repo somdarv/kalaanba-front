@@ -1,0 +1,26 @@
+key: player.media.max_bytes
+engine: player-affiliation
+scope: platform
+value_type: integer
+default: 4194304
+approval_level: low
+description: |
+  Largest player image the API will accept, in bytes. 4 MiB.
+
+  Generous on purpose, and the reason is the opposite of the usual one. The
+  frontend already shrinks a picked photo to a 512px square before sending it,
+  which lands around 60 KB, so anything arriving near this ceiling came from a
+  client that skipped that step. The limit exists to bound abuse, not to police
+  ordinary phones, and setting it tight would reject a legitimate upload from
+  any client that has not implemented the shrink yet.
+
+  Enforced by the Form Request on every upload, and by nothing else. The
+  frontend's downscale is a courtesy to the player's data bundle, never a gate:
+  the server applies this to whatever actually arrives.
+
+  Raising it costs storage and upload time on paid mobile data. Lowering it
+  below about 1 MiB starts rejecting unshrunk camera photos, which is a support
+  ticket rather than a saving.
+
+  Low approval: it changes an operational limit, invents no football, and gates
+  nothing downstream.

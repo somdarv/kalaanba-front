@@ -55,6 +55,9 @@ import { PlayerHero } from "./player-hero";
 export function MeScreen() {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
+  // Held here, not in <PlayerHero>, because <DetailsSheet> opens it too and
+  // exactly one overlay may be up at a time.
+  const [isPickingPhoto, setIsPickingPhoto] = useState(false);
 
   const { data: user, isLoading: isUserLoading } = useUser();
   const meta = usePlayerMeta();
@@ -125,6 +128,8 @@ export function MeScreen() {
             player={record}
             meta={meta.data}
             onEdit={() => setIsEditing(true)}
+            isPickingPhoto={isPickingPhoto}
+            onPickingPhotoChange={setIsPickingPhoto}
           />
 
           {record ? (
@@ -161,6 +166,10 @@ export function MeScreen() {
           onOpenChange={setIsEditing}
           player={record}
           meta={meta.data}
+          onEditPhoto={() => {
+            setIsEditing(false);
+            setIsPickingPhoto(true);
+          }}
         />
       ) : null}
     </AppShell>

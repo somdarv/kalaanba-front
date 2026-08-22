@@ -52,7 +52,7 @@ export function SetupAnnouncement() {
             delay: reduce ? 0 : MARK_DELAY_S,
             ease: EASE_ENTRANCE,
           }}
-          className="inline-flex size-16 items-center justify-center rounded-full bg-primary text-on-primary"
+          className="bg-primary text-on-primary inline-flex size-16 items-center justify-center rounded-full"
         >
           <Check size={32} weight="bold" />
         </m.span>
@@ -65,7 +65,7 @@ export function SetupAnnouncement() {
             delay: reduce ? 0 : WORDS_DELAY_S,
             ease: EASE_OUT,
           }}
-          className="font-display text-2xl font-bold tracking-tight text-fg"
+          className="font-display text-fg text-2xl font-bold tracking-tight"
         >
           Profile created
         </m.p>

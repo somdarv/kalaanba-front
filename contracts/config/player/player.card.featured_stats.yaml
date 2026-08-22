@@ -4,25 +4,26 @@ scope: platform
 value_type: json
 default: >-
   {
-    "goalkeeper":            ["appearances","clean_sheets","minutes"],
-    "left_back":             ["appearances","clean_sheets","assists"],
-    "centre_back":           ["appearances","clean_sheets","goals"],
-    "right_back":            ["appearances","clean_sheets","assists"],
-    "defensive_midfielder":  ["appearances","clean_sheets","assists"],
-    "left_midfielder":       ["appearances","assists","goals"],
-    "centre_midfielder":     ["appearances","assists","goals"],
-    "right_midfielder":      ["appearances","assists","goals"],
-    "attacking_midfielder":  ["appearances","goals","assists"],
-    "left_winger":           ["appearances","goals","assists"],
-    "right_winger":          ["appearances","goals","assists"],
-    "second_striker":        ["appearances","goals","assists"],
-    "striker":               ["appearances","goals","assists"]
+    "goalkeeper":            ["appearances","clean_sheets","minutes","starts","assists","goals"],
+    "left_back":             ["appearances","clean_sheets","assists","starts","minutes","goals"],
+    "centre_back":           ["appearances","clean_sheets","goals","starts","minutes","assists"],
+    "right_back":            ["appearances","clean_sheets","assists","starts","minutes","goals"],
+    "defensive_midfielder":  ["appearances","clean_sheets","assists","minutes","starts","goals"],
+    "left_midfielder":       ["appearances","assists","goals","minutes","starts","clean_sheets"],
+    "centre_midfielder":     ["appearances","assists","goals","minutes","starts","clean_sheets"],
+    "right_midfielder":      ["appearances","assists","goals","minutes","starts","clean_sheets"],
+    "attacking_midfielder":  ["appearances","goals","assists","minutes","starts","clean_sheets"],
+    "left_winger":           ["appearances","goals","assists","minutes","starts","clean_sheets"],
+    "right_winger":          ["appearances","goals","assists","minutes","starts","clean_sheets"],
+    "second_striker":        ["appearances","goals","assists","minutes","starts","clean_sheets"],
+    "striker":               ["appearances","goals","assists","minutes","starts","clean_sheets"]
   }
 approval_level: medium
 description: |
-  The three verified counters the player card LEADS with, per primary-position
-  key. Everything else the record holds still appears on the card, in the
-  secondary strip underneath — this key decides billing, never visibility.
+  The ORDER the player card bills verified counters in, per primary-position
+  key. The card's lead row takes the first three the player actually has
+  something in; everything else appears in the strip underneath. This key
+  decides billing, never visibility.
 
   Why this is configuration and not code (Constitution Law 2): a centre-back is
   not judged on goals and a goalkeeper is not judged on assists, so one fixed
@@ -34,21 +35,40 @@ description: |
   members of `player.positions`. Stat keys must be fields of the VerifiedRecord
   shape in `contracts/api/player/get-players-me.v1.yaml`: appearances, starts,
   goals, assists, minutes, clean_sheets. `yellow_cards` and `red_cards` are
-  deliberately NOT featurable — they are reported together as a single
+  deliberately NOT billable — they are reported together as a single
   disciplinary line, and a card that leads with a player's bookings is not a
   card anyone shares.
 
-  Every list must hold exactly three keys. The card's lead row is a three-up
-  grid; two leaves a hole and four wraps on a 360px screen.
+  ## An ordered list, not a fixed trio (changed 2026-08-22)
+
+  This key used to hold exactly three keys per position and the card led with
+  those three whatever their values were. That put a "0" in one of three
+  headline slots for every striker who had not scored yet, every keeper without
+  a clean sheet, and every player in their first month — which is the same
+  category error §13 exists to prevent, one level down. A zero at that size
+  reads as a verdict on the player rather than as a season that has not started.
+
+  So the value is now a PRIORITY ORDER. The card walks it and bills the first
+  three counters the player has a non-zero figure in; the skipped counter drops
+  to the strip below and returns the week it earns a number. A striker with no
+  goals yet leads with games, assists and minutes, and nothing about his card
+  announces the absence.
+
+  Give each position at least three keys, ideally all six in the order that
+  position should be read in. A list with fewer than three usable keys is
+  treated as a mistake and the default order is used instead, whole — filling
+  the gap silently would produce an order nobody chose and hide the error from
+  whoever made it. Counters a list never names are appended in default order,
+  so an admin who forgets `starts` does not thereby delete it from every card.
 
   `appearances` leads every position on purpose. It is the denominator for
   everything beside it, and a goals figure with no games played beside it is
   the kind of number that starts arguments at the side of a pitch.
 
   Defenders lead with clean sheets per the engine doc's own framing (§13 lists
-  clean sheets among the verified set). Centre-backs keep `goals` in third
-  because set-piece goals are how a centre-back gets talked about; full-backs
-  keep `assists` for the same reason.
+  clean sheets among the verified set). Centre-backs keep `goals` third because
+  set-piece goals are how a centre-back gets talked about; full-backs keep
+  `assists` for the same reason.
 
   Medium approval: it changes what every player card in the country leads with,
   but it invents no football and gates nothing downstream.
