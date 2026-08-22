@@ -12,6 +12,19 @@ import type { MyPlayer, PlayerMeta } from "@/lib/api/player";
  * implementations of it is how the shared image and the live URL start
  * disagreeing.
  *
+ * **This surface is where the card is fullest.** Setup has no record to speak
+ * of, so it renders identity alone. Here the card gets the verified counters
+ * (§13) too, which is the difference between "your card" at minute one and the
+ * same card a season later. They are backend-owned values passed straight
+ * through (Constitution Law 3), and which three of them lead is config the
+ * card reads by position (Law 2).
+ *
+ * **No availability on the card here.** `<AvailabilityBlock>` sits directly
+ * underneath it as a one-tap control, so the card would be restating a value
+ * the player can already see and change six inches lower. The setup reveal
+ * still shows it, where the player has just chosen it and nothing else on the
+ * screen confirms the choice.
+ *
  * **Share is rendered disabled, not hidden.** §15 calls the shareable card the
  * acquisition loop, so a player should be able to see it is coming. It needs a
  * public read and a public route, both fenced out of this packet. The line
@@ -33,15 +46,11 @@ export type PlayerHeroProps = {
 export function PlayerHero({ player, meta, onEdit }: PlayerHeroProps) {
   if (!player) {
     return (
-      <Card
-        tone="flat"
-        size="md"
-        className="border-dashed text-center"
-      >
-        <h1 className="font-display text-xl font-bold tracking-tight text-fg">
+      <Card tone="flat" size="md" className="border-dashed text-center">
+        <h1 className="font-display text-fg text-xl font-bold tracking-tight">
           Make your player card
         </h1>
-        <p className="mx-auto mt-2 max-w-xs text-sm text-fg-muted">
+        <p className="text-fg-muted mx-auto mt-2 max-w-xs text-sm">
           It takes a minute. You pick your number, your position and when you
           play.
         </p>
@@ -58,14 +67,14 @@ export function PlayerHero({ player, meta, onEdit }: PlayerHeroProps) {
           heading. A second visible <h1> above it would say the same thing
           twice; `<PlayerCard>` renders the stage name as its own <h2>, and the
           visually-hidden <h1> is what gives the document one. */}
-      <h1 className="sr-only">
-        {player.stage_name}, your player card
-      </h1>
+      <h1 className="sr-only">{player.stage_name}, your player card</h1>
 
       <PlayerCard
         player={player}
         positions={meta.positions}
         marketStatuses={meta.market_statuses}
+        record={player.record}
+        featuredStats={meta.card_featured_stats}
       />
 
       <div className="flex items-center gap-2">
@@ -77,9 +86,7 @@ export function PlayerHero({ player, meta, onEdit }: PlayerHeroProps) {
         </Button>
       </div>
 
-      <p className="text-xs text-fg-subtle">
-        Sharing your card is coming next.
-      </p>
+      <p className="text-fg-subtle text-xs">Sharing your card is coming next.</p>
     </div>
   );
 }

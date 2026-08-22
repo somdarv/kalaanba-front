@@ -150,6 +150,8 @@ export function SetupReveal({
                     player={player}
                     positions={meta.positions}
                     marketStatuses={meta.market_statuses}
+                    availability={meta.availability}
+                    featuredStats={meta.card_featured_stats}
                   />
                 </RevealBeat>
 

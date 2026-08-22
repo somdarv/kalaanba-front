@@ -62,6 +62,14 @@ export const VerifiedRecordSchema = z.object({
   minutes: z.number().int().nonnegative(),
   yellow_cards: z.number().int().nonnegative(),
   red_cards: z.number().int().nonnegative(),
+  /**
+   * §13 names these two alongside the six above. Optional for the same reason
+   * `abbreviation` is on `PositionOptionSchema`: contract-first, so a client on
+   * this build keeps working against an API that predates them (§7).
+   */
+  starts: z.number().int().nonnegative().optional(),
+  clean_sheets: z.number().int().nonnegative().optional(),
+  player_of_the_match: z.number().int().nonnegative().optional(),
 });
 
 export type VerifiedRecord = z.infer<typeof VerifiedRecordSchema>;
@@ -161,6 +169,20 @@ export const PlayerMetaSchema = z.object({
    * degradation `abbreviation` already relies on above.
    */
   card_confidence: z.array(LabelledOptionSchema).optional(),
+  /**
+   * Which three counters the card leads with, per position key
+   * (`player.card.featured_stats`).
+   *
+   * A centre-back is not judged on goals and a keeper is not judged on
+   * assists, so the card cannot lead with one fixed trio. The mapping is a
+   * display decision that changes as the game's vocabulary changes, which
+   * makes it configuration rather than code (Law 2) — an admin adding
+   * `clean_sheets` to wing-backs must not need a deploy.
+   *
+   * Optional because it is contract-first, like `card_confidence`. Absent, the
+   * card falls back to the three §15 names by name.
+   */
+  card_featured_stats: z.record(z.string(), z.array(z.string())).optional(),
   preferred_number: z.object({
     min: z.number().int(),
     max: z.number().int(),

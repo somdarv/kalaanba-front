@@ -190,6 +190,29 @@ components:
         minutes: { type: integer, minimum: 0 }
         yellow_cards: { type: integer, minimum: 0 }
         red_cards: { type: integer, minimum: 0 }
+        # Named by §13 alongside the six above, and additive rather than
+        # required: a client on the current build must keep working against an
+        # API that predates them (§7 — adding fields is non-breaking). The
+        # player card renders each only when it is present.
+        starts:
+          type: integer
+          minimum: 0
+          description: Confirmed appearances that began in the starting eleven.
+        clean_sheets:
+          type: integer
+          minimum: 0
+          description: |
+            Confirmed matches the player finished without conceding. §13 lists
+            this among the verified set. Meaningful for goalkeepers and
+            defenders and reported for everyone: which positions FEATURE it is
+            a display decision carried by `player.card.featured_stats`, not a
+            property of the counter.
+        player_of_the_match:
+          type: integer
+          minimum: 0
+          description: |
+            Count of confirmed matches where this player was recorded as player
+            of the match. A verified award, not a Fan Buzz signal (Law 8/9).
 
     ResponseMeta:
       type: object

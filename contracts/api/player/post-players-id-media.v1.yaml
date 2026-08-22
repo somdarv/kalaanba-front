@@ -1,0 +1,175 @@
+openapi: 3.1.0
+info:
+  title: "Player & Affiliation — Upload player media"
+  version: "1.0.0"
+
+paths:
+  /api/v1/players/{id}/media:
+    post:
+      summary: Upload a player image and receive its resolvable URL
+      description: |
+        Two-step, matching `POST /api/v1/users/me/avatar`: upload returns a URL,
+        the caller then PATCHes `/players/{id}` with `headshot_url`. Upload stays
+        idempotent and isolated from the profile patch.
+
+        **Separate from the account avatar on purpose.** §7 splits the two:
+        `users.avatar_url` is the person behind the account, `player.headshot_url`
+        is football media that appears on team sheets, lineups and the player
+        card. One player profile can be claimed, transferred or archived without
+        touching the account's picture, and a ghost player has media before it
+        has an account at all.
+
+        `kind` selects the role the image plays, and the roles are §7's:
+
+          headshot    Tight face crop. Small avatars, lineups, team sheets,
+                      goal-scorer cards, notifications, profile thumbnail.
+          half_body   Waist-up. The player card front and the profile hero.
+          full_body   Standing. Special cards, spotlights, posters, the share
+                      graphic.
+
+        Only `headshot` is required at V1 and only `headshot` is written back to
+        `headshot_url` today. The other two are accepted now so the model does
+        not have to change when the card gains its portrait slot — §7 is explicit
+        that "the data model should support all types from the start".
+
+        MIME allow-list and max size come from admin config:
+          player.media.allowed_mime  (default: image/jpeg, image/png, image/webp)
+          player.media.max_bytes     (default: 4 MiB)
+
+        Per-player throttle: player.media.throttle.per_minute (default 10).
+
+        **Authorization.** The actor must own the player profile or hold a club
+        role with media rights over it. A ghost profile's media may only be set
+        by a club officer until the profile is claimed (§4). Every write is
+        audited (Law 5).
+
+        **Moderation.** Player media is public content the moment it lands on a
+        card, so an upload raises `player.media_uploaded` and Moderation & Safety
+        may hold it. A held image resolves but is not served on public surfaces
+        until cleared — the owner sees it, a stranger does not (Law 10).
+
+        Minor-related restrictions are deferred to the §16 privacy work and are
+        NOT enforced here yet. That gap is the reason the public card page and
+        the share graphic are still fenced off.
+      operationId: uploadPlayerMedia
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema: { type: string, minLength: 8, maxLength: 128 }
+        - in: header
+          name: X-Request-Id
+          required: false
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file, kind]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                kind:
+                  type: string
+                  enum: [headshot, half_body, full_body]
+                  description: |
+                    The §7 role this image plays. Stable internal key, never a
+                    display string (Law 4).
+      responses:
+        "201":
+          description: Stored. The URL is resolvable and safe to PATCH back.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/PlayerMediaView"
+                  meta:
+                    $ref: "#/components/schemas/ResponseMeta"
+        "403":
+          description: Actor may not set media on this player profile.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "413":
+          description: Larger than `player.media.max_bytes`.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "415":
+          description: MIME type outside `player.media.allowed_mime`.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "429":
+          description: Per-player upload rate limit exceeded.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+
+  schemas:
+    PlayerMediaView:
+      type: object
+      additionalProperties: false
+      required: [url, kind, moderation_status]
+      properties:
+        url:
+          type: string
+          format: uri
+          description: |
+            Resolvable image URL. Never a signed evidence URL — player media is
+            public content, not evidence, and must not be logged as one.
+        kind:
+          type: string
+          enum: [headshot, half_body, full_body]
+        width:
+          type: integer
+          minimum: 1
+        height:
+          type: integer
+          minimum: 1
+        moderation_status:
+          type: string
+          description: |
+            Stable internal key from Moderation & Safety. `cleared` is servable
+            on public surfaces; anything else is owner-visible only until the
+            hold resolves.
+
+    ResponseMeta:
+      type: object
+      required: [request_id, api_version]
+      properties:
+        request_id: { type: string }
+        api_version: { type: string, const: "v1" }
+
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message, request_id]
+          properties:
+            code:
+              type: string
+              description: Stable `engine.specific_reason` string.
+            message: { type: string }
+            details: { type: object }
+            request_id: { type: string }

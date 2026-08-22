@@ -16,7 +16,6 @@ import { ComingBlock } from "./coming-block";
 import { DetailsBlock } from "./details-block";
 import { DetailsSheet } from "./details-sheet";
 import { PlayerHero } from "./player-hero";
-import { RecordBlock } from "./record-block";
 
 /**
  * `/me` — the player's own record.
@@ -31,15 +30,26 @@ import { RecordBlock } from "./record-block";
  * `site/home-screen.tsx` states: never show invented football. What this shows
  * instead is identity, one live control, and honest names for the rest.
  *
- * **Layout.** One column on a phone, in the order a player cares about. At
- * `lg` the identity half lifts into a sticky rail and the substance scrolls
- * beside it — the composition the reference dashboards get right, without
- * introducing the second navigation model a sidebar would bring. Same
- * `AppShell` + `SiteNav` as every other route.
+ * **The card owns the record.** There is no separate record block. The card
+ * carries the full §13 set now that it is tall enough to, and a block below
+ * repeating the same six counters was saying the same thing twice on one
+ * screen. The empty case travels with it: the card states the gate, and
+ * `CardConfidenceBlock` explains how the gate opens.
  *
- * The rail caps its height and scrolls internally. A sticky element taller than
- * the viewport pins its top and makes its bottom unreachable, which on a short
- * laptop screen would hide the availability control behind nothing.
+ * **Layout.** One column on a phone, in the order a player cares about, and the
+ * page scrolls the way every other route does.
+ *
+ * At `lg` the page itself stops scrolling and the two columns scroll
+ * independently inside a fixed viewport. Sticky was the first attempt and it
+ * was wrong for this surface: a sticky rail taller than the viewport pins its
+ * top and makes its bottom unreachable, and giving it its own scroll then put a
+ * second scrollbar inside the page's, which reads as a rendering fault rather
+ * than as two panes. Fixing the shell means one scroll context per column and
+ * none for the document.
+ *
+ * Both bars are hidden (`kx-scroll-none`). They sit inside a composed surface
+ * where two of them side by side is noise, and each column's scrollability is
+ * already evident from its content being clipped at the fold.
  */
 
 export function MeScreen() {
@@ -101,9 +111,16 @@ export function MeScreen() {
   const record = player.data ?? null;
 
   return (
-    <AppShell header={<SiteNav />} contentClassName="max-w-6xl">
-      <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)] lg:items-start lg:gap-6">
-        <div className="flex flex-col gap-4 lg:sticky lg:top-6 lg:max-h-[calc(100dvh-3rem)] lg:overflow-y-auto lg:overscroll-contain">
+    <AppShell
+      header={<SiteNav />}
+      className="lg:h-dvh lg:overflow-hidden"
+      contentClassName="max-w-6xl lg:min-h-0 lg:overflow-hidden lg:pb-6"
+    >
+      <div className="flex flex-col gap-4 lg:grid lg:h-full lg:min-h-0 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)] lg:items-start lg:gap-6">
+        {/* `min-h-0` on both columns is load-bearing: a grid item's automatic
+            minimum size is its content, so without it the column refuses to
+            shrink below its content and scrolls the page instead of itself. */}
+        <div className="kx-scroll-none flex flex-col gap-4 lg:h-full lg:min-h-0 lg:overflow-y-auto lg:overscroll-contain">
           <PlayerHero
             player={record}
             meta={meta.data}
@@ -121,10 +138,9 @@ export function MeScreen() {
           ) : null}
         </div>
 
-        <div className="flex flex-col gap-4">
+        <div className="kx-scroll-none flex flex-col gap-4 lg:h-full lg:min-h-0 lg:overflow-y-auto lg:overscroll-contain">
           {record ? (
             <>
-              <RecordBlock record={record.record} />
               <ClubBlock player={record} meta={meta.data} />
               <DetailsBlock
                 player={record}

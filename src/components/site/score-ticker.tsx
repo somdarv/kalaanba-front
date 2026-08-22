@@ -116,7 +116,7 @@ function TickerRow({ fixture }: { fixture: TickerFixture }) {
   const isLive = fixture.minute !== null;
 
   return (
-    <div className="flex shrink-0 items-center gap-2.5 px-5 py-2.5 text-[0.9375rem] whitespace-nowrap">
+    <div className="flex shrink-0 items-center gap-2.5 px-5 py-2.5 text-[0.7375rem] whitespace-nowrap">
       <span className="text-fg-muted">{fixture.home}</span>
       {hasScore ? (
         <span className="kx-numeric rounded-row bg-bg px-2.5 py-1 font-semibold text-fg">
@@ -128,7 +128,7 @@ function TickerRow({ fixture }: { fixture: TickerFixture }) {
         /* Brand ink on the minute: it is the one thing in the strip that is
            changing, so it is the one thing that gets colour. Not colour alone
            either, since the apostrophe already reads as a minute. */
-        <span className="kx-numeric text-sm font-semibold text-primary-ink">
+        <span className="kx-numeric text-[0.7375rem] font-semibold text-primary-ink">
           {fixture.minute}
         </span>
       ) : fixture.statusLabel ? (

@@ -142,6 +142,42 @@
   --pitch-line:     oklch(1 0 0 / 0.30);
   --on-pitch:       oklch(1 0 0);
 
+  /* ---- Player card. Theme-stable for the same reason --pitch-* is
+          (ADR-0011): the card is an artefact a player screenshots into a
+          group chat, and what lands in that chat must not depend on which
+          theme the sender happened to be using. A depicted object does not
+          invert.
+
+          Darker than the brand FILLS on purpose. ADR-0012 knowingly ships
+          white on --primary at 3.19:1 because a button label is one short
+          word the eye already expects. This surface carries a full name, a
+          stat row and a meta bar at 12-14px, so it does not get that
+          latitude: every ground below clears 4.5:1 against --on-card, and
+          `design-tokens.test.ts` holds them there. These are the same
+          lightnesses the brand-fill comment names as "the compliant version"
+          (primary L 0.594, accent L 0.565), arrived at independently.
+
+          Two stops per look. The lighter one is the ceiling, so it is what
+          the contrast test measures; the deep stop only ever adds margin.
+
+          REVISED 2026-08-21 (same day). These were originally the brightest
+          values clearing 4.5:1 on their own. They are not on their own: the
+          card carries a white pattern layer, and white at `soft-light` lightens
+          whatever it crosses, which took the shipped card to 4.19:1. The
+          pattern is part of the surface, so the surface has to clear AA WITH it
+          on. These are now the brightest values that clear 4.5:1 through a
+          full-strength pattern at `--card-pattern-max-opacity`, and
+          `design-tokens.test.ts` measures the composite rather than the bare
+          gradient. Raising either these or that cap breaks the other.
+          ADR-0014. ---- */
+  --card-flare:      oklch(0.576 0.190 350); /* white 4.83, with pattern 4.53 */
+  --card-flare-deep: oklch(0.400 0.150 350);
+  --card-dusk:       oklch(0.564 0.155 315); /* white 4.94, with pattern 4.53 */
+  --card-dusk-deep:  oklch(0.360 0.120 295);
+  --card-deep:       oklch(0.545 0.130 245); /* white 4.91, with pattern 4.52 */
+  --card-deep-deep:  oklch(0.370 0.100 255);
+  --on-card:         oklch(1 0 0);
+
   /* ---- Live — in-play matches only. The one electric color in the system;
           rationed so it still means something when it appears. ---- */
   --live:     oklch(0.840 0.140 195);
@@ -250,7 +286,7 @@ html.light {
      .elev-flat pairs the fill with --border, which §4.3 says carries depth
      before the fill does. To restore the old separation, raise L, not chroma. */
   --bg:              oklch(1.000 0.000 264);
-  --surface:         oklch(0.982 0.002 264); /* #F8F9FA */
+  --surface:         oklch(0.995  0.000 000); /* #F8F9FA */
   --surface-elev:    oklch(1.000 0.000 264);
   --surface-overlay: oklch(1.000 0.000 264);
   --surface-2:       var(--surface-elev);
@@ -451,6 +487,14 @@ html.light {
   --color-pitch-turf-alt: var(--pitch-turf-alt);
   --color-pitch-line:     var(--pitch-line);
   --color-on-pitch:       var(--on-pitch);
+
+  --color-card-flare:      var(--card-flare);
+  --color-card-flare-deep: var(--card-flare-deep);
+  --color-card-dusk:       var(--card-dusk);
+  --color-card-dusk-deep:  var(--card-dusk-deep);
+  --color-card-deep:       var(--card-deep);
+  --color-card-deep-deep:  var(--card-deep-deep);
+  --color-on-card:         var(--on-card);
   --color-live:     var(--live);
   --color-live-ink: var(--live-ink);
   --color-on-live:  var(--on-live);
@@ -674,6 +718,19 @@ button:disabled,
   background: color-mix(in oklab, var(--fg-muted) 45%, transparent);
 }
 .kx-scroll::-webkit-scrollbar-corner { background: transparent; }
+
+/* Scrollable, with no bar drawn.
+   For panes whose scrolling is obvious from their content being clipped and
+   whose bar would otherwise sit inside a composed surface — the `/me` columns,
+   where two bars beside each other read as a rendering fault rather than as
+   two independent panes. Do NOT use it on a pane whose scrollability is not
+   already evident; a region that scrolls with no affordance and no clipped
+   content is a region nobody scrolls. Keyboard and wheel are unaffected. */
+.kx-scroll-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.kx-scroll-none::-webkit-scrollbar { width: 0; height: 0; display: none; }
 
 /* ---------------------------------------------------------------------
    Score ticker — the strip under the nav, moving.

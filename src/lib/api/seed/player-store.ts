@@ -43,18 +43,26 @@ const SEED_PLAYER: MyPlayer = {
   headshot_url: null,
   archived_at: null,
   confidence: {
-    tier: "growing",
-    confirmed_matches: 5,
-    next_tier: "verified",
-    matches_to_next_tier: 5,
+    tier: "verified",
+    confirmed_matches: 24,
+    next_tier: null,
+    matches_to_next_tier: null,
   },
+  // A full season, so the card is exercised at the length it has to hold. The
+  // earlier five-match seed left the record band nearly empty and hid every
+  // layout question the tall card actually asks: three four-figure numbers in
+  // a row, a two-line secondary strip, and what a top tier looks like when
+  // there is no next one to progress to.
   record: {
-    appearances: 5,
-    goals: 3,
-    assists: 2,
-    minutes: 412,
-    yellow_cards: 1,
-    red_cards: 0,
+    appearances: 24,
+    goals: 11,
+    assists: 7,
+    minutes: 1872,
+    yellow_cards: 3,
+    red_cards: 1,
+    starts: 21,
+    clean_sheets: 6,
+    player_of_the_match: 4,
   },
 };
 

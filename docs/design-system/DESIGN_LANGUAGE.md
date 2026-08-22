@@ -124,6 +124,17 @@ against. Every neutral above still answers to it.
    means something. Consumed only by <LiveIndicator>. */
 --live  --live-ink  --on-live
 
+/* Depicted objects — theme-stable. Defined once in :root and NEVER
+   overridden in the light block, because these paint a thing rather
+   than a UI surface and a thing does not invert when the reader picks
+   a theme. Grass is green at noon and under floodlights; a card in a
+   WhatsApp thread looks the same to sender and receiver. Each set is
+   scoped to the component named beside it. */
+--pitch-turf  --pitch-turf-alt  --pitch-line  --on-pitch   /* PitchPicker,  ADR-0011 */
+--card-flare  --card-dusk  --card-deep                     /* PlayerCard,   ADR-0014 */
+--card-flare-deep  --card-dusk-deep  --card-deep-deep
+--on-card
+
 /* Focus — its own hue (200), never the brand. Paired with
    outline-offset it lands on the ground behind the control. */
 --ring  --focus-ring  --ring-offset
@@ -133,7 +144,11 @@ Hue map: primary 350 · danger 30 · warning 75 · success 150 · live 195 · ac
 
 **Rule:** every color token MUST be registered in `@theme inline` so Tailwind utilities exist (`bg-primary`, `text-primary-ink`, `border-border-strong`, etc.).
 
-**Rule:** a filled control MUST clear 4.5:1 against its own label, in every state. Note the polarity: because labels are dark, the **pressed** state (L -0.050) is the worst case, not the safest. Check pressed, not base.
+**Rule:** a filled control MUST clear 4.5:1 against its own label, in every state. Note the polarity: because labels are white (ADR-0012), the **hover** state (L +0.030) is the worst case, not the safest. Check hover, not base.
+
+> **Corrected 2026-08-21.** This rule previously said labels were dark and named `pressed` as the worst case, which was true only under ADR-0010. ADR-0012 flipped the label back to white four days later and inverted the polarity; the doc did not follow. The brand and state fills also do not currently satisfy this rule — they measure 2.80 to 3.89:1 and ADR-0012 accepts that deviation explicitly, with `design-tokens.test.ts` pinning the floor so they cannot drift lower. The rule stands as the target.
+>
+> **The deviation does not travel.** It was argued for a one-word button label. A surface carrying sentences, labels or data at small sizes takes its own token set at the lightness that actually clears 4.5:1 — that is what `--card-*` is (ADR-0014), and it demonstrates the compliant lightnesses are usable in production.
 
 ### 2.3 Shape tokens
 
