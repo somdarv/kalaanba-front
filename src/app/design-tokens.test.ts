@@ -2,6 +2,11 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, it, expect } from "vitest";
 
+import {
+  ALL_PATTERNS,
+  MAX_PATTERN_OPACITY,
+} from "@/components/player/setup/player-card-patterns";
+
 /**
  * Contract tests for the v3 (OKLCH) token layer — ADR-0006.
  *
@@ -152,6 +157,109 @@ describe("design tokens — WCAG contrast", () => {
     const ring = token("--ring");
     for (const ground of ["--bg", "--surface", "--surface-elev"] as const) {
       expect(contrastRatio(ring, token(ground))).toBeGreaterThanOrEqual(3);
+    }
+  });
+
+  /**
+   * The player card grounds get NO part of ADR-0012's deviation, and that is
+   * the whole reason they exist as their own tokens (ADR-0014).
+   *
+   * A filled button is one short word the eye already expects, which is what
+   * made 3.19:1 an arguable trade. The card carries a full name, a three-up
+   * stat row and a meta bar at 11-14px on the same surface. Reusing --primary
+   * there would have multiplied a known, accepted, one-word deviation across a
+   * paragraph of small text, so these sit at the lightness that actually
+   * clears AA — the same values the --primary comment names as "the compliant
+   * version", arrived at independently.
+   *
+   * Only the light stop of each pair is asserted. It is the ceiling: the deep
+   * stop is darker by construction, and the gradient between them never
+   * exceeds either end.
+   */
+  const CARD_GROUNDS = ["--card-flare", "--card-dusk", "--card-deep"] as const;
+
+  it.each(CARD_GROUNDS)("%s carries --on-card at >= 4.5:1", (name) => {
+    expect(
+      contrastRatio(token(name), token("--on-card")),
+    ).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it.each(["--card-flare-deep", "--card-dusk-deep", "--card-deep-deep"] as const)(
+    "%s is darker than the light stop it pairs with, so the pair never inverts",
+    (name) => {
+      const light = token(name.replace("-deep", "") as (typeof CARD_GROUNDS)[number]);
+      expect(token(name).L).toBeLessThan(light.L);
+    },
+  );
+
+  /**
+   * The pattern layer is part of the card, so the card has to clear AA with it
+   * on. This is the assertion that was missing when the first artwork shipped
+   * at 0.16 and quietly took the surface to 4.19:1 — the bare-gradient test
+   * above passed the whole time, because the bare gradient was never what a
+   * reader saw.
+   *
+   * CSS composites blend modes in gamma-encoded sRGB, not linear light, so the
+   * blend runs on the encoded values and the result is decoded before it is
+   * measured. Doing this in linear light overstates the headroom.
+   */
+  const srgbEncode = (v: number) =>
+    v <= 0.0031308 ? 12.92 * v : 1.055 * Math.pow(v, 1 / 2.4) - 0.055;
+  const srgbDecode = (v: number) =>
+    v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+  /** W3C soft-light, reduced for a pure white source. */
+  const softLightOnWhite = (c: number) =>
+    c <= 0.25 ? ((16 * c - 12) * c + 4) * c : Math.sqrt(c);
+
+  /** Contrast of white against a ground wearing a white layer at `opacity`. */
+  function contrastUnderPattern(
+    ground: Oklch,
+    blend: "normal" | "soft-light",
+    opacity: number,
+  ): number {
+    const lit = oklchToLinearSrgb(ground)
+      .map((v) => Math.min(Math.max(v, 0), 1))
+      .map(srgbEncode)
+      .map((c) => {
+        const blended = blend === "normal" ? 1 : softLightOnWhite(c);
+        return c + (blended - c) * opacity;
+      })
+      .map(srgbDecode);
+    const luminance = 0.2126 * lit[0]! + 0.7152 * lit[1]! + 0.0722 * lit[2]!;
+    return 1.05 / (luminance + 0.05);
+  }
+
+  it.each(ALL_PATTERNS.map((p) => [p.key, p.blend, p.opacity] as const))(
+    "pattern %s stays inside the opacity cap the grounds were derived from",
+    (_key, _blend, opacity) => {
+      expect(opacity).toBeLessThanOrEqual(MAX_PATTERN_OPACITY);
+    },
+  );
+
+  it.each(CARD_GROUNDS)(
+    "%s still carries white at >= 4.5:1 through every pattern it can wear",
+    (name) => {
+      const ground = token(name);
+      for (const pattern of ALL_PATTERNS) {
+        const ratio = contrastUnderPattern(
+          ground,
+          pattern.blend,
+          pattern.opacity,
+        );
+        expect(
+          ratio,
+          `${name} under ${pattern.key} (${pattern.blend} @ ${pattern.opacity})`,
+        ).toBeGreaterThanOrEqual(4.5);
+      }
+    },
+  );
+
+  it("the card grounds are theme-stable — the light block never overrides them", () => {
+    // Same guarantee --pitch-* relies on (ADR-0011). A card lands in a group
+    // chat as an image; what it looks like there cannot depend on which theme
+    // the sender happened to be using.
+    for (const name of [...CARD_GROUNDS, "--on-card"] as const) {
+      expect(() => lightToken(name)).toThrow();
     }
   });
 });

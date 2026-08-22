@@ -25,7 +25,7 @@ import Image from "next/image";
 import { forwardRef, type ButtonHTMLAttributes, type HTMLAttributes } from "react";
 import { cn } from "@/lib/cn";
 
-export type AvatarSize = "sm" | "md" | "lg" | "xl";
+export type AvatarSize = "sm" | "md" | "lg" | "xl" | "2xl";
 
 /** Pixel sizes map — 1:1 with the tailwind classes below so `next/image` gets exact px. */
 const SIZE_PX: Record<AvatarSize, number> = {
@@ -33,6 +33,10 @@ const SIZE_PX: Record<AvatarSize, number> = {
   md: 40,
   lg: 48,
   xl: 64,
+  /* Card hero. The player card is avatar-only (§7 assigns the headshot to
+     small avatars, not to a card front), so this size is the anchor the whole
+     composition hangs on. */
+  "2xl": 96,
 };
 
 const SIZE_CLASS: Record<AvatarSize, string> = {
@@ -40,6 +44,7 @@ const SIZE_CLASS: Record<AvatarSize, string> = {
   md: "size-10 text-sm",
   lg: "size-12 text-base",
   xl: "size-16 text-lg",
+  "2xl": "size-24 text-2xl",
 };
 
 /** Derive 1–2 character initials from a display name. */

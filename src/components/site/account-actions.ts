@@ -15,15 +15,20 @@ import { useLogout } from "@/lib/api/hooks/use-auth";
  * Only routes that exist are listed. A menu is a promise that the thing you tap
  * is there, and the surfaces the product will eventually want (settings, my
  * matches, RP wallet) have none yet. They get added when they are built.
+ *
+ * Shortened 2026-08-21 when `/me` shipped. It used to carry three entries;
+ * "Player profile" pointed at `/player/setup`, which sent a player who ALREADY
+ * had a card back into the wizard that creates one, and "Your area" duplicated
+ * a row that now lives on `/me` itself. `/me` absorbs both, so the menu names
+ * the person rather than listing the parts of them.
  */
 
 export type AccountLink = { href: string; label: string };
 
 /** Live routes only. See the note above before adding to this. */
 export const ACCOUNT_LINKS: readonly AccountLink[] = [
-  { href: "/player/setup", label: "Player profile" },
+  { href: "/me", label: "Your profile" },
   { href: "/clubs/manage", label: "My clubs" },
-  { href: "/onboarding/area", label: "Your area" },
 ];
 
 /**

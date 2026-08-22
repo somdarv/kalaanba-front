@@ -1,0 +1,23 @@
+key: player.card_confidence.labels
+engine: player-affiliation
+scope: platform
+value_type: json
+default: '{"provisional":"Provisional","growing":"Growing","verified":"Verified"}'
+approval_level: low
+description: |
+  Display labels for the card-confidence tiers (Player & Affiliation engine doc
+  §14). Keyed by the stable internal keys in `player.card_confidence.tiers`.
+
+  Separate from the ladder itself so a rename never touches a threshold, and a
+  threshold change never touches copy (Constitution Law 4). Served to clients
+  through `GET /players/meta` alongside the position and availability label maps
+  (ADR-0007), resolved against `Accept-Language`.
+
+  Copy rules apply (constitution §8): these are strings a player reads on their
+  own card. One word each, no punctuation, nothing a ten year old would have to
+  ask about.
+
+  Low approval: renaming a label changes no behaviour and no eligibility. Any
+  key present here that is absent from the ladder is ignored; any ladder key
+  absent here falls back to the raw key, so a partial map degrades to something
+  readable rather than to a blank chip.

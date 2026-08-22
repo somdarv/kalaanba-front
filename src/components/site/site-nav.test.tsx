@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { SiteNav } from "./site-nav";
+import { ACCOUNT_LINKS } from "./account-actions";
 import { PRIMARY_NAV } from "./nav-items";
 import type { TickerFixture } from "./score-ticker";
 import * as useAuth from "@/lib/api/hooks/use-auth";
@@ -108,7 +109,12 @@ describe("<SiteNav>", () => {
     const sheet = await screen.findByRole("dialog");
 
     expect(within(sheet).getByText("Abdul Rahman")).toBeInTheDocument();
-    expect(within(sheet).getByText("Player profile")).toBeInTheDocument();
+    // Read from the model rather than pinning a label. The two surfaces share
+    // ONE list by design, and the thing worth asserting is that every entry
+    // reaches the sheet — not what any of them happens to be called today.
+    for (const link of ACCOUNT_LINKS) {
+      expect(within(sheet).getByText(link.label)).toBeInTheDocument();
+    }
     expect(
       within(sheet).getByRole("button", { name: /sign out/i }),
     ).toBeInTheDocument();

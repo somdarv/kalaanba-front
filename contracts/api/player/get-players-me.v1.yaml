@@ -1,0 +1,237 @@
+openapi: 3.1.0
+info:
+  title: "Player & Affiliation — My player record"
+  version: "1.0.0"
+  description: |
+    The signed-in user's own player record, as the `/me` surface reads it.
+
+    Exists because nothing in the product could previously answer "does this
+    account already have a player card?". `POST /players` is one-per-user and
+    idempotent, so the app could create one but never read one back, which is
+    why the account menu still sent a player who HAS a card into the setup
+    wizard. This closes the item deferred from WP-20260702-player-profile.
+
+    **Ownership.** Player & Affiliation §6 owns the profile fields; §13 owns the
+    verified-stat gate; §14 owns card confidence. Nothing here is computed by
+    the client (Constitution Law 3).
+
+    **The stat block is gated, not optional.** §13 is explicit that official
+    player stats come only from confirmed match records, and that claimed stats
+    never appear in profile totals. Until Match/Fixture ships, `record` is
+    returned with every counter at 0 and `confirmed_matches: 0`. It is NOT
+    omitted: a client that has to distinguish "no stats yet" from "field
+    missing" will guess, and guessing is how a zero becomes a claim.
+
+    **Confidence is a label, not a score.** §14 keeps numeric ratings out of V1.
+    `confidence` is a stable internal key resolved against
+    `player.card_confidence.tiers`; the display label comes from
+    `GET /players/meta` (ADR-0007). Logic must never branch on the label.
+
+    404 rather than an empty 200 when the user has no player profile. The two
+    states drive different surfaces, and an envelope with a null payload makes
+    every caller write the same null check.
+
+paths:
+  /api/v1/players/me:
+    get:
+      summary: The signed-in user's player record
+      operationId: getMyPlayer
+      tags: [player]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: header
+          name: Accept-Language
+          required: false
+          schema: { type: string }
+          description: |
+            Reserved. This endpoint returns internal keys only; labels are
+            resolved from `GET /players/meta` (Law 4). Present so a future
+            label-bearing field does not need a new major.
+      responses:
+        "200":
+          description: The player record belonging to the authenticated user.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/MyPlayer"
+                  meta:
+                    $ref: "#/components/schemas/ResponseMeta"
+        "401":
+          description: No session.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "404":
+          description: |
+            Authenticated, but this account has no player profile. Expected and
+            common: post-signup users are `role=user` and player-hood is opt-in
+            (§22). The `/me` surface renders its no-card state on this.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+              examples:
+                noProfile:
+                  value:
+                    error:
+                      code: "player.profile_not_found"
+                      message: "No player profile for this account."
+                      details: {}
+                      request_id: "01J9X..."
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+
+  schemas:
+    MyPlayer:
+      type: object
+      required:
+        - id
+        - user_id
+        - first_name
+        - last_name
+        - stage_name
+        - availability_status
+        - market_status
+        - claim_status
+        - confidence
+        - record
+      properties:
+        id: { type: string, format: uuid }
+        user_id: { type: string, format: uuid }
+        first_name: { type: string }
+        last_name: { type: string }
+        stage_name:
+          type: string
+          description: The jersey / football name. §3 — carried prominently on the card.
+        preferred_number:
+          type: [integer, "null"]
+          description: Bounds are config (`player.profile.*`), not fixed here.
+        primary_position:
+          type: [string, "null"]
+          description: Internal key. Label from `/players/meta` (Law 4).
+        availability_status:
+          type: string
+          description: |
+            Internal key. §12 — feeds the club availability summary, which is
+            why `/me` exposes it as a first-class control rather than a form row.
+        market_status:
+          type: string
+          description: Internal key, e.g. `free_agent`. Backend-owned (Law 3).
+        claim_status:
+          type: string
+          description: Internal key. Ghost records are never returned here (§5).
+        headshot_url:
+          type: [string, "null"]
+          description: |
+            Player media, NOT the account `avatar_url` (§7, resolved
+            2026-07-02). Signed URL where the driver is private.
+        archived_at:
+          type: [string, "null"]
+          format: date-time
+          description: Archive-don't-delete (Constitution Law 13).
+        confidence:
+          $ref: "#/components/schemas/CardConfidence"
+        record:
+          $ref: "#/components/schemas/VerifiedRecord"
+
+    CardConfidence:
+      type: object
+      required: [tier, confirmed_matches]
+      description: |
+        §14 — card confidence in place of a numeric rating for V1.
+      properties:
+        tier:
+          type: string
+          description: |
+            Stable internal key from `player.card_confidence.tiers`
+            (`provisional` | `growing` | `verified` at the shipped default).
+            Never branch on a label.
+          examples: ["provisional"]
+        confirmed_matches:
+          type: integer
+          minimum: 0
+          description: |
+            Count of matches with `result_confirmed = true` AND Trust clearance
+            recorded (Constitution Law 7). 0 until Match/Fixture ships.
+        next_tier:
+          type: [string, "null"]
+          description: Internal key of the tier above, or null at the top.
+        matches_to_next_tier:
+          type: [integer, "null"]
+          minimum: 0
+          description: |
+            Backend-computed from the config thresholds. The client must not
+            derive this — the thresholds are effective-dated config.
+
+    VerifiedRecord:
+      type: object
+      description: |
+        §13 — verified stats only. Every counter here is sourced from confirmed
+        match records. Provisional or claimed figures never appear.
+      required:
+        - appearances
+        - goals
+        - assists
+        - minutes
+        - yellow_cards
+        - red_cards
+      properties:
+        appearances: { type: integer, minimum: 0 }
+        goals: { type: integer, minimum: 0 }
+        assists: { type: integer, minimum: 0 }
+        minutes: { type: integer, minimum: 0 }
+        yellow_cards: { type: integer, minimum: 0 }
+        red_cards: { type: integer, minimum: 0 }
+        # Named by §13 alongside the six above, and additive rather than
+        # required: a client on the current build must keep working against an
+        # API that predates them (§7 — adding fields is non-breaking). The
+        # player card renders each only when it is present.
+        starts:
+          type: integer
+          minimum: 0
+          description: Confirmed appearances that began in the starting eleven.
+        clean_sheets:
+          type: integer
+          minimum: 0
+          description: |
+            Confirmed matches the player finished without conceding. §13 lists
+            this among the verified set. Meaningful for goalkeepers and
+            defenders and reported for everyone: which positions FEATURE it is
+            a display decision carried by `player.card.featured_stats`, not a
+            property of the counter.
+        player_of_the_match:
+          type: integer
+          minimum: 0
+          description: |
+            Count of confirmed matches where this player was recorded as player
+            of the match. A verified award, not a Fan Buzz signal (Law 8/9).
+
+    ResponseMeta:
+      type: object
+      required: [request_id, api_version]
+      properties:
+        request_id: { type: string }
+        api_version: { type: string, const: "v1" }
+
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message, request_id]
+          properties:
+            code:
+              type: string
+              description: Stable `engine.specific_reason` string.
+            message: { type: string }
+            details: { type: object }
+            request_id: { type: string }

@@ -158,6 +158,34 @@ components:
             `player.market_status.labels`.
           items: { $ref: "#/components/schemas/LabelledOption" }
 
+        card_featured_stats:
+          type: object
+          description: |
+            Which three verified counters the player card LEADS with, keyed by
+            primary-position key. From `player.card.featured_stats`.
+
+            Billing, not visibility: every counter the record holds still
+            appears on the card, in the secondary strip. This decides which
+            three get display scale.
+
+            Additive and therefore absent from `required` — a client on an
+            older build keeps working and falls back to the three §15 names
+            (§7, adding fields is non-breaking).
+
+            Keys are members of `player.positions`. Values are VerifiedRecord
+            field names, exactly three per position. `yellow_cards` and
+            `red_cards` never appear: they are reported as one disciplinary
+            line, and a card that leads with a player's bookings is not a card
+            anyone shares.
+          additionalProperties:
+            type: array
+            minItems: 3
+            maxItems: 3
+            items:
+              type: string
+              enum:
+                [appearances, starts, goals, assists, minutes, clean_sheets]
+
         preferred_number:
           type: object
           additionalProperties: false

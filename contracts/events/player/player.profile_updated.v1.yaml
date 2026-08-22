@@ -1,0 +1,71 @@
+event_name: player.profile_updated
+schema_version: 1
+engine: player-affiliation
+description: |
+  Emitted when a player edits their own profile (Player & Affiliation engine
+  doc §6, §12, §17). Covers both the one-tap availability control and the
+  details sheet on `/me`, because both are the same write.
+
+  The consumer this event exists for is **Club**. §12 feeds a player's
+  availability into the club readiness summary ("16 of 21 available"), and that
+  is a cross-engine effect, so it travels here rather than through a write into
+  a club's tables (Constitution Law 1) or a poll of player rows (Law 6). Club
+  recomputes its own readiness from its own squad; this engine only reports that
+  a player moved.
+
+  Also consumed by Analytics (profile-completeness funnel) and Fan Buzz /
+  Discovery (a player becoming available again may resurface in discovery).
+
+  **No RP, no stats, no standings, no awards.** Nothing here is verified
+  football; renaming yourself is not an achievement (§13, §14).
+
+  `previous_availability_status` is carried so a consumer can act on the
+  TRANSITION rather than the destination — "became available" is a different
+  signal from "is available", and a consumer that only receives the new value
+  has to keep its own copy of the old one to tell them apart.
+required:
+  - player_id
+  - user_id
+  - stage_name
+  - availability_status
+  - availability_changed
+  - updated_at
+payload:
+  player_id:
+    type: uuid
+  user_id:
+    type: uuid
+    description: The Identity account that owns this player (cross-engine link).
+  stage_name:
+    type: string
+    description: Current value after the edit, not a diff.
+  primary_position:
+    type: string
+    description: Stable internal position key, or null.
+  availability_status:
+    type: string
+    description: |
+      Stable internal key after the edit. available | limited | unavailable |
+      unknown. Labels are config (Law 4) and never appear in a payload.
+  availability_changed:
+    type: boolean
+    description: |
+      True when this edit moved availability. Lets a §12 consumer filter on the
+      one field it cares about without diffing a payload it was never sent.
+  previous_availability_status:
+    type: string
+    description: |
+      The value before the edit, or null when availability did not change.
+  updated_at:
+    type: string
+    format: date-time
+idempotency: |
+  event_id is a fresh UUIDv7 per emission, NOT the player_id: unlike creation,
+  a profile is edited many times and reusing the player id would collapse every
+  edit into one event. The write itself is deduped upstream by the
+  Idempotency-Key header on PATCH (Constitution Law 14, 24h Redis TTL), so a
+  retried request cannot produce a second event.
+
+  Consumers dedupe on (event_id, listener_name) as usual, and must be safe to
+  replay: recomputing a club readiness summary from the current squad is
+  naturally idempotent, incrementing a counter is not.

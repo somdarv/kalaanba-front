@@ -1,0 +1,35 @@
+key: player.card_confidence.tiers
+engine: player-affiliation
+scope: platform
+value_type: json
+default: '[{"key":"provisional","min_confirmed_matches":0},{"key":"growing","min_confirmed_matches":3},{"key":"verified","min_confirmed_matches":10}]'
+approval_level: medium
+description: |
+  The card-confidence ladder (Player & Affiliation engine doc §14). Each entry
+  is a stable internal key plus the number of CONFIRMED matches at which a
+  player's card reaches that tier. Ordered ascending by threshold; the first
+  entry must sit at 0 so every claimed player has a tier from the moment the
+  profile exists.
+
+  Exists because §14 rules a numeric player rating out of V1 — ratings go unfair
+  without minutes, role, opposition strength and defensive context — and puts
+  confidence labels in its place. A brand-new card therefore reads "Provisional"
+  rather than showing a grid of zeros, which states the truth (nothing is
+  confirmed yet) instead of implying a record of nothing.
+
+  "Confirmed" means the Match/Fixture engine has set `result_confirmed = true`
+  AND Trust clearance is recorded (Constitution Law 7). Provisional or claimed
+  appearances never advance a tier (§13).
+
+  The tier is resolved BACKEND-SIDE and served as an internal key on
+  `GET /players/me`. The client never compares a count to a threshold: these
+  values are effective-dated, so a historical card must resolve against the
+  thresholds in force at the time, and no client can know those.
+
+  Display labels are a separate key so they stay translatable and renameable
+  without touching this ladder (Constitution Law 4) — see
+  `player.card_confidence.labels`. Renaming "Verified" is a label edit;
+  moving 10 to 15 is an edit here.
+
+  Medium approval: changing a threshold re-tiers every existing card at once,
+  which is visible to every player, but it mints nothing and reverses cleanly.
