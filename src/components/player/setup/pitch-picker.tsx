@@ -5,11 +5,7 @@ import { useMemo, useRef, type KeyboardEvent } from "react";
 import type { PositionOption } from "@/lib/api/player";
 import { cn } from "@/lib/cn";
 
-import {
-  PITCH_LAYOUT,
-  PITCH_VIEWBOX,
-  PITCH_ZONE_LABELS,
-} from "./pitch-layout";
+import { PITCH_LAYOUT, PITCH_VIEWBOX, PITCH_ZONE_LABELS } from "./pitch-layout";
 
 /**
  * Position picker rendered as a real pitch.
@@ -103,7 +99,7 @@ export function PitchPicker({
     <fieldset className="min-w-0">
       <legend className="sr-only">{legend}</legend>
 
-      <div className="overflow-hidden rounded-card shadow-(--shadow-md)">
+      <div className="rounded-card overflow-hidden shadow-(--shadow-md)">
         <svg
           viewBox={`0 0 ${PITCH_VIEWBOX.width} ${PITCH_VIEWBOX.height}`}
           className="block w-full touch-manipulation select-none"
@@ -149,19 +145,37 @@ export function PitchPicker({
             <rect x="28" y="20" width="404" height="560" rx="2" />
             <line x1="28" y1="300" x2="432" y2="300" />
             <circle cx="230" cy="300" r="60" />
-            <circle cx="230" cy="300" r="3" stroke="none" style={{ fill: "var(--pitch-line)" }} />
+            <circle
+              cx="230"
+              cy="300"
+              r="3"
+              stroke="none"
+              style={{ fill: "var(--pitch-line)" }}
+            />
 
             {/* Attacking end */}
             <rect x="103" y="20" width="254" height="90" />
             <rect x="163" y="20" width="134" height="36" />
-            <circle cx="230" cy="76" r="2.5" stroke="none" style={{ fill: "var(--pitch-line)" }} />
+            <circle
+              cx="230"
+              cy="76"
+              r="2.5"
+              stroke="none"
+              style={{ fill: "var(--pitch-line)" }}
+            />
             <path d="M 174 110 A 60 60 0 0 0 286 110" />
             <rect x="183" y="10" width="94" height="10" />
 
             {/* Defending end */}
             <rect x="103" y="490" width="254" height="90" />
             <rect x="163" y="544" width="134" height="36" />
-            <circle cx="230" cy="524" r="2.5" stroke="none" style={{ fill: "var(--pitch-line)" }} />
+            <circle
+              cx="230"
+              cy="524"
+              r="2.5"
+              stroke="none"
+              style={{ fill: "var(--pitch-line)" }}
+            />
             <path d="M 174 490 A 60 60 0 0 1 286 490" />
             <rect x="183" y="580" width="94" height="10" />
 
@@ -223,11 +237,16 @@ export function PitchPicker({
                 >
                   {/* Touch target. Invisible, 48px across in pitch units, so a
                       thumb never has to find a 38px dot (§9.1). */}
-                  <circle cx={option.x} cy={option.y} r={26} fill="transparent" />
+                  <circle
+                    cx={option.x}
+                    cy={option.y}
+                    r={26}
+                    fill="transparent"
+                  />
 
                   {/* Focus / selection ring */}
                   <circle
-                    className="ring transition-opacity duration-quick"
+                    className="duration-quick ring transition-opacity"
                     cx={option.x}
                     cy={option.y}
                     r={MARKER_RADIUS_SELECTED + 6}
@@ -248,7 +267,7 @@ export function PitchPicker({
                     fillOpacity={isSelected ? 1 : 0.18}
                     strokeOpacity={isSelected ? 0 : 0.45}
                     strokeWidth="1.5"
-                    className="transition-all duration-quick"
+                    className="duration-quick transition-all"
                     style={{
                       fill: isSelected ? "var(--primary)" : "var(--on-pitch)",
                       stroke: "var(--on-pitch)",
@@ -281,20 +300,20 @@ export function PitchPicker({
             part of the pitch: it is the answer the pitch produced, and on green
             it read as a stray label lying on the grass. Out here it reads as
             the confirmation of a choice, which is what it is. */}
-        <div className="min-h-18 border-t border-border bg-surface-elev px-4 py-3 text-center">
+        <div className="border-border bg-surface-elev min-h-18 border-t px-4 py-3 text-center">
           {selected ? (
             <>
-              <p className="font-display text-xl leading-tight font-bold tracking-tight text-fg">
+              <p className="font-display text-fg text-xl leading-tight font-bold tracking-tight">
                 {selected.label}
               </p>
               {selected.description ? (
-                <p className="mt-1 text-sm leading-snug text-fg-muted">
+                <p className="text-fg-muted mt-1 text-sm leading-snug">
                   {selected.description}
                 </p>
               ) : null}
             </>
           ) : (
-            <p className="text-sm text-fg-muted">
+            <p className="text-fg-muted text-sm">
               Tap the spot where you play.
             </p>
           )}
@@ -308,11 +327,11 @@ export function PitchPicker({
             <label
               key={option.key}
               className={cn(
-                "cursor-pointer rounded-pill border px-4 py-2.5 text-sm font-medium",
+                "rounded-pill cursor-pointer border px-4 py-2.5 text-sm font-medium",
                 "has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2",
                 "has-[:focus-visible]:outline-focus-ring",
                 option.key === value
-                  ? "border-transparent bg-primary text-on-primary"
+                  ? "bg-primary text-on-primary border-transparent"
                   : "border-border bg-surface-elev text-fg hover:border-border-strong",
               )}
             >

@@ -61,7 +61,13 @@ export function createApiClient(options: ApiClientOptions) {
       ...opts.headers,
     };
 
-    if (opts.body !== undefined) {
+    // `FormData` sets its own `Content-Type`, and it has to: the header must
+    // carry the multipart boundary the browser generated. Naming the type here
+    // would omit the boundary and the server would read an empty upload.
+    const isMultipart =
+      typeof FormData !== "undefined" && opts.body instanceof FormData;
+
+    if (opts.body !== undefined && !isMultipart) {
       headers["Content-Type"] = "application/json";
     }
 
@@ -76,7 +82,11 @@ export function createApiClient(options: ApiClientOptions) {
     const response = await fetchImpl(url, {
       method,
       headers,
-      body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined,
+      body: isMultipart
+        ? (opts.body as FormData)
+        : opts.body !== undefined
+          ? JSON.stringify(opts.body)
+          : undefined,
       signal: opts.signal,
     });
 
@@ -87,13 +97,7 @@ export function createApiClient(options: ApiClientOptions) {
       const parsed = ApiErrorEnvelopeSchema.safeParse(raw);
       if (parsed.success) {
         const { code, message, details, request_id } = parsed.data.error;
-        throw new ApiError(
-          response.status,
-          code,
-          message,
-          details,
-          request_id,
-        );
+        throw new ApiError(response.status, code, message, details, request_id);
       }
       throw new ApiError(
         response.status,

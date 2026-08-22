@@ -61,7 +61,7 @@ export function StageNameStep({ wizard }: StepProps) {
                the loudest colour on the screen on a convenience control and
                made a shortcut outrank the answer the player typed. */
             <div className="mt-5 flex flex-wrap items-center gap-2">
-              <span className="text-sm text-fg-muted">Or use</span>
+              <span className="text-fg-muted text-sm">Or use</span>
               {suggestions.map((suggestion) => (
                 <ChipToggle
                   key={suggestion}

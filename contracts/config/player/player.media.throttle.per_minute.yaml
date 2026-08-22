@@ -1,0 +1,25 @@
+key: player.media.throttle.per_minute
+engine: player-affiliation
+scope: platform
+value_type: integer
+default: 10
+approval_level: low
+description: |
+  Player image uploads allowed per minute, per ACTING USER.
+
+  Keyed by user rather than by IP, unlike the public read throttles. A shared
+  connection is the ordinary case here, not the edge one: a whole club on one
+  wifi, or a row of players at an internet cafe, all share an address. An IP key
+  would let one player's retries lock out everyone sitting beside them.
+
+  Ten is generous for a human and tight for a script. A player changing their
+  photo does it once, or three times if they are fussy about the crop; nobody
+  legitimately uploads ten images in a minute, and the ceiling is set where it
+  is so a bad connection retrying a large file does not hit it.
+
+  Falls back to an IP key only for an unauthenticated caller, which the route's
+  `auth:sanctum` middleware already refuses. That branch exists so the limiter
+  is total, not because it is reachable.
+
+  Low approval: an operational limit that invents no football and gates nothing
+  downstream.

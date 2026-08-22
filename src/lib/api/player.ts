@@ -108,6 +108,49 @@ export const UpdatePlayerInputSchema = z.object({
 export type UpdatePlayerInput = z.infer<typeof UpdatePlayerInputSchema>;
 
 /**
+ * The §7 role an uploaded image plays. Stable internal keys, never display
+ * strings (Law 4).
+ *
+ *   headshot   Tight face crop. Small avatars, lineups, team sheets, the round
+ *              photo on the player card.
+ *   half_body  Waist-up. The card's portrait slot and the profile hero.
+ *   full_body  Standing. Special cards, spotlights, the share graphic.
+ *
+ * Only `headshot` is written back to `headshot_url` today. The other two are
+ * typed now so the model does not change when the card gains its portrait slot
+ * — §7 is explicit that "the data model should support all types from the
+ * start".
+ */
+export const PLAYER_MEDIA_KINDS = [
+  "headshot",
+  "half_body",
+  "full_body",
+] as const;
+
+export type PlayerMediaKind = (typeof PLAYER_MEDIA_KINDS)[number];
+
+/**
+ * The result of an upload. Contract:
+ * contracts/api/player/post-players-id-media.v1.yaml.
+ *
+ * `moderation_status` is a stable key from Moderation & Safety, not a boolean:
+ * player media is public content the moment it lands on a card, and an image
+ * on hold resolves for its owner while a stranger does not see it (Law 10).
+ * The card shows the owner their own upload either way — this field is what a
+ * PUBLIC surface must consult before serving it, and the public card route is
+ * still fenced off.
+ */
+export const PlayerMediaSchema = z.object({
+  url: z.string().url(),
+  kind: z.enum(PLAYER_MEDIA_KINDS),
+  width: z.number().int().positive().optional(),
+  height: z.number().int().positive().optional(),
+  moderation_status: z.string(),
+});
+
+export type PlayerMedia = z.infer<typeof PlayerMediaSchema>;
+
+/**
  * Transport shape of the create payload. Deliberately structural: it types the
  * request, it does not police it. Bounds and allowed keys are config (Law 2/4),
  * so the form's validation schema is *derived* from `PlayerMeta` at runtime
@@ -170,7 +213,7 @@ export const PlayerMetaSchema = z.object({
    */
   card_confidence: z.array(LabelledOptionSchema).optional(),
   /**
-   * Which three counters the card leads with, per position key
+   * The ORDER the card bills counters in, per position key
    * (`player.card.featured_stats`).
    *
    * A centre-back is not judged on goals and a keeper is not judged on
@@ -179,10 +222,34 @@ export const PlayerMetaSchema = z.object({
    * makes it configuration rather than code (Law 2) — an admin adding
    * `clean_sheets` to wing-backs must not need a deploy.
    *
-   * Optional because it is contract-first, like `card_confidence`. Absent, the
-   * card falls back to the three §15 names by name.
+   * A priority list rather than a trio, because the card must never lead with
+   * a zero: the top row takes the first three the player has something in, and
+   * the rest fall to the strip below. See `player-card-stats.ts`.
+   *
+   * Optional because it is contract-first, like `card_confidence`. Absent, a
+   * default order applies.
    */
   card_featured_stats: z.record(z.string(), z.array(z.string())).optional(),
+  /**
+   * Display names for the card's stat keys (`player.card.stat_labels`), in the
+   * two lengths the card sets them at: `label` for the strip, `short` for the
+   * 10px lead row where "Clean sheets" does not fit and "CLN SHTS" does.
+   *
+   * Config rather than code for the same reason position abbreviations are
+   * (Law 4): "Clean sheets" shortens one way in English and another in
+   * Dagbani, and no client-side rule gets that right.
+   *
+   * Contract-first and optional. Absent, the card's own defaults apply.
+   */
+  card_stat_labels: z
+    .record(
+      z.string(),
+      z.object({
+        label: z.string().optional(),
+        short: z.string().optional(),
+      }),
+    )
+    .optional(),
   preferred_number: z.object({
     min: z.number().int(),
     max: z.number().int(),
@@ -203,6 +270,21 @@ export function labelFor(
 ): string | null {
   if (!key) return null;
   return options.find((option) => option.key === key)?.label ?? key;
+}
+
+/**
+ * Resolve a position's short form, falling back to its label, then to the raw
+ * key — the chain `player.positions.abbreviations.yaml` specifies, in one place
+ * so the pitch marker and the card cannot drift apart on it. A slot sized for
+ * two characters must never render blank.
+ */
+export function abbreviationFor(
+  options: ReadonlyArray<PositionOption>,
+  key: string | null | undefined,
+): string | null {
+  if (!key) return null;
+  const option = options.find((candidate) => candidate.key === key);
+  return option?.abbreviation ?? option?.label ?? key;
 }
 
 // ─── Calls ───────────────────────────────────────────────────────────
@@ -289,5 +371,67 @@ export async function updatePlayer(
     method: "PATCH",
     body: input,
     schema: MyPlayerSchema,
+  });
+}
+
+/**
+ * Upload one player image and get back a resolvable URL.
+ *
+ * Two steps, not one: this call stores the file, the caller then PATCHes
+ * `headshot_url`. Keeping them apart is what lets the upload be retried on a
+ * dropped connection without the profile write being retried with it, which on
+ * a Ghanaian mobile network is the ordinary case rather than the edge one.
+ *
+ * **Why this goes through the API and not straight to object storage.** A
+ * browser holding a bucket credential could write whatever it liked, and it
+ * would skip every gate the contract names: the MIME allow-list and size
+ * ceiling from `player.media.*`, the per-player throttle, the audit entry
+ * (Law 5), and the `player.media_uploaded` event Moderation & Safety consumes
+ * before an image is served on a public surface (Law 10). Player photos are
+ * public content. The gate is the point.
+ *
+ * Seeded mode keeps the file in the browser, because a demo dataset must not
+ * put a real person's face in a real bucket.
+ *
+ * Contract: contracts/api/player/post-players-id-media.v1.yaml.
+ */
+export async function uploadPlayerMedia(
+  playerId: string,
+  file: File | Blob,
+  kind: PlayerMediaKind = "headshot",
+): Promise<PlayerMedia> {
+  if (IS_SEED_ENABLED) {
+    return {
+      url: await readAsDataUrl(file),
+      kind,
+      moderation_status: "cleared",
+    };
+  }
+
+  const form = new FormData();
+  form.append("file", file, fileNameFor(file, kind));
+  form.append("kind", kind);
+
+  return getApiClient().request({
+    path: `/players/${playerId}/media`,
+    method: "POST",
+    body: form,
+    schema: PlayerMediaSchema,
+  });
+}
+
+/** `Blob` has no name; multipart needs one and the server reads the extension. */
+function fileNameFor(file: File | Blob, kind: PlayerMediaKind): string {
+  if (file instanceof File && file.name) return file.name;
+  const extension = file.type === "image/png" ? "png" : "jpg";
+  return `${kind}.${extension}`;
+}
+
+function readAsDataUrl(file: File | Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(reader.error ?? new Error("Read failed"));
+    reader.onload = () => resolve(String(reader.result));
+    reader.readAsDataURL(file);
   });
 }

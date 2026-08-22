@@ -1,7 +1,11 @@
 "use client";
 
 import { Chip, Progress } from "@/components/ui";
-import { labelFor, type CardConfidence, type PlayerMeta } from "@/lib/api/player";
+import {
+  labelFor,
+  type CardConfidence,
+  type PlayerMeta,
+} from "@/lib/api/player";
 
 import { MeSection } from "./me-section";
 
@@ -37,8 +41,7 @@ export function CardConfidenceBlock({
   meta,
 }: CardConfidenceBlockProps) {
   const { tier, confirmed_matches, matches_to_next_tier } = confidence;
-  const tierLabel =
-    labelFor(meta.card_confidence ?? [], tier) ?? tier;
+  const tierLabel = labelFor(meta.card_confidence ?? [], tier) ?? tier;
 
   const toNext = matches_to_next_tier ?? null;
   const hasNext = toNext !== null && toNext > 0;
@@ -59,7 +62,7 @@ export function CardConfidenceBlock({
         </Chip>
       }
     >
-      <p className="text-sm text-fg-muted">
+      <p className="text-fg-muted text-sm">
         {confirmed_matches === 0
           ? "Your card gets stronger with every match we confirm."
           : `${confirmed_matches} ${confirmed_matches === 1 ? "match" : "matches"} confirmed so far.`}
@@ -71,7 +74,7 @@ export function CardConfidenceBlock({
             value={percent}
             aria-label={`Progress to the next card level, ${percent} percent`}
           />
-          <p className="text-xs text-fg-subtle">
+          <p className="text-fg-subtle text-xs">
             {toNext} more to reach the next level.
           </p>
         </div>

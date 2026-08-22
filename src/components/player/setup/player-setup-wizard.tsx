@@ -108,7 +108,7 @@ export function PlayerSetupWizard({
         footer={
           <div className="flex flex-col gap-2">
             {wizard.submitError ? (
-              <p role="alert" className="text-center text-sm text-danger-ink">
+              <p role="alert" className="text-danger-ink text-center text-sm">
                 {wizard.submitError}
               </p>
             ) : null}

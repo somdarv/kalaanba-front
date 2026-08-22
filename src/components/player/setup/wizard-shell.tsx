@@ -60,8 +60,8 @@ export function WizardShell({
   footer,
 }: WizardShellProps) {
   return (
-    <div className="flex min-h-dvh flex-col bg-bg">
-      <header className="sticky top-0 z-20 bg-bg/95 backdrop-blur-md">
+    <div className="bg-bg flex min-h-dvh flex-col">
+      <header className="bg-bg/95 sticky top-0 z-20 backdrop-blur-md">
         <div className="relative flex min-h-14 items-center justify-center px-2">
           <IconButton
             className="absolute left-1"
@@ -71,7 +71,7 @@ export function WizardShell({
             icon={<CaretLeft size={20} weight="bold" />}
             onClick={onBack}
           />
-          <p className="text-sm font-medium text-fg-muted select-none">
+          <p className="text-fg-muted text-sm font-medium select-none">
             {title}
           </p>
         </div>
@@ -84,7 +84,9 @@ export function WizardShell({
         />
       </header>
 
-      <main className={`flex-1 overscroll-contain ${flowGutter} pt-12 pb-6 sm:pt-14`}>
+      <main
+        className={`flex-1 overscroll-contain ${flowGutter} pt-12 pb-6 sm:pt-14`}
+      >
         <div className={flowColumn}>
           <StepTransition stepKey={stepKey} direction={direction}>
             {children}

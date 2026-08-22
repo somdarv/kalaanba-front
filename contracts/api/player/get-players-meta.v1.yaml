@@ -161,30 +161,69 @@ components:
         card_featured_stats:
           type: object
           description: |
-            Which three verified counters the player card LEADS with, keyed by
+            The ORDER the player card bills verified counters in, keyed by
             primary-position key. From `player.card.featured_stats`.
 
-            Billing, not visibility: every counter the record holds still
-            appears on the card, in the secondary strip. This decides which
-            three get display scale.
+            The card's lead row takes the first three the player has a non-zero
+            figure in; the rest fall to the strip underneath. Billing, not
+            visibility: every counter the record holds still appears on the
+            card.
+
+            A priority order rather than a fixed trio, because the card must
+            never lead with a zero. Three headline slots showing "0" is the
+            same category error §13 exists to prevent, one level down: at that
+            size a zero reads as a verdict on the player rather than as a
+            season that has not started. Changed 2026-08-22; see the config key
+            for the full rationale.
 
             Additive and therefore absent from `required` — a client on an
-            older build keeps working and falls back to the three §15 names
-            (§7, adding fields is non-breaking).
+            older build keeps working and falls back to its own default order
+            (§7, adding fields is non-breaking). A client reading a value that
+            predates the change still works: three keys is a valid priority
+            order, it simply has less to fall back to.
 
             Keys are members of `player.positions`. Values are VerifiedRecord
-            field names, exactly three per position. `yellow_cards` and
-            `red_cards` never appear: they are reported as one disciplinary
-            line, and a card that leads with a player's bookings is not a card
-            anyone shares.
+            field names, at least three per position and ideally all six.
+            `yellow_cards` and `red_cards` never appear: they are reported as
+            one disciplinary line, and a card that leads with a player's
+            bookings is not a card anyone shares.
           additionalProperties:
             type: array
             minItems: 3
-            maxItems: 3
+            maxItems: 6
+            uniqueItems: true
             items:
               type: string
               enum:
                 [appearances, starts, goals, assists, minutes, clean_sheets]
+
+        card_stat_labels:
+          type: object
+          description: |
+            The words the card puts under its numbers, per counter key. From
+            `player.card.stat_labels`.
+
+            Two lengths, because the card sets each name in two places: `short`
+            for the 10px lead row, where "Clean sheets" wraps and "CLN SHTS"
+            does not, and `label` for the strip below, where there is room to
+            spell it out.
+
+            Display strings, never keys (Law 4). Additive and absent from
+            `required`; a client falls back to its own defaults per FIELD, so
+            an entry supplying `label` and omitting `short` still renders a
+            lead row.
+          additionalProperties:
+            type: object
+            additionalProperties: false
+            properties:
+              label:
+                type: string
+                description: Sentence case, for the strip. "Clean sheets".
+              short:
+                type: string
+                description: |
+                  Upper case, for the lead column. "CLN SHTS". Roughly eight
+                  characters; longer is accepted and will not fit.
 
         preferred_number:
           type: object

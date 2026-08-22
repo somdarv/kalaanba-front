@@ -16,7 +16,8 @@ import { cn } from "@/lib/cn";
  * border resolves, and `aria-pressed` carries it to assistive tech.
  */
 
-const SELECTED = "bg-primary text-on-primary border-transparent shadow-[var(--shadow-sm)]";
+const SELECTED =
+  "bg-primary text-on-primary border-transparent shadow-[var(--shadow-sm)]";
 const UNSELECTED = cn(
   "bg-surface-elev text-fg border-border",
   "hover:border-border-strong hover:bg-[color-mix(in_oklab,transparent,var(--fg)_6%)]",
@@ -37,7 +38,7 @@ export function NumberTile({ value, selected, onSelect }: NumberTileProps) {
       onClick={onSelect}
       className={cn(
         pressableBase,
-        "aspect-square w-full rounded-control border",
+        "rounded-control aspect-square w-full border",
         selected ? SELECTED : UNSELECTED,
       )}
     >
@@ -69,7 +70,7 @@ export function TextTile({
       onClick={onSelect}
       className={cn(
         pressableBase,
-        "w-full rounded-control border px-3 text-sm font-semibold",
+        "rounded-control w-full border px-3 text-sm font-semibold",
         selected ? SELECTED : UNSELECTED,
         className,
       )}
@@ -104,7 +105,7 @@ export function ChoiceCard({
       onClick={onSelect}
       className={cn(
         pressableBase,
-        "w-full flex-col items-start gap-1 rounded-card border px-4 py-3.5 text-left",
+        "rounded-card w-full flex-col items-start gap-1 border px-4 py-3.5 text-left",
         selected ? SELECTED : UNSELECTED,
       )}
     >

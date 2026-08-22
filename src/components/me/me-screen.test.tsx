@@ -38,8 +38,16 @@ const META: PlayerMeta = {
     { key: "goalkeeper", label: "Goalkeeper" },
   ],
   availability: [
-    { key: "available", label: "Available", description: "You can play any week." },
-    { key: "weekends_only", label: "Weekends only", description: "Saturdays and Sundays." },
+    {
+      key: "available",
+      label: "Available",
+      description: "You can play any week.",
+    },
+    {
+      key: "weekends_only",
+      label: "Weekends only",
+      description: "Saturdays and Sundays.",
+    },
   ],
   availability_default: "available",
   market_statuses: [{ key: "free_agent", label: "Free agent" }],
@@ -77,6 +85,7 @@ const PLAYER: MyPlayer = {
 };
 
 const mutate = vi.fn();
+const uploadPhoto = vi.fn();
 
 type PlayerQuery = ReturnType<typeof usePlayer.useMyPlayer>;
 
@@ -118,6 +127,12 @@ function stub({
     isPending: false,
   } as unknown as ReturnType<typeof usePlayer.useUpdatePlayer>);
 
+  vi.mocked(usePlayer.useUploadPlayerPhoto).mockReturnValue({
+    mutate: uploadPhoto,
+    mutateAsync: vi.fn().mockResolvedValue(PLAYER),
+    isPending: false,
+  } as unknown as ReturnType<typeof usePlayer.useUploadPlayerPhoto>);
+
   vi.mocked(useClubs.useMyClubs).mockReturnValue({
     data: [],
     isLoading: false,
@@ -144,7 +159,9 @@ describe("<MeScreen> — the /me surface (WP-20260821)", () => {
   });
 
   it("sends a signed-out visitor to sign in", () => {
-    stub({ user: null as unknown as ReturnType<typeof useAuth.useUser>["data"] });
+    stub({
+      user: null as unknown as ReturnType<typeof useAuth.useUser>["data"],
+    });
     renderMe();
     expect(replace).toHaveBeenCalledWith("/auth/login");
   });
@@ -168,9 +185,11 @@ describe("<MeScreen> — the /me surface (WP-20260821)", () => {
     // tall enough to carry the full §13 set, so a block repeating the same
     // counters was saying one thing twice on one screen.
     expect(
-      screen.getByText(/stats show up when a match you played in is confirmed/i),
+      screen.getByText(
+        /stats show up when a match you played in is confirmed/i,
+      ),
     ).toBeInTheDocument();
-    expect(screen.queryByText("Games")).not.toBeInTheDocument();
+    expect(screen.queryByText("GAMES")).not.toBeInTheDocument();
     expect(screen.queryByText("Assists")).not.toBeInTheDocument();
   });
 
@@ -210,17 +229,23 @@ describe("<MeScreen> — the /me surface (WP-20260821)", () => {
     });
     renderMe();
 
-    // META ships no `card_featured_stats`, so the lead falls back to the three
-    // §15 names rather than to nothing.
-    expect(screen.getByText("Games")).toBeInTheDocument();
+    // META ships no `card_featured_stats`, so the billing order falls back to
+    // the default rather than to nothing. The lead row is set in the short
+    // register ("GAMES"); the strip below keeps the long one ("Starts").
+    expect(screen.getByText("GAMES")).toBeInTheDocument();
     expect(screen.getByText("12")).toBeInTheDocument();
     // §13's wider set follows underneath rather than being dropped.
-    expect(screen.getByText("Starts")).toBeInTheDocument();
+    expect(screen.getByText("Minutes")).toBeInTheDocument();
     expect(screen.getByText("940")).toBeInTheDocument();
     // One disciplinary line, never two counters.
     expect(screen.getByText("Cards")).toBeInTheDocument();
     expect(screen.getByText("2Y, 1R")).toBeInTheDocument();
     expect(screen.queryByText("Yellows")).not.toBeInTheDocument();
+    // Minutes, starts and the cards line is three items in a two-column strip,
+    // and a half-empty last row is what makes a screenshotted object look
+    // unfinished. The trim comes off the stats, never off the cards line: a red
+    // card is the one figure on this strip a club asks about.
+    expect(screen.queryByText("Starts")).not.toBeInTheDocument();
     // A verified match award, so it may appear as a §15 badge.
     expect(screen.getByText(/player of the match/i)).toBeInTheDocument();
   });
@@ -260,9 +285,10 @@ describe("<MeScreen> — the /me surface (WP-20260821)", () => {
     renderMe();
 
     // A keeper is not judged on goals. Clean sheets take the middle slot from
-    // config, and nothing is hidden by the swap: goals and assists move to the
-    // strip rather than disappearing.
-    expect(screen.getByText("Clean sheets")).toBeInTheDocument();
+    // config, abbreviated because the lead column is a third of a 360px card
+    // wide. Nothing is hidden by the swap: goals and assists move to the strip
+    // rather than disappearing.
+    expect(screen.getByText("CLN SHTS")).toBeInTheDocument();
     expect(screen.getByText("9")).toBeInTheDocument();
     expect(screen.getByText("Goals")).toBeInTheDocument();
     expect(screen.getByText("Assists")).toBeInTheDocument();
@@ -279,20 +305,28 @@ describe("<MeScreen> — the /me surface (WP-20260821)", () => {
     });
     renderMe();
 
-    expect(screen.getByText("Games")).toBeInTheDocument();
+    expect(screen.getByText("GAMES")).toBeInTheDocument();
     expect(screen.queryByText("Starts")).not.toBeInTheDocument();
     expect(screen.queryByText(/player of the match/i)).not.toBeInTheDocument();
   });
 
-  it("names the player's status on the card without a legend (§15)", () => {
+  it("puts the position on the card and keeps status off it (§15)", () => {
     renderMe();
 
-    // Position, market status and availability resolved from the config-served
-    // label maps (ADR-0007), never compiled in. `getAllByText` because the
-    // availability control below the card offers the same words as options.
+    // The position is resolved from the config-served label map (ADR-0007),
+    // never compiled in, and sits inline with the legal name the way a team
+    // sheet writes it.
     expect(screen.getAllByText("Striker").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText("Free agent").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText("Available").length).toBeGreaterThanOrEqual(1);
+
+    // Market status is not on §15's list and is nowhere on this surface.
+    expect(screen.queryByText("Free agent")).not.toBeInTheDocument();
+
+    // Availability IS on the surface, but as the one-tap control below the
+    // card rather than as a word printed on it. A card restating a value the
+    // player can change six inches lower is saying it twice.
+    expect(
+      screen.getByRole("button", { name: "Available" }),
+    ).toBeInTheDocument();
   });
 
   it("gives the shirt number an accessible name, since it renders as a bare numeral", () => {
@@ -327,9 +361,77 @@ describe("<MeScreen> — the /me surface (WP-20260821)", () => {
     expect(find).toHaveAttribute("href", "/clubs/near-you");
   });
 
-  it("keeps share visible but disabled until the public card ships", () => {
+  it("never leads with a zero, and drops the empty counter to the strip", () => {
+    stub({
+      player: {
+        ...PLAYER,
+        // A striker who has not scored yet. Config bills goals second, but a
+        // "0" as one of three headline figures is the §13 category error one
+        // level down: it reads as a verdict rather than as a blank page.
+        record: {
+          ...PLAYER.record,
+          appearances: 6,
+          goals: 0,
+          assists: 2,
+          minutes: 410,
+          starts: 3,
+        },
+      },
+    });
     renderMe();
-    expect(screen.getByRole("button", { name: /share card/i })).toBeDisabled();
-    expect(screen.getByText(/sharing your card is coming next/i)).toBeInTheDocument();
+
+    // Games, assists, minutes lead. Goals is still on the card, below.
+    expect(screen.getByText("GAMES")).toBeInTheDocument();
+    expect(screen.getByText("ASSISTS")).toBeInTheDocument();
+    expect(screen.getByText("MINS")).toBeInTheDocument();
+    expect(screen.queryByText("GOALS")).not.toBeInTheDocument();
+    expect(screen.getByText("Goals")).toBeInTheDocument();
+  });
+
+  it("offers real photo options rather than jumping straight to a file picker", async () => {
+    const user = userEvent.setup();
+    renderMe();
+
+    // The photo is a control only where the viewer owns the card, and no camera
+    // glyph is drawn onto it: the card is the thing a player screenshots, and a
+    // control baked into the artefact travels into every copy as a button
+    // nobody can press.
+    const photo = screen.getByRole("button", { name: /add your photo/i });
+    await user.click(photo);
+
+    // Opening the OS file browser directly handled one of the four things a
+    // player wants. It could not take a photo, and it could not remove one.
+    expect(
+      await screen.findByRole("button", { name: /take a photo/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /choose from your photos/i }),
+    ).toBeInTheDocument();
+
+    // Nothing is uploaded by opening the sheet.
+    expect(uploadPhoto).not.toHaveBeenCalled();
+  });
+
+  it("offers remove only when there is a photo to remove", async () => {
+    const user = userEvent.setup();
+    stub({ player: { ...PLAYER, headshot_url: "https://cdn.test/face.jpg" } });
+    renderMe();
+
+    await user.click(screen.getByRole("button", { name: /change your photo/i }));
+
+    expect(
+      await screen.findByRole("button", { name: /remove photo/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("ships share as a picture, since that is the artefact §15 asks for", () => {
+    renderMe();
+    // A link in a WhatsApp thread is a grey rectangle. The graphic is rendered
+    // client-side from the record the owner already holds, so it needs neither
+    // the public read nor the public route that are still fenced off.
+    expect(screen.getByRole("button", { name: /share card/i })).toBeEnabled();
+    expect(
+      screen.queryByText(/sharing your card is coming next/i),
+    ).not.toBeInTheDocument();
   });
 });

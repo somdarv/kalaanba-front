@@ -30,9 +30,7 @@ export function NumberStep({ wizard, meta }: StepProps) {
   const { min, max, quick_picks: quickPicks } = meta.preferred_number;
   const current = watch("preferred_number");
   const isQuickPick = quickPicks.some((pick) => String(pick) === current);
-  const [showCustom, setShowCustom] = useState(
-    current !== "" && !isQuickPick,
-  );
+  const [showCustom, setShowCustom] = useState(current !== "" && !isQuickPick);
 
   return (
     <>
@@ -101,7 +99,7 @@ export function NumberStep({ wizard, meta }: StepProps) {
               />
 
               {errors.preferred_number?.message ? (
-                <p role="alert" className="text-sm text-danger-ink">
+                <p role="alert" className="text-danger-ink text-sm">
                   {errors.preferred_number.message}
                 </p>
               ) : null}

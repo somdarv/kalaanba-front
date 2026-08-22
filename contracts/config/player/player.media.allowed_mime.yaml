@@ -1,0 +1,28 @@
+key: player.media.allowed_mime
+engine: player-affiliation
+scope: platform
+value_type: json
+default: '["image/jpeg","image/png","image/webp"]'
+approval_level: medium
+description: |
+  The MIME types a player image may be. Everything else is refused with
+  `player.media.mime_disallowed` and a 415.
+
+  The check re-sniffs the file's ACTUAL type server-side with finfo. It does
+  NOT read the client's `Content-Type` header, which is written by whoever is
+  uploading and is therefore worth nothing as a control. This distinction is
+  the whole value of the key.
+
+  Three formats cover every phone in the market. JPEG is what a camera
+  produces, PNG is what a screenshot produces, and WebP is what a modern
+  Android share sheet produces. HEIC is deliberately absent: Safari hands over
+  a JPEG on upload, and accepting HEIC would mean storing images that most
+  Android browsers cannot display.
+
+  Medium approval rather than low, because widening it is a security decision.
+  Player media is public content served to strangers, and every format added
+  here is a new decoder pointed at a file a stranger supplied. `image/svg+xml`
+  in particular must never be added: SVG carries script, and this bucket is
+  served on the same origin family as the product.
+
+  Related: `player.media.max_bytes`, `player.media.throttle.per_minute`.

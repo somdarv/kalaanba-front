@@ -1,117 +1,111 @@
 "use client";
 
 import { StatValue } from "@/components/ui";
-import { IS_SEED_ENABLED } from "@/lib/env";
 import type { VerifiedRecord } from "@/lib/api/player";
 import { cn } from "@/lib/cn";
+
+import {
+  balanceStrip,
+  statLabelFor,
+  stripColumns,
+  type CardStatKey,
+  type CardStatLabel,
+} from "./player-card-stats";
 
 /**
  * The record band on a player card (Player & Affiliation §13).
  *
- * Split out of `player-card.tsx` because the two answer different questions —
- * that file lays out a card, this one decides which numbers a player is judged
- * on — and because together they cleared the 400-line limit.
+ * Split from `player-card.tsx` because the two answer different questions —
+ * that file lays out a card, this one renders a record — and because together
+ * they cleared the 400-line limit. Which counters get billed is a third
+ * question again, and lives in `player-card-stats.ts`.
  *
- * **Three lead, the rest follow.** Which three is a position question: a
- * centre-back is not judged on goals and a keeper is not judged on assists, so
- * one fixed trio misrepresents most of the pitch. The mapping comes from
- * `player.card.featured_stats` through `/players/meta` (Law 2) — this file
- * holds no opinion about which position leads with what, only about how a
- * lead stat looks next to a secondary one.
+ * **Two registers, two rows.** The lead row is three figures at display scale
+ * under 10px uppercase abbreviations: the numbers a player is judged on, read
+ * from across a room. The strip below is a two-column grid at 12px: the numbers
+ * that give the top row context, read only by someone who has already stopped
+ * to look.
  *
- * Nothing is hidden by the choice. Every counter the record carries appears;
- * featuring decides billing, not visibility.
+ * **The strip is justified, the lead row is centred, and the difference is the
+ * point.** Three big figures want to be centred under their labels — they are
+ * a headline. A column of small figures wants label hard left and value hard
+ * right, filling the column, because that is what puts the values in a straight
+ * line the eye can run down. Centring them instead left a ragged seam through
+ * the middle of the block and nothing to scan against.
+ *
+ * **The strip always fills whole rows.** One line, or whole lines, never a line
+ * and a half — an orphaned last item on an object built to be screenshotted
+ * reads as something that failed to load. Two columns, so an odd count sheds
+ * its lowest-priority stat.
  */
 
-export const CARD_STAT_KEYS = [
-  "appearances",
-  "starts",
-  "goals",
-  "assists",
-  "minutes",
-  "clean_sheets",
-] as const;
-
-export type CardStatKey = (typeof CARD_STAT_KEYS)[number];
-
-/**
- * Short enough to sit under a number on a 360px screen, and the words a player
- * already uses. "Games", not "Appearances".
- */
-const STAT_LABELS: Record<CardStatKey, string> = {
-  appearances: "Games",
-  starts: "Starts",
-  goals: "Goals",
-  assists: "Assists",
-  minutes: "Minutes",
-  clean_sheets: "Clean sheets",
-};
-
-/** §15 names these three by name, so they are the fallback when config is silent. */
-const DEFAULT_FEATURED: ReadonlyArray<CardStatKey> = [
-  "appearances",
-  "goals",
-  "assists",
-];
-
-const isCardStatKey = (key: string): key is CardStatKey =>
-  (CARD_STAT_KEYS as ReadonlyArray<string>).includes(key);
-
-/**
- * Resolve the lead three for a position.
- *
- * Falls back whole rather than partially. A config list that has been edited
- * down to two keys is a mistake, and filling the gap from the default would
- * produce a trio nobody chose and hide the mistake from whoever made it.
- */
-export function featuredStatsFor(
-  position: string | null | undefined,
-  map: Record<string, ReadonlyArray<string>> | undefined,
-): ReadonlyArray<CardStatKey> {
-  const configured = position ? map?.[position] : undefined;
-  const valid = configured?.filter(isCardStatKey) ?? [];
-  return valid.length === 3 ? valid : DEFAULT_FEATURED;
-}
+/** Grid classes, written out because Tailwind cannot see a computed name. */
+const COLUMN_CLASS = {
+  1: "grid-cols-1",
+  2: "grid-cols-2",
+} as const;
 
 export type PlayerCardRecordProps = {
   record: VerifiedRecord;
-  featured: ReadonlyArray<CardStatKey>;
+  /** Billed by `leadStatsFor` — three counters the player has something in. */
+  lead: ReadonlyArray<CardStatKey>;
+  /** Everything else the record carries, in priority order. */
+  secondary: ReadonlyArray<CardStatKey>;
+  /** `player.card.stat_labels` from `/players/meta`. Absent, defaults apply. */
+  statLabels?: Record<string, Partial<CardStatLabel>>;
   /** Shared with the card head so the two labels stay one decision. */
   labelClassName: string;
 };
 
-export function PlayerCardRecord({
-  record,
-  featured,
-  labelClassName,
-}: PlayerCardRecordProps) {
-  const secondary = CARD_STAT_KEYS.filter(
-    (key) => !featured.includes(key) && record[key] != null,
-  );
+type StripItem = { key: string; label: string; value: string };
+
+/**
+ * Build the strip.
+ *
+ * Yellows and reds are one item, never two. They are read together or not at
+ * all, and a card that spends two of its slots on a player's bookings is not a
+ * card anyone shares. The line only appears when there is something to report,
+ * which is also what keeps a clean record from advertising its own cleanliness.
+ */
+function buildStrip(
+  record: VerifiedRecord,
+  secondary: ReadonlyArray<CardStatKey>,
+  statLabels: PlayerCardRecordProps["statLabels"],
+): StripItem[] {
+  const stats: StripItem[] = secondary.map((key) => ({
+    key,
+    label: statLabelFor(key, statLabels).label,
+    value: String(record[key] ?? 0),
+  }));
 
   const yellows = record.yellow_cards;
   const reds = record.red_cards;
-  const hasCards = yellows > 0 || reds > 0;
+  const cards: StripItem | null =
+    yellows > 0 || reds > 0
+      ? { key: "cards", label: "Cards", value: `${yellows}Y, ${reds}R` }
+      : null;
+
+  return balanceStrip(stats, cards);
+}
+
+export function PlayerCardRecord({
+  record,
+  lead,
+  secondary,
+  statLabels,
+  labelClassName,
+}: PlayerCardRecordProps) {
+  const strip = buildStrip(record, secondary, statLabels);
 
   return (
-    <div className="pb-5">
-      {/* Load-bearing, not decoration. Under `IS_SEED_ENABLED` these figures
-          are invented (`seed/player-store.ts`) and this is the object a player
-          screenshots to a club. It stops a fabricated stat line from ever
-          being read as a record. */}
-      {IS_SEED_ENABLED ? (
-        <p className={cn(labelClassName, "text-on-card/70 mb-3 text-center")}>
-          Demo data
-        </p>
-      ) : null}
-
-      <dl className="grid grid-cols-3 gap-2">
-        {featured.map((key) => (
-          <div key={key} className="flex flex-col items-center gap-1.5">
+    <div>
+      <dl className="grid my-2 grid-cols-3 gap-x-2 gap-y-2">
+        {lead.map((key) => (
+          <div key={key} className="flex flex-col items-center gap-2">
             <dd className="order-2">
               <StatValue
                 size="lg"
-                className="text-on-card leading-none font-bold tracking-normal"
+                className="text-on-card leading-non font-bold tracking-normal"
               >
                 {record[key] ?? 0}
               </StatValue>
@@ -125,50 +119,35 @@ export function PlayerCardRecord({
                 "text-on-card/70 order-1 text-center",
               )}
             >
-              {STAT_LABELS[key]}
+              {statLabelFor(key, statLabels).short}
             </dt>
           </div>
         ))}
       </dl>
 
-      {secondary.length > 0 || hasCards ? (
-        <dl className="border-on-card/15 mt-4 flex flex-wrap items-baseline justify-center gap-x-4 gap-y-1 border-t pt-3">
-          {secondary.map((key) => (
-            <div key={key} className="flex items-baseline gap-1.5">
-              <dt className="text-on-card/65 text-xs">{STAT_LABELS[key]}</dt>
-              <dd className="text-on-card/95 kx-numeric text-xs font-semibold">
-                {record[key]}
+      {strip.length > 0 ? (
+        <dl
+          className={cn(
+            "border-on-card/15 mt-6 grid gap-x-8 gap-y-3 border-t pt-5",
+            COLUMN_CLASS[stripColumns(strip.length)],
+          )}
+        >
+          {strip.map((item) => (
+            // Justified: label hard left, value hard right, filling the column.
+            // `shrink-0` on the value and `truncate` on the label decide who
+            // gives way when a long label meets a four-figure number — the
+            // number never wraps, because a number that wraps is unreadable.
+            <div
+              key={item.key}
+              className="flex items-baseline justify-between gap-2"
+            >
+              <dt className="text-on-card/65 truncate text-xs">{item.label}</dt>
+              <dd className="text-on-card/95 kx-numeric shrink-0 text-xs font-semibold">
+                {item.value}
               </dd>
             </div>
           ))}
-
-          {/* One disciplinary line, never two counters. Yellows and reds are
-              read together or not at all, and a card that spends two of its
-              slots on a player's bookings is not a card anyone shares. */}
-          {hasCards ? (
-            <div className="flex items-baseline gap-1.5">
-              <dt className="text-on-card/65 text-xs">Cards</dt>
-              <dd className="text-on-card/95 kx-numeric text-xs font-semibold">
-                {yellows}Y, {reds}R
-              </dd>
-            </div>
-          ) : null}
         </dl>
-      ) : null}
-
-      {/* §15 allows badges, and this is the only one backed by verified data:
-          a Trust-cleared match award, never a Fan Buzz signal (Law 8/9). Full
-          width and squared off, because a pill reads as a status chip and this
-          is the one line on the card a player earned rather than filled in. */}
-      {record.player_of_the_match ? (
-        <p className="border-on-card/30 bg-on-card/10 rounded-row mt-4 flex items-baseline justify-center gap-2 border px-3 py-2.5">
-          <span className="kx-numeric text-on-card text-sm font-bold">
-            {record.player_of_the_match}x
-          </span>
-          <span className="text-on-card/90 text-[0.6875rem] leading-none font-semibold tracking-[0.16em] uppercase">
-            Player of the match
-          </span>
-        </p>
       ) : null}
     </div>
   );

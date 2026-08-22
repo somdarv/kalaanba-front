@@ -2,11 +2,14 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { preparePhoto } from "@/lib/images/prepare-photo";
+
 import {
   createPlayer,
   fetchPlayerMeta,
   getMyPlayer,
   updatePlayer,
+  uploadPlayerMedia,
   type MyPlayer,
   type UpdatePlayerInput,
 } from "../player";
@@ -104,6 +107,60 @@ export function useUpdatePlayer(player: MyPlayer | null | undefined) {
       if (context && "previous" in context) {
         qc.setQueryData(PLAYER_ME_KEY, context.previous);
       }
+    },
+
+    onSuccess: (next) => {
+      qc.setQueryData<MyPlayer>(PLAYER_ME_KEY, next);
+    },
+  });
+}
+
+/**
+ * Set the signed-in player's photo.
+ *
+ * Three steps behind one call: shrink it, store it, point the profile at it.
+ * The caller passes a file and gets back the updated record.
+ *
+ * **Not optimistic, unlike `useUpdatePlayer`.** Availability is one tap and a
+ * boolean, so showing the new value immediately and rolling back on failure
+ * costs nothing if it fails. A photo is a two-request round trip carrying
+ * megabytes over a connection that drops; painting the face on before the
+ * bytes have landed would show the player a card that does not exist yet, and
+ * on a slow upload it would show it for a long time. The avatar reports that it
+ * is working instead (`isPending`), which is honest and is what the spinner is
+ * for.
+ *
+ * **The PATCH is not what saves the photo.** `POST /players/{id}/media` writes
+ * `headshot_url` itself, inside the same transaction as the moderation event,
+ * so a connection that drops after the upload cannot leave a stored photo that
+ * no card points at. The PATCH that follows is doing two other jobs: it is the
+ * write in seeded mode, where there is no server to do it, and against the real
+ * API it returns the fresh `MyPlayer` — which is why it is a PATCH rather than
+ * an invalidate plus a refetch. Same two requests either way, and this way the
+ * second one hands back the record instead of a cache miss.
+ *
+ * The caller owns the failure message — this hook does the work, it does not
+ * decide how to say so.
+ */
+export function useUploadPlayerPhoto(player: MyPlayer | null | undefined) {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (file: File | Blob): Promise<MyPlayer> => {
+      if (!player) {
+        throw new Error("useUploadPlayerPhoto called without a player record.");
+      }
+
+      const prepared = await preparePhoto(file);
+      const media = await uploadPlayerMedia(
+        player.id,
+        prepared.blob,
+        "headshot",
+      );
+
+      return updatePlayer(player.id, player.user_id, {
+        headshot_url: media.url,
+      });
     },
 
     onSuccess: (next) => {

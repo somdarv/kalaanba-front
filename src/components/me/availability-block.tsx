@@ -63,10 +63,7 @@ export function AvailabilityBlock({ player, meta }: AvailabilityBlockProps) {
   };
 
   return (
-    <MeSection
-      title="When can you play"
-      description="Clubs near you see this."
-    >
+    <MeSection title="When can you play" description="Clubs near you see this.">
       <div
         className="flex flex-wrap gap-2"
         role="group"
@@ -87,7 +84,7 @@ export function AvailabilityBlock({ player, meta }: AvailabilityBlockProps) {
       {/* The config author's own line for the selected option. `aria-live` so a
           screen reader hears the description change after a tap, which is the
           only feedback the toast does not already carry. */}
-      <p className="mt-3 text-sm text-fg-muted" aria-live="polite">
+      <p className="text-fg-muted mt-3 text-sm" aria-live="polite">
         {currentDescription ??
           `You are set to ${labelFor(meta.availability, current) ?? current}.`}
       </p>

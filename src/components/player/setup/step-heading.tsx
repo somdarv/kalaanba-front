@@ -34,13 +34,13 @@ export function StepHeading({ lead, children, note }: StepHeadingProps) {
     <StepStagger index={0}>
       <div>
         {lead ? (
-          <p className="mb-1.5 text-sm font-medium text-primary-ink">{lead}</p>
+          <p className="text-primary-ink mb-1.5 text-sm font-medium">{lead}</p>
         ) : null}
-        <h1 className="font-display text-[1.9rem] leading-[1.05] font-bold tracking-tight text-balance text-fg sm:text-[2.35rem]">
+        <h1 className="font-display text-fg text-[1.9rem] leading-[1.05] font-bold tracking-tight text-balance sm:text-[2.35rem]">
           {children}
         </h1>
         {note ? (
-          <p className="mt-3 text-sm leading-relaxed text-fg-muted">{note}</p>
+          <p className="text-fg-muted mt-3 text-sm leading-relaxed">{note}</p>
         ) : null}
       </div>
     </StepStagger>

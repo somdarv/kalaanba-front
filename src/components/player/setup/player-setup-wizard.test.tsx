@@ -147,7 +147,9 @@ describe("PlayerSetupWizard", () => {
     // The last question waits for a deliberate press rather than a timer.
     const available = await reachAvailability();
     await user.click(available);
-    await user.click(screen.getByRole("button", { name: /create my profile/i }));
+    await user.click(
+      screen.getByRole("button", { name: /create my profile/i }),
+    );
 
     await waitFor(() => expect(createPlayer).toHaveBeenCalledTimes(1));
     // TanStack Query hands `mutationFn` a second context argument; the
@@ -173,7 +175,9 @@ describe("PlayerSetupWizard", () => {
       await screen.findByText(/enter the name they call you/i),
     ).toBeInTheDocument();
     // Still on the same step — the number grid never appeared.
-    expect(screen.queryByRole("button", { name: "10" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "10" }),
+    ).not.toBeInTheDocument();
     expect(createPlayer).not.toHaveBeenCalled();
   });
 
@@ -182,7 +186,9 @@ describe("PlayerSetupWizard", () => {
     renderWizard();
     await reachNumber(user);
 
-    await user.click(screen.getByRole("button", { name: /write your own number/i }));
+    await user.click(
+      screen.getByRole("button", { name: /write your own number/i }),
+    );
     await user.type(await screen.findByLabelText(/your number/i), "77");
     await user.click(nextStep());
 
@@ -203,7 +209,9 @@ describe("PlayerSetupWizard", () => {
     await user.click(skip());
 
     await user.click(await reachAvailability());
-    await user.click(screen.getByRole("button", { name: /create my profile/i }));
+    await user.click(
+      screen.getByRole("button", { name: /create my profile/i }),
+    );
 
     await waitFor(() => expect(createPlayer).toHaveBeenCalledTimes(1));
     expect(createPlayer.mock.calls[0]?.[0]).toMatchObject({
@@ -225,7 +233,9 @@ describe("PlayerSetupWizard", () => {
     await reachPosition();
     await user.click(skip());
     await user.click(await reachAvailability());
-    await user.click(screen.getByRole("button", { name: /create my profile/i }));
+    await user.click(
+      screen.getByRole("button", { name: /create my profile/i }),
+    );
 
     // Back on step 2, with the server's reason attached to the field.
     expect(
@@ -244,18 +254,27 @@ describe("PlayerSetupWizard", () => {
     await user.click(screen.getByRole("radio", { name: /winger/i }));
     await user.click(nextStep());
     await user.click(await reachAvailability());
-    await user.click(screen.getByRole("button", { name: /create my profile/i }));
+    await user.click(
+      screen.getByRole("button", { name: /create my profile/i }),
+    );
 
     // Act one: the moment lands before anything else does.
     expect(await screen.findByText(/profile created/i)).toBeInTheDocument();
     // Act two: it leaves, and the profile takes the space it was using.
     expect(
-      await screen.findByText(/you're on the record/i, undefined, REVEAL_TIMEOUT),
+      await screen.findByText(
+        /you're on the record/i,
+        undefined,
+        REVEAL_TIMEOUT,
+      ),
     ).toBeInTheDocument();
     expect(screen.queryByText(/profile created/i)).not.toBeInTheDocument();
-    // "Winger" and "Free agent" both come from the served label maps.
+    // The position comes from the served label maps, never compiled in.
+    // Market status and availability are deliberately NOT on the card: §15
+    // lists neither, and they bloated the name block with facts nobody reads
+    // off a card.
     expect(screen.getAllByText("Winger").length).toBeGreaterThan(0);
-    expect(screen.getByText("Free agent")).toBeInTheDocument();
+    expect(screen.queryByText("Free agent")).not.toBeInTheDocument();
     // Nothing computed: a brand-new card carries no stats or rating (§13/§14).
     expect(screen.queryByText(/rating/i)).not.toBeInTheDocument();
 
@@ -283,7 +302,9 @@ describe("PlayerSetupWizard", () => {
     await user.click(screen.getByRole("radio", { name: /winger/i }));
     await user.click(nextStep());
     await user.click(await reachAvailability());
-    await user.click(screen.getByRole("button", { name: /create my profile/i }));
+    await user.click(
+      screen.getByRole("button", { name: /create my profile/i }),
+    );
 
     await screen.findByText(/you're on the record/i, undefined, REVEAL_TIMEOUT);
     expect(window.sessionStorage.getItem("kx:player-setup:draft")).toBeNull();

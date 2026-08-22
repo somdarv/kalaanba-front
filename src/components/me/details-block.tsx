@@ -43,8 +43,7 @@ export function DetailsBlock({ player, meta, onEdit }: DetailsBlockProps) {
     },
     {
       label: "Position",
-      value:
-        labelFor(meta.positions, player.primary_position) ?? "Not set",
+      value: labelFor(meta.positions, player.primary_position) ?? "Not set",
     },
   ];
 

@@ -5,6 +5,7 @@ import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import {
+  Avatar,
   BottomSheet,
   Button,
   Select,
@@ -42,6 +43,15 @@ export type DetailsSheetProps = {
   onOpenChange: (next: boolean) => void;
   player: MyPlayer;
   meta: PlayerMeta;
+  /**
+   * Hand off to the photo options.
+   *
+   * A callback rather than a nested `<PhotoSheet>`, because a sheet opened
+   * from inside a sheet leaves two stacked overlays sharing one Escape key and
+   * one backdrop, and the player cannot tell which one a tap will close. The
+   * owner closes this sheet and opens that one, so there is only ever one.
+   */
+  onEditPhoto?: () => void;
 };
 
 type FieldName =
@@ -68,6 +78,7 @@ export function DetailsSheet({
   onOpenChange,
   player,
   meta,
+  onEditPhoto,
 }: DetailsSheetProps) {
   const { push } = useToast();
   const update = useUpdatePlayer(player);
@@ -147,6 +158,25 @@ export function DetailsSheet({
 
   return (
     <BottomSheet open={open} onOpenChange={onOpenChange} title="Your details">
+      {onEditPhoto ? (
+        <div className="border-border mb-4 flex items-center gap-3 border-b pb-4">
+          <Avatar
+            size="lg"
+            name={player.stage_name}
+            src={player.headshot_url ?? undefined}
+          />
+          <div className="min-w-0 flex-1">
+            <p className="text-fg text-sm font-medium">Your photo</p>
+            <p className="text-fg-muted truncate text-xs">
+              Clubs look at this first.
+            </p>
+          </div>
+          <Button intent="secondary" size="sm" onClick={onEditPhoto}>
+            {player.headshot_url ? "Change" : "Add"}
+          </Button>
+        </div>
+      ) : null}
+
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
         <TextField
           label="Football name"
