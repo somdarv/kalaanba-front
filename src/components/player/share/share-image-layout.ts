@@ -67,6 +67,7 @@ export type Ink = {
   faint: string;
   display: string;
   sans: string;
+  signature: string;
 };
 
 export function initialsOf(name: string): string {

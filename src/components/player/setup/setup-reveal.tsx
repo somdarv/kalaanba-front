@@ -147,6 +147,7 @@ export function SetupReveal({
                   <PlayerCard
                     player={player}
                     positions={meta.positions}
+                    marketStatuses={meta.market_statuses}
                     featuredStats={meta.card_featured_stats}
                     statLabels={meta.card_stat_labels}
                   />

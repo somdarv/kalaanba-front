@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Sora } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { AppProviders } from "@/components/providers/app-providers";
 import { ThemeProvider } from "@/components/providers/theme-provider";
@@ -19,6 +20,40 @@ const sora = Sora({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800"],
   display: "swap",
+});
+
+/**
+ * The signature on a player card (ADR-0016).
+ *
+ * One weight, read by exactly one component. A third typeface is a real cost on
+ * a phone paying by the megabyte, so the bargain is that it earns its place by
+ * doing something the other two cannot: a signature is handwriting, and Sora
+ * set at an angle is just Sora at an angle.
+ *
+ * **Chic Budapest, supplied rather than chosen from Google.** It is a licensed
+ * face the team brought to the project, self-hosted through `next/font/local`
+ * so it is subsetted, preloaded and served from our own origin like the other
+ * two. Google's script faces are still rendered side by side on the design page
+ * for comparison; the constraint that ruled most of them out is that the
+ * signature sits at roughly 60% opacity on a saturated card ground, where
+ * hairline calligraphy disappears.
+ *
+ * **It ships as TTF, not WOFF2**, because that is the format it arrived in.
+ * That is roughly double the bytes a WOFF2 of the same face would cost. Worth
+ * converting before this reaches production.
+ *
+ * The CSS variable is named for the ROLE, not the family, so swapping the face
+ * is one line here rather than a change in `globals.css` as well.
+ */
+const signature = localFont({
+  src: "./fonts/Chic-Budapest.ttf",
+  variable: "--font-signature-face",
+  weight: "400",
+  style: "normal",
+  display: "swap",
+  // The name is already on the card twice as real text; if this face fails the
+  // signature should still look like handwriting rather than like body copy.
+  fallback: ["Segoe Script", "Snell Roundhand", "cursive"],
 });
 
 // Archivo was configured here "to try it" and never referenced — no CSS ever
@@ -81,7 +116,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${sora.variable}`}
+      className={`${inter.variable} ${sora.variable} ${signature.variable}`}
       // Stamped server-side so the locked theme is already right in the first
       // byte of HTML — no flash, nothing to resolve on the client. Both go
       // `undefined` when the lock lifts, and <ThemeScript> takes the job back.
@@ -92,7 +127,7 @@ export default function RootLayout({
       <head>
         <ThemeScript />
       </head>
-      <body className="min-h-dvh bg-bg text-fg">
+      <body className="bg-bg text-fg min-h-dvh">
         <ThemeProvider>
           <AppProviders>
             <ToastProvider>{children}</ToastProvider>

@@ -99,7 +99,7 @@ export function PlayerCardRecord({
 
   return (
     <div>
-      <dl className="grid my-2 grid-cols-3 gap-x-2 gap-y-2">
+      <dl className="my-2 grid grid-cols-3 gap-x-2 gap-y-2">
         {lead.map((key) => (
           <div key={key} className="flex flex-col items-center gap-2">
             <dd className="order-2">

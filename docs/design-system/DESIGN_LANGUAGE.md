@@ -186,6 +186,13 @@ Canonical values live in **§3.2** — that is the single definition. (This sect
 
 - **Display**: `Sora` — hero 64/1.05 tracking `-0.025em`, h1 40/1.1 `-0.02em`, h2 32/1.15 `-0.015em`. **Tight tracking on display is non-negotiable** — it's the single biggest "premium" signal.
 - **Body**: `Inter` — 16/1.55 default, 14/1.5 secondary, 12 uppercase `0.14em` for eyebrows (`<Eyebrow>`).
+- **Signature**: `Chic Budapest` — the player's own name signed across a card
+  that has no verified record yet, and nothing else (`ADR-0016`). A licensed
+  face, self-hosted via `next/font/local`, one weight, consumed solely by
+  `<PlayerCardSignature>` and the canvas that draws the share graphic. A fourth
+  consumer is the signal to re-argue the decision, not to extend it. The token
+  is named for the role (`--font-signature-face`), so the family can be swapped
+  in `layout.tsx` alone.
 - **Numeric**: `--font-numeric-features` (`"tnum" 1, "cv11" 1, "ss01" 1`), applied via the `.kx-numeric` class and owned by `<StatValue>`. Do not reach for Tailwind's `tabular-nums` directly in a component — that is what left ten call sites each holding their own half of this rule.
 
 ---

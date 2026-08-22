@@ -179,18 +179,24 @@ describe("<MeScreen> — the /me surface (WP-20260821)", () => {
     expect(replace).not.toHaveBeenCalled();
   });
 
-  it("names the gate instead of showing a row of zeros for an empty record", () => {
+  it("shows no zeros for an empty record, and does not apologise for it", () => {
     renderMe();
-    // On the card itself now. The separate record block is gone: the card is
-    // tall enough to carry the full §13 set, so a block repeating the same
-    // counters was saying one thing twice on one screen.
-    expect(
-      screen.getByText(
-        /stats show up when a match you played in is confirmed/i,
-      ),
-    ).toBeInTheDocument();
+
+    // A row of zeroes at display scale reads as a verdict on the player rather
+    // than as a season that has not started — the §13 error one level down.
     expect(screen.queryByText("GAMES")).not.toBeInTheDocument();
     expect(screen.queryByText("Assists")).not.toBeInTheDocument();
+
+    // Nor a line explaining the absence. It made absence the subject of an
+    // object built to be shared; the explanation lives in the block below.
+    expect(
+      screen.queryByText(/stats show up when a match/i),
+    ).not.toBeInTheDocument();
+
+    // What stands there instead: the two true facts a club reads off a new
+    // player. Both resolved from the config-served label maps (ADR-0007).
+    expect(screen.getAllByText("Striker").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Free agent").length).toBeGreaterThanOrEqual(1);
   });
 
   it("keeps the confidence tier off the card and in its own block (§14)", () => {
@@ -310,18 +316,24 @@ describe("<MeScreen> — the /me surface (WP-20260821)", () => {
     expect(screen.queryByText(/player of the match/i)).not.toBeInTheDocument();
   });
 
-  it("puts the position on the card and keeps status off it (§15)", () => {
+  it("drops market status once the card has a record to show (§15)", () => {
+    stub({
+      player: {
+        ...PLAYER,
+        record: { ...PLAYER.record, appearances: 9, goals: 2, assists: 1 },
+      },
+    });
     renderMe();
 
-    // The position is resolved from the config-served label map (ADR-0007),
-    // never compiled in, and sits inline with the legal name the way a team
+    // "Free agent" earns its place only while there is nothing else. Beside a
+    // record it was bloat, and §15 does not list it among what a card carries.
+    expect(screen.queryByText("Free agent")).not.toBeInTheDocument();
+
+    // The position stays either way, inline with the legal name the way a team
     // sheet writes it.
     expect(screen.getAllByText("Striker").length).toBeGreaterThanOrEqual(1);
 
-    // Market status is not on §15's list and is nowhere on this surface.
-    expect(screen.queryByText("Free agent")).not.toBeInTheDocument();
-
-    // Availability IS on the surface, but as the one-tap control below the
+    // Availability is on the surface, but as the one-tap control below the
     // card rather than as a word printed on it. A card restating a value the
     // player can change six inches lower is saying it twice.
     expect(
@@ -417,7 +429,9 @@ describe("<MeScreen> — the /me surface (WP-20260821)", () => {
     stub({ player: { ...PLAYER, headshot_url: "https://cdn.test/face.jpg" } });
     renderMe();
 
-    await user.click(screen.getByRole("button", { name: /change your photo/i }));
+    await user.click(
+      screen.getByRole("button", { name: /change your photo/i }),
+    );
 
     expect(
       await screen.findByRole("button", { name: /remove photo/i }),

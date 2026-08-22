@@ -180,7 +180,7 @@ export function PlayerCardIdentity({
           that wider box. The symptom is the logo appearing to drift off the
           margin, which reads as a design choice rather than as the layout bug
           it is. */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="mt-1 flex items-start justify-between gap-4">
         <Wordmark size="sm" className="h-5 opacity-80" />
 
         {player.preferred_number != null ? (
@@ -201,7 +201,7 @@ export function PlayerCardIdentity({
           part still hanging off the left edge. Stacked and centred it agrees
           with the rest, and it is the shape a player card has always had:
           the face, then the name under it. */}
-      <div className="mt-2 flex flex-col items-center">
+      <div className="mt-4 flex flex-col items-center">
         <PlayerPhoto
           player={player}
           size={isRecordEmpty ? "3xl" : "2xl"}
