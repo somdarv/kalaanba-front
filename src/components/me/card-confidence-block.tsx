@@ -1,10 +1,14 @@
 "use client";
 
-import { Chip, Progress } from "@/components/ui";
+import { Progress } from "@/components/ui";
 import {
-  labelFor,
+  CARD_STAT_KEYS,
+  statLabelFor,
+} from "@/components/player/setup/player-card-stats";
+import {
   type CardConfidence,
   type PlayerMeta,
+  type VerifiedRecord,
 } from "@/lib/api/player";
 
 import { MeSection } from "./me-section";
@@ -17,31 +21,44 @@ import { MeSection } from "./me-section";
  * place. This block is that decision made visible.
  *
  * It also does the job an empty stat grid cannot: it explains a blank card.
- * "Provisional, 0 matches confirmed" states the truth, where six tiles reading
- * zero imply a record OF nothing rather than the absence of one.
+ * A count of confirmed matches states the truth, where six tiles reading zero
+ * imply a record OF nothing rather than the absence of one.
  *
- * The tier is a stable internal key resolved backend-side (Law 3/4). Nothing
- * here compares a count to a threshold: the thresholds are effective-dated
- * config, so only the server knows which ones applied when.
+ * **The tier chip is gone; the ladder is shown by the bar.** "Provisional" beside
+ * the heading was a verdict on a card the player has not had a chance to fill
+ * yet, and it was the second pink thing on a surface DESIGN_LANGUAGE §4.3 gives
+ * one accent to. The progress bar and the count carry the same fact without
+ * labelling the player.
  *
- * `first-letter:uppercase` rather than `capitalize`: when the label map has not
- * shipped yet, `labelFor` falls back to the raw key ("growing") and a bare
- * lowercase word in a chip reads as a bug. Capitalising only the first letter
- * degrades a missing label gracefully without mangling a real multi-word one
- * into Title Case.
+ * **The tracked list is names only, never numbers, and only while the record is
+ * empty.** It answers "what does this card measure" for a player who has
+ * nothing on it yet. Rendering the counters here would restate what
+ * `<PlayerCard>` already bills six inches above, and a column of zeroes is
+ * exactly the impression §14 exists to avoid. Once a match is confirmed the
+ * card bills the real figures and this list retires, because naming a counter
+ * next to a card already showing it is saying the same thing twice.
+ *
+ * The vocabulary comes from `/players/meta` (Law 4) with the card's own
+ * defaults as the fallback, so this list and the card cannot end up calling one
+ * counter two different names.
+ *
+ * Nothing here compares a count to a threshold: the thresholds are
+ * effective-dated config, so only the server knows which ones applied when.
  */
 
 export type CardConfidenceBlockProps = {
   confidence: CardConfidence;
+  /** Read to decide whether the card already bills real figures. */
+  record: VerifiedRecord;
   meta: PlayerMeta;
 };
 
 export function CardConfidenceBlock({
   confidence,
+  record,
   meta,
 }: CardConfidenceBlockProps) {
-  const { tier, confirmed_matches, matches_to_next_tier } = confidence;
-  const tierLabel = labelFor(meta.card_confidence ?? [], tier) ?? tier;
+  const { confirmed_matches, matches_to_next_tier } = confidence;
 
   const toNext = matches_to_next_tier ?? null;
   const hasNext = toNext !== null && toNext > 0;
@@ -53,23 +70,41 @@ export function CardConfidenceBlock({
   const percent =
     stepTotal > 0 ? Math.round((confirmed_matches / stepTotal) * 100) : 0;
 
+  // Keyed on the RECORD, not on the match count: this list retires the moment
+  // the card has a figure to bill, and those are two different reads of the
+  // same truth. A record can carry minutes from a match still being confirmed.
+  const hasRecord = CARD_STAT_KEYS.some((key) => (record[key] ?? 0) > 0);
+  const tracked = hasRecord
+    ? []
+    : CARD_STAT_KEYS.map((key) => ({
+        key,
+        label: statLabelFor(key, meta.card_stat_labels).label,
+      }));
+
   return (
     <MeSection
       title="Your card"
-      note={
-        <Chip intent="primary" size="sm" className="first-letter:uppercase">
-          {tierLabel}
-        </Chip>
+      description={
+        confirmed_matches === 0
+          ? "These fill up as we confirm your matches."
+          : `${confirmed_matches} ${confirmed_matches === 1 ? "match" : "matches"} confirmed.`
       }
     >
-      <p className="text-fg-muted text-sm">
-        {confirmed_matches === 0
-          ? "Your card gets stronger with every match we confirm."
-          : `${confirmed_matches} ${confirmed_matches === 1 ? "match" : "matches"} confirmed so far.`}
-      </p>
+      {tracked.length > 0 ? (
+        <ul className="flex flex-wrap gap-x-2 gap-y-1.5">
+          {tracked.map((stat) => (
+            <li
+              key={stat.key}
+              className="text-fg-muted rounded-pill bg-surface border-border border px-2.5 py-1 text-xs"
+            >
+              {stat.label}
+            </li>
+          ))}
+        </ul>
+      ) : null}
 
       {hasNext ? (
-        <div className="mt-3.5 flex flex-col gap-1.5">
+        <div className={tracked.length > 0 ? "mt-4 flex flex-col gap-1.5" : "flex flex-col gap-1.5"}>
           <Progress
             value={percent}
             aria-label={`Progress to the next card level, ${percent} percent`}

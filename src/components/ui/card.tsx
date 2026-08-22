@@ -22,6 +22,12 @@ import { pressableBase } from "./pressable";
  * The recipes live in globals.css as `.elev-*` so non-Card surfaces
  * (sheets, popovers) compose the same thing instead of re-deriving it.
  *
+ * A fourth tone, `soft`, is EXPERIMENTAL (WP-20260822-me-soft-cards) and is
+ * composed only by `/me` while the shape is judged. It deletes the line and
+ * lets the fill carry the card, which is the inverse of §4.3, so it needs an
+ * ADR before any other surface reaches for it. The rationale and the light
+ * theme's limitation are written out beside the recipe in globals.css.
+ *
  * History: v2 declared `flat | raised` and resolved BOTH to one string
  * (`bg-surface shadow-md`) — the prop was a no-op. It also dropped the
  * border entirely, inverting §4.3 ("border-strong carries depth before
@@ -31,13 +37,14 @@ import { pressableBase } from "./pressable";
  * migration made the steps uniform, so the tiers are now expressible.
  */
 
-export type CardTone = "flat" | "raised" | "floating";
+export type CardTone = "flat" | "raised" | "floating" | "soft";
 export type CardSize = "md" | "lg";
 
 const TONES: Record<CardTone, string> = {
   flat: "elev-flat",
   raised: "elev-raised",
   floating: "elev-floating",
+  soft: "elev-soft",
 };
 
 const SIZES: Record<CardSize, string> = {

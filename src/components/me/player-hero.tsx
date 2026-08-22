@@ -59,6 +59,15 @@ export type PlayerHeroProps = {
   /** Owned by `<MeScreen>`: the details sheet opens the photo options too. */
   isPickingPhoto: boolean;
   onPickingPhotoChange: (next: boolean) => void;
+  /**
+   * Whether to apply the guided-flow gutter on a phone. Default on.
+   *
+   * `/me` puts the card straight onto the page, so the card owes itself the
+   * 10% gutter that stops it bleeding off both edges. `/me/v2` puts it inside
+   * a padded pane that already does that, and two gutters on a 360px screen
+   * shrink the card by another 50px for nothing.
+   */
+  withMobileGutter?: boolean;
 };
 
 export function PlayerHero({
@@ -67,6 +76,7 @@ export function PlayerHero({
   onEdit,
   isPickingPhoto,
   onPickingPhotoChange,
+  withMobileGutter = true,
 }: PlayerHeroProps) {
   const [photoFailed, setPhotoFailed] = useState(false);
   // The picked file, held while the player frames it. Cleared on confirm or
@@ -148,7 +158,11 @@ export function PlayerHero({
           CONTAINING BLOCK, and on desktop this card lives in a 380px column, so
           leaving the gutter on would shave 76px off a card whose length is the
           thing that works there. */}
-      <div className={`${flowGutter} sm:pr-0 sm:pl-0`}>
+      <div
+        className={
+          withMobileGutter ? `${flowGutter} sm:pr-0 sm:pl-0` : undefined
+        }
+      >
         <PlayerCard
           player={player}
           positions={meta.positions}
@@ -184,8 +198,13 @@ export function PlayerHero({
         </p>
       ) : null}
 
-      <div className="flex flex-wrap items-center gap-2">
-        <Button intent="secondary" size="sm" onClick={onEdit}>
+      {/* A split row rather than two buttons at their natural width. Both are
+          secondary, both are equally likely, and left-aligned pills on a 360px
+          screen leave a ragged gap on the right that reads as a layout fault.
+          `items-start` so the share button's error line grows downward without
+          stretching its neighbour. */}
+      <div className="grid grid-cols-2 items-start gap-2">
+        <Button intent="secondary" size="md" fullWidth onClick={onEdit}>
           Edit details
         </Button>
         <ShareCardButton
@@ -193,6 +212,7 @@ export function PlayerHero({
           model={model}
           record={player.record}
           statLabels={meta.card_stat_labels}
+          fullWidth
         />
       </div>
     </div>

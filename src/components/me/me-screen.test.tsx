@@ -184,8 +184,16 @@ describe("<MeScreen> — the /me surface (WP-20260821)", () => {
 
     // A row of zeroes at display scale reads as a verdict on the player rather
     // than as a season that has not started — the §13 error one level down.
+    // Both of the card's registers stay empty: the lead row's short form and
+    // the strip's own value column.
     expect(screen.queryByText("GAMES")).not.toBeInTheDocument();
-    expect(screen.queryByText("Assists")).not.toBeInTheDocument();
+    expect(screen.queryByText("ASSISTS")).not.toBeInTheDocument();
+    expect(screen.queryByText("0")).not.toBeInTheDocument();
+
+    // <CardConfidenceBlock> does name the counters, which is a different claim
+    // from billing them: a name with no figure beside it says "this is what
+    // gets measured", where a name with a 0 says "you have none".
+    expect(screen.getByText("Assists")).toBeInTheDocument();
 
     // Nor a line explaining the absence. It made absence the subject of an
     // object built to be shared; the explanation lives in the block below.
@@ -202,15 +210,14 @@ describe("<MeScreen> — the /me surface (WP-20260821)", () => {
   it("keeps the confidence tier off the card and in its own block (§14)", () => {
     renderMe();
 
-    // Once, not twice. The tier reads as a claim about whether the stats are
-    // verified, and on this platform every stat already is — only confirmed
-    // matches reach a record at all (§13). On the card that made it look like
-    // a caveat on figures that carry none. The block below keeps it, where it
-    // is what it actually measures: how much record stands behind the card.
-    expect(screen.getAllByText("provisional")).toHaveLength(1);
+    // Nowhere, not once. The tier read as a verdict on a card the player has
+    // not been given a chance to fill, and it was a second brand-filled thing
+    // on a surface DESIGN_LANGUAGE §4.3 allows one accent. The ladder is still
+    // on the page; it is the bar and the count that carry it.
+    expect(screen.queryByText("provisional")).not.toBeInTheDocument();
 
     expect(
-      screen.getByText(/gets stronger with every match we confirm/i),
+      screen.getByText(/these fill up as we confirm your matches/i),
     ).toBeInTheDocument();
     // §14: no numeric rating anywhere on the surface.
     expect(screen.queryByText(/rating/i)).not.toBeInTheDocument();
@@ -333,12 +340,11 @@ describe("<MeScreen> — the /me surface (WP-20260821)", () => {
     // sheet writes it.
     expect(screen.getAllByText("Striker").length).toBeGreaterThanOrEqual(1);
 
-    // Availability is on the surface, but as the one-tap control below the
-    // card rather than as a word printed on it. A card restating a value the
-    // player can change six inches lower is saying it twice.
-    expect(
-      screen.getByRole("button", { name: "Available" }),
-    ).toBeInTheDocument();
+    // Availability is on the surface, but as a stated value below the card
+    // rather than as a word printed on it. A card restating a value the player
+    // can change six inches lower is saying it twice.
+    expect(screen.getByText("Available")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Change" })).toBeInTheDocument();
   });
 
   it("gives the shirt number an accessible name, since it renders as a bare numeral", () => {
@@ -346,11 +352,14 @@ describe("<MeScreen> — the /me surface (WP-20260821)", () => {
     expect(screen.getByLabelText("Shirt number 10")).toBeInTheDocument();
   });
 
-  it("writes availability on a single tap", async () => {
+  it("writes availability from the sheet, and closes on the tap that sets it", async () => {
     const user = userEvent.setup();
     renderMe();
 
-    await user.click(screen.getByRole("button", { name: "Weekends only" }));
+    await user.click(screen.getByRole("button", { name: "Change" }));
+    await user.click(
+      await screen.findByRole("radio", { name: /weekends only/i }),
+    );
 
     expect(mutate).toHaveBeenCalledWith(
       { availability_status: "weekends_only" },
@@ -362,14 +371,26 @@ describe("<MeScreen> — the /me surface (WP-20260821)", () => {
     const user = userEvent.setup();
     renderMe();
 
-    await user.click(screen.getByRole("button", { name: "Available" }));
+    await user.click(screen.getByRole("button", { name: "Change" }));
+    await user.click(await screen.findByRole("radio", { name: /available/i }));
 
     expect(mutate).not.toHaveBeenCalled();
   });
 
+  it("carries the config author's line for each option into the sheet (§24)", async () => {
+    const user = userEvent.setup();
+    renderMe();
+
+    await user.click(screen.getByRole("button", { name: "Change" }));
+
+    // The chip row had nowhere to put these. Behind a sheet there is room, and
+    // the description is what separates "Weekends only" from "Not sure yet".
+    expect(await screen.findByText("Saturdays and Sundays.")).toBeInTheDocument();
+  });
+
   it("points a free agent at the club finder", () => {
     renderMe();
-    const find = screen.getByRole("link", { name: /find a club/i });
+    const find = screen.getByRole("link", { name: /join a club/i });
     expect(find).toHaveAttribute("href", "/clubs/near-you");
   });
 

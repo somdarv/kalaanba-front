@@ -10,10 +10,17 @@ import { cn } from "@/lib/cn";
  *
  * Every block on this surface is the same shape — a title, an optional status
  * chip beside it, an optional action on the right, then content — so the shape
- * is declared once here rather than re-derived eight times. Composing
- * `<Card tone="raised">` keeps the elevation recipe in the one place
- * DESIGN_LANGUAGE §2.4 puts it ("compose the class; do not re-derive the
- * recipe").
+ * is declared once here rather than re-derived eight times. Composing `<Card>`
+ * keeps the elevation recipe in the one place DESIGN_LANGUAGE §2.4 puts it
+ * ("compose the class; do not re-derive the recipe").
+ *
+ * **`tone="soft"` is an experiment (WP-20260822-me-soft-cards).** Under
+ * `raised` these blocks were boxes drawn with a line: §4.3 puts the border
+ * before the shadow, and the ground ramp then left the fill doing nothing, so
+ * six sections down a page read as six outlines rather than six objects.
+ * `soft` drops the line and lets the fill carry the card, with the shadow at a
+ * whisper. `/me` is the only route composing it. If it reads better here, the
+ * question it settles is a design-system one and gets an ADR (§8).
  *
  * The heading is an `<h2>` because the page's `<h1>` is the player's own name
  * on the card. A screen reader running the heading list should hear who this is
@@ -31,7 +38,12 @@ export type MeSectionProps = {
   action?: ReactNode;
   /** One line under the title, when the block needs framing. */
   description?: ReactNode;
-  children: ReactNode;
+  /**
+   * Optional: a block whose whole point is its heading row (a title, a state
+   * line and one action) has no body, and an empty div still costs its top
+   * margin.
+   */
+  children?: ReactNode;
   className?: string;
   id?: string;
 };
@@ -46,7 +58,7 @@ export function MeSection({
   id,
 }: MeSectionProps) {
   return (
-    <Card tone="raised" size="md" className={cn("w-full", className)} id={id}>
+    <Card tone="soft" size="md" className={cn("w-full", className)} id={id}>
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
         <div className="flex min-w-0 items-center gap-2">
           <h2 className="font-display text-fg text-base font-bold tracking-tight">
@@ -61,7 +73,7 @@ export function MeSection({
         <p className="text-fg-muted mt-1.5 text-sm">{description}</p>
       ) : null}
 
-      <div className="mt-4">{children}</div>
+      {children ? <div className="mt-4">{children}</div> : null}
     </Card>
   );
 }

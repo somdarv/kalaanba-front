@@ -372,7 +372,7 @@ html.light {
      111 / Safari 16.2, which is a real slice of budget Android here) would
      render SOLID brand pink under dark label text on every press. :active
      fires on touch, so that is not a hover-only edge case. */
-  --secondary-hover:      oklch(0.962 0.024 350); /* #FFECF5, R-B +10 */
+  --secondary-hover:      oklch(97.872% 0.00346 352.86); /* #FFECF5, R-B +10 */
   --secondary-active:     oklch(0.936 0.040 350); /* #FFE0EE, R-B +17 */
 
   --shadow-sm: 0 1px 2px oklch(0.255 0.022 264 / 0.07);
@@ -565,6 +565,65 @@ html.light {
   box-shadow: var(--highlight-inset), var(--shadow-lg);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
+}
+
+/* ---------------------------------------------------------------------
+   EXPERIMENTAL — WP-20260822-me-soft-cards. Composed by `/me` and `/me/v2`
+   only, while the shape is judged, the way `/legacy/showcase` stays built so
+   old and new can be compared (DESIGN_LANGUAGE §7).
+
+   A fourth tier that REORDERS what §2.4 and §4.3 set. flat, raised and
+   floating all lead with the line ("border-strong carries depth before shadow
+   does"); here the FILL carries the card and the line follows it, dropped to
+   --divider, with the shadow at a whisper. That demotes a stated rule rather
+   than extending it, so if it survives the look it needs an ADR before any
+   other route composes it (§8).
+
+   --divider is the quietest line the system owns, in both directions: light
+   0.925 against --border 0.905 is less contrast on paper, and dark 0.280
+   against 0.320 is less contrast on the ground. So this is the softest border
+   available without inventing one.
+
+   WHY IT NEEDS A GROUND CLASS TOO, AND WHAT THAT EXPOSES. A fill can only
+   define a card if the ground underneath it is a different fill. Dark has that
+   already: --bg to --surface-elev is two uniform steps, DL 0.080, and
+   .kx-ground-soft changes nothing there. Light does not have it at any value
+   the palette currently holds -- --bg (1.000), --surface-elev (1.000),
+   --surface (0.995) and --control-surface (0.991) all sit within DL 0.009 of
+   paper, which is why every light surface in this product is currently a white
+   box drawn with a line. The app ships light only (`FORCED_THEME`), so an
+   experiment that reads in dark and not in light answers nothing.
+
+   The light ground is therefore DERIVED from two existing tokens rather than
+   picked: paper mixed a quarter of the way toward the hairline, which lands at
+   L 0.976, DL 0.024 below the card. Both inputs are chroma 0.000 in light, so
+   the result stays neutral and §2.1.1 (no chroma on near-white) holds. That
+   value is roughly where --surface itself sat before 2026-08-19.
+
+   If the shape wins, the design-system change it argues for is a real ground
+   step in the light ramp, and this color-mix is the placeholder for it.
+   Nothing here invents a colour or a shadow: --shadow-sm is already the
+   system's quietest (7% in light, a 1px hairline in dark), reused rather than
+   softened, because a new shadow value would be a token addition (§8).
+
+   The ground class still earns its place with the line back. It is what lets
+   the line be this quiet: on paper-on-paper a --divider hairline is the only
+   thing holding the card together and has to shout, whereas over a recessed
+   ground the fill has already drawn the edge and the line is just softening
+   it. Remove .kx-ground-soft and this border has to go back to --border.
+   --------------------------------------------------------------------- */
+.elev-soft {
+  background-color: var(--surface-elev);
+  border: 1px solid var(--divider);
+  box-shadow: var(--highlight-inset), var(--shadow-sm);
+}
+
+.kx-ground-soft {
+  background-color: var(--bg);
+}
+:root[data-theme="light"] .kx-ground-soft,
+html.light .kx-ground-soft {
+  background-color: color-mix(in oklab, var(--surface-elev) 92%, var(--border));
 }
 
 /* Numeric treatment — DESIGN_LANGUAGE §2.6. Owned by <StatValue>; this class

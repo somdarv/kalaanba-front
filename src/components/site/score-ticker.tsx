@@ -57,11 +57,13 @@ export function ScoreTicker({ fixtures, className }: ScoreTickerProps) {
   return (
     <div
       className={cn(
-        // --brand-wash: the brand hue at 4%, which lands around #FEF8FB on
-        // paper. Nearly white with a hint of pink in it, so the strip belongs
-        // to the brand without becoming a third coloured bar under the other
-        // two. --hover-overlay (7%) was tried first and read as a panel.
-        "border-b border-divider bg-brand-wash",
+        // --bg, the same ground the nav above it takes, so the strip reads as
+        // the bottom of one piece of chrome rather than as a third bar with
+        // its own colour. It was --brand-wash (the brand hue at 4%): a pink
+        // tint is affordable on a white page, but on a recessed ground the
+        // chrome is already the lightest thing on screen and the tint became
+        // the loudest. The scores are the colour on this strip.
+        "border-b border-divider bg-bg",
         className,
       )}
     >
@@ -119,7 +121,7 @@ function TickerRow({ fixture }: { fixture: TickerFixture }) {
     <div className="flex shrink-0 items-center gap-2.5 px-5 py-2.5 text-[0.7375rem] whitespace-nowrap">
       <span className="text-fg-muted">{fixture.home}</span>
       {hasScore ? (
-        <span className="kx-numeric rounded-row bg-bg px-2.5 py-1 font-semibold text-fg">
+        <span className="kx-numeric rounded-row bg-surface border border-border px-2.5 py-1 font-semibold text-fg">
           {fixture.homeScore}&nbsp;-&nbsp;{fixture.awayScore}
         </span>
       ) : null}

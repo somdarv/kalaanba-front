@@ -41,11 +41,16 @@ export function ClubBlock({ player, meta }: ClubBlockProps) {
       <MeSection
         title="Your club"
         description="You are a free agent. Clubs near you can find you."
-      >
-        <ButtonLink href="/clubs/near-you" size="md">
-          Find a club
-        </ButtonLink>
-      </MeSection>
+        // The heading row, so it sits far right against the title rather than
+        // below the line it answers. It is also the ONE filled action on this
+        // surface: a player with no club has one obvious next move, and
+        // DESIGN_LANGUAGE §4.3 allows exactly one primary per viewport.
+        action={
+          <ButtonLink href="/clubs/near-you" size="sm">
+            Join a club
+          </ButtonLink>
+        }
+      />
     );
   }
 

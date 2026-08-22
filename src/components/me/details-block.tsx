@@ -51,7 +51,7 @@ export function DetailsBlock({ player, meta, onEdit }: DetailsBlockProps) {
     <MeSection
       title="Your details"
       action={
-        <Button intent="ghost" size="sm" onClick={onEdit}>
+        <Button intent="secondary" size="sm" onClick={onEdit}>
           Edit
         </Button>
       }

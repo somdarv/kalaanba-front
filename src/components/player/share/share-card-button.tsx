@@ -40,6 +40,8 @@ export type ShareCardButtonProps = {
   model: PlayerCardModel;
   record?: VerifiedRecord | null;
   statLabels?: Record<string, Partial<CardStatLabel>>;
+  /** Fill the parent. Used where this sits beside a peer in a split row. */
+  fullWidth?: boolean;
   className?: string;
 };
 
@@ -50,6 +52,7 @@ export function ShareCardButton({
   model,
   record,
   statLabels,
+  fullWidth,
   className,
 }: ShareCardButtonProps) {
   const [status, setStatus] = useState<Status>("idle");
@@ -98,7 +101,8 @@ export function ShareCardButton({
     <div className={className}>
       <Button
         intent="secondary"
-        size="sm"
+        size="md"
+        fullWidth={fullWidth}
         onClick={share}
         loading={status === "working"}
         leadingIcon={<ShareNetwork size={16} weight="bold" />}
