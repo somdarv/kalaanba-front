@@ -1,0 +1,13 @@
+key: club.meta.cache_ttl_seconds
+engine: club
+scope: platform
+value_type: int
+default: '300'
+approval_level: low
+description: |
+  `max-age` on `GET /api/v1/clubs/meta`. `stale-while-revalidate` is twelve
+  times this value. The response also carries an ETag that changes whenever any
+  sourced config key changes, so a client can hold the vocabulary and
+  revalidate cheaply.
+
+  Low approval — a caching knob, not a rule.

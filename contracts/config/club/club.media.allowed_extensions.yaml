@@ -1,0 +1,13 @@
+key: club.media.allowed_extensions
+engine: club
+scope: platform
+value_type: json
+default: '["jpg","jpeg","png","webp"]'
+approval_level: high
+description: |
+  Image types accepted for a club crest, checked against the SERVER's sniff of
+  the bytes and not the filename the browser sent.
+
+  High approval — this list is what stops something executable reaching a public
+  bucket. SVG is deliberately absent: it is a document format that can carry
+  script, and a crest is drawn at 40px where vector buys nothing.

@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: "Club — Clubs near you (discovery)"
-  version: "1.0.0"
+  version: "1.1.0"
   description: |
     Lists clubs in an Area for the "join a club near you" finder (Club engine
     doc §6 location, §15 public profile). Authenticated; capped at
@@ -63,3 +63,23 @@ components:
         maturity_level:
           type: string
           description: informal | structured | verified | registered (internal key)
+        verification_state:
+          type: string
+          description: |
+            not_required | pending | cleared | rejected (internal key). Added
+            1.1.0 (WP-20260823); additive, so it does not break v1.
+
+            A `pending` club is one that claimed the `professional` tier and has not
+            been checked yet. It NEVER appears in this list: discovery filters it
+            out at the reader. It does appear in `GET /api/v1/clubs/mine`, which
+            is the one read that deliberately shows a club to its own admins
+            before it is public, so the Owner can see their claim is being looked
+            at rather than assume it vanished.
+        verification_source:
+          type: [string, "null"]
+          description: |
+            platform_history | documents | admin_fast_track, or null when
+            verification has not been sought. The three keys are the exact set
+            named in Club engine doc §4's locked rule. Internal detail: the
+            public surface shows one badge, "Verified Club", and never the
+            source.

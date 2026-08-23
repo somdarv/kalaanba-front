@@ -46,6 +46,13 @@ function stubClubs(clubs: typeof CLUBS | undefined) {
     isLoading: false,
     isError: false,
   } as unknown as ReturnType<typeof useClubs.useClubsNearby>);
+
+  // The rail resolves club-type labels from the config-served vocabulary
+  // (ADR-0007). The whole hooks module is auto-mocked here, so without this
+  // the resolver comes back undefined and the rail cannot render a row.
+  vi.mocked(useClubs.useClubTypeLabel).mockReturnValue(
+    (key: string) => (key === "community" ? "Community club" : key),
+  );
 }
 
 function stubHubs() {

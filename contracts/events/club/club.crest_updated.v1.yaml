@@ -1,0 +1,38 @@
+event_name: club.crest_updated
+schema_version: 1
+engine: club
+description: |
+  Emitted when a club admin sets or replaces the club crest (Club engine doc
+  §5 step 6, §11).
+
+  Consumed by Moderation & Safety, which decides whether the image may be shown
+  publicly. The Club engine never computes that verdict and never waits for one:
+  the club's own admins see the crest immediately, and a PUBLIC surface reads
+  the verdict before serving it to a stranger (Constitution Law 6, Law 10).
+
+  Also consumed by Analytics (profile completion) and any cache holding a club
+  card.
+
+  **A consumer showing this publicly must also check the club's
+  `verification_state`.** A professional claim can set a crest while still
+  `pending`, and that club is not yet entitled to the identity it is dressing
+  up (ADR-0017).
+required:
+  - club_id
+  - crest_url
+  - updated_at
+payload:
+  club_id:
+    type: uuid
+  crest_url:
+    type: string
+    description: Plain resolvable URL. Never signed; a crest is public content.
+  updated_at:
+    type: string
+    format: date-time
+idempotency: |
+  event_id is a fresh UUID per upload rather than the club id: replacing a
+  crest is a distinct event from setting the first one, and Moderation must see
+  both. Consumers dedupe on event_id + listener_name as usual. The upload
+  itself is guarded by the Idempotency-Key middleware, and the stored object is
+  content-addressed, so a retried upload of the same bytes reuses one object.

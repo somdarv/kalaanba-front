@@ -1,0 +1,16 @@
+key: club.name.ignored_tokens
+engine: club
+scope: platform
+value_type: json
+default: '["fc","f.c.","sc","afc","football","club","team"]'
+approval_level: low
+description: |
+  Generic football words dropped from a club name before it is matched against
+  `club.name.reserved_terms`, so that "Manchester United FC" cannot walk past a
+  block on "Manchester United".
+
+  Keep this to words that carry no identity. A word here is invisible to the
+  matcher, so adding "united" or "real" would quietly unblock "Manchester
+  United" and "Real Madrid".
+
+  Low approval — but read the paragraph above before changing it.

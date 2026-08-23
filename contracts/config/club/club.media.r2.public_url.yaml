@@ -1,0 +1,17 @@
+key: club.media.r2.public_url
+engine: club
+scope: platform
+value_type: string
+default: ''
+approval_level: high
+description: |
+  The base URL a browser fetches a stored crest from: the bucket's r2.dev
+  domain or a custom domain.
+
+  Required when `club.media.driver` is `r2`. It cannot be derived from the S3
+  endpoint, which is private and resolves for nobody without a signature, so an
+  environment that omits it would serve broken crests and the failure would look
+  like an upload bug rather than a missing setting.
+
+  Credentials are NOT here. `R2_ACCESS_KEY_ID` and `R2_SECRET_ACCESS_KEY` are
+  env-only, never admin config (engineering-standards §10).

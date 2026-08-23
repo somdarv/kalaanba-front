@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 import { ClubRequestsManager } from "@/components/club";
-import { Spinner } from "@/components/ui";
+import { ButtonLink, Spinner } from "@/components/ui";
 import { useUser } from "@/lib/api/hooks/use-auth";
 import { useMyClubs } from "@/lib/api/hooks/use-clubs";
 
@@ -45,10 +45,13 @@ export default function ManageClubsPage() {
 
       {!clubs || clubs.length === 0 ? (
         <div className="rounded-card bg-surface p-5 text-center shadow-md">
-          <p className="font-semibold">You don&apos;t administer any clubs</p>
-          <p className="mt-1 text-sm text-fg-muted">
-            Clubs you own or admin will appear here with their join requests.
+          <p className="font-semibold">You do not run any clubs yet</p>
+          <p className="text-fg-muted mt-1 text-sm">
+            Start one and it will show up here.
           </p>
+          <ButtonLink href="/clubs/create" size="md" className="mt-4">
+            Start a club
+          </ButtonLink>
         </div>
       ) : (
         <div className="flex flex-col gap-4">

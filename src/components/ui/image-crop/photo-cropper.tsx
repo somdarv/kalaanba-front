@@ -5,7 +5,7 @@ import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { BottomSheet, Button, Spinner } from "@/components/ui";
 import { cn } from "@/lib/cn";
 
-import { MAX_ZOOM, usePhotoCrop } from "./use-photo-crop";
+import { MAX_ZOOM, usePhotoCrop } from "@/hooks/use-photo-crop";
 
 /**
  * Frame the photo before it is uploaded.

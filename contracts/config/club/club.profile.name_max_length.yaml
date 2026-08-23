@@ -1,0 +1,12 @@
+key: club.profile.name_max_length
+engine: club
+scope: platform
+value_type: int
+default: '120'
+approval_level: medium
+description: |
+  Longest club name accepted at creation. Must not exceed the `clubs.name`
+  column width (120), which is the hard ceiling; raising it past that needs a
+  migration first.
+
+  Medium approval — it gates what can be created.

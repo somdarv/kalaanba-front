@@ -1,0 +1,24 @@
+key: club.types.tier
+engine: club
+scope: platform
+value_type: json
+default: '{"community":"amateur","informal":"amateur","school":"amateur","corporate":"amateur","religious":"amateur","facility":"amateur","academy":"professional","institution":"professional","registered":"professional"}'
+approval_level: medium
+description: |
+  Which tier each `club.types` key belongs to. The creation flow offers only
+  the types whose tier matches the door the person picked, and the create
+  endpoint refuses a type that does not belong to the submitted tier.
+
+  School and corporate sit under `amateur` by default even though Club engine doc
+  §10 groups "Schools, academies, corporates" under the document-based upgrade
+  path. A class team or an office five-a-side is grassroots football and should
+  not have to produce an institution letter to exist. A school that genuinely
+  wants the institution's name and badge goes through the `professional` door as an
+  `institution`. This is a config map precisely so that judgement can move
+  without a deploy once real clubs test it.
+
+  A type present in `club.types` but missing here is treated as `amateur`, the
+  safer default: it may be created freely but may not take a reserved name.
+
+  Medium approval — moving a type between tiers changes who may claim a
+  protected name and whether a club goes live on submit.

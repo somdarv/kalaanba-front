@@ -1,0 +1,102 @@
+openapi: 3.1.0
+info:
+  title: "Club — Upload the club crest"
+  version: "1.0.0"
+  description: |
+    Stores a club crest and returns its address (Club engine doc §5 step 6,
+    §11). Owner / Cofounder / Admin only: §7 puts club identity changes at
+    admin level, and a crest is the most visible piece of identity a club has.
+
+    Works on a club whose professional claim is still `pending`, so an Owner can
+    finish setting up while an admin checks it. The crest is not public until
+    the club is (ADR-0017).
+
+    The client crops and re-encodes before sending, so an ordinary upload is far
+    under the ceiling; the limit exists for the phone that sends a raw 12 MP
+    photo.
+
+paths:
+  /api/v1/clubs/{clubId}/crest:
+    post:
+      summary: Upload or replace the club crest
+      operationId: uploadClubCrest
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: clubId
+          required: true
+          schema: { type: string, format: uuid }
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema: { type: string, minLength: 8, maxLength: 128 }
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: |
+                    Image bytes. Types come from `club.media.allowed_extensions`
+                    and are checked against the SERVER's sniff, never the
+                    filename. Size ceiling is `club.media.max_kilobytes`.
+      responses:
+        "201":
+          description: Stored.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: object
+                    required: [crest_url, moderation_status]
+                    properties:
+                      crest_url:
+                        type: string
+                        format: uri
+                        description: |
+                          Plain, resolvable, never signed. A crest is public
+                          content, unlike the evidence bucket (§11), and a
+                          signed URL would expire while the club row still
+                          pointed at it.
+                      width: { type: [integer, "null"] }
+                      height: { type: [integer, "null"] }
+                      moderation_status:
+                        type: string
+                        description: |
+                          Always `pending` here, and that is not a placeholder
+                          for "we did not check". The upload raises
+                          `club.crest_updated` through the outbox and Moderation
+                          consumes it asynchronously (Law 6), so no verdict
+                          exists yet. A PUBLIC surface must read the verdict
+                          before serving this to a stranger (Law 10).
+                  meta: { type: object }
+        "401":
+          description: Missing or invalid bearer token.
+        "403":
+          description: |
+            Not an admin of this club. Stable key: club.not_club_admin.
+        "404":
+          description: |
+            No such club. Stable key: club.not_found.
+        "422":
+          description: |
+            Validation errors. Stable error keys:
+              club.crest_required
+              club.crest_too_large
+              club.crest_type_unsupported
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: SanctumPersonalAccessToken

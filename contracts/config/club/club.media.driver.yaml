@@ -1,0 +1,16 @@
+key: club.media.driver
+engine: club
+scope: platform
+value_type: string
+default: 'local'
+approval_level: high
+description: |
+  Where club crests are stored: `local` (the app's own public disk) or `r2`
+  (Cloudflare R2 over the S3 API).
+
+  `local` is the default so dev, test and CI need no bucket. A deployed
+  environment sets `r2`, and the factory then REFUSES to boot without
+  `club.media.r2.public_url` and the R2 key pair rather than silently writing
+  every crest to one web server's disk.
+
+  High approval — pointing this at the wrong place loses uploads.

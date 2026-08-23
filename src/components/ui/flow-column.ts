@@ -23,7 +23,7 @@
 
 /** Edge padding for a flow's scroll region and its sticky footer. */
 export const flowGutter =
-  "pl-[max(5%,env(safe-area-inset-left))] pr-[max(5%,env(safe-area-inset-right))]";
+  "pl-[max(10%,env(safe-area-inset-left))] pr-[max(10%,env(safe-area-inset-right))]";
 
 /** The column inside the gutter — full width on a phone, capped on a desktop. */
 export const flowColumn = "mx-auto w-full max-w-md";

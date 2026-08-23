@@ -14,8 +14,12 @@ import {
 import { StepTransition } from "./step-transition";
 
 /**
- * Chrome for the player-setup flow: a back affordance, a title, a progress
- * line, the animated step region, and a sticky CTA.
+ * Chrome for a guided flow: a back affordance, a title, a progress line, the
+ * animated step region, and a sticky CTA.
+ *
+ * Promoted out of `player/setup/` in WP-20260823 when club creation became the
+ * second caller. It knows nothing about what is being set up; a flow brings its
+ * own state machine, its own steps and its own footer.
  *
  * Layout follows DESIGN_LANGUAGE §9.2 — `min-h-dvh` (never `100vh`), edge
  * padding that respects the safe-area insets, and a scroll region that

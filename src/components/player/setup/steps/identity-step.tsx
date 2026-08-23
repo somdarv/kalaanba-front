@@ -2,8 +2,7 @@
 
 import { TextField } from "@/components/ui";
 
-import { StepHeading } from "../step-heading";
-import { StepStagger } from "../step-transition";
+import { StepHeading, StepStagger } from "@/components/ui/wizard";
 import type { StepProps } from "./step-props";
 
 /**

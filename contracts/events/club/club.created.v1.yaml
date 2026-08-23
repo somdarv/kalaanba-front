@@ -6,10 +6,18 @@ description: |
   §5, §7). Consumed by Analytics (club growth), Notification (welcome / next
   steps), Fan Buzz / Discovery (a new club may surface locally), and Season
   (a new active club auto-joins the season per Club §8, handled downstream).
+
+  **A consumer that puts this club in front of the public must read
+  `verification_state` first.** An `professional`-tier club is created `pending`
+  and is not yet entitled to the name it carries; surfacing it before an admin
+  clears it is the exact impersonation this event's producer refuses at the
+  door (ADR-0017). Analytics may count it. Discovery may not show it.
 required:
   - club_id
   - name
   - club_type
+  - tier
+  - verification_state
   - city_hub_id
   - area_id
   - created_by_user_id
@@ -22,6 +30,17 @@ payload:
   club_type:
     type: string
     description: Stable internal key from the club.types config set.
+  tier:
+    type: string
+    description: |
+      Stable internal key from the club.tiers config set (local | official).
+      Added 2026-08-23; additive, so schema_version stays 1 (Constitution §8).
+  verification_state:
+    type: string
+    description: |
+      not_required (local) | pending (official, awaiting the document review
+      in Club §10). Never `cleared` here: clearance is a later, separate event.
+      Added 2026-08-23; additive.
   city_hub_id:
     type: uuid
     description: Zone-engine City Hub (cross-engine reference).

@@ -5,9 +5,13 @@ import Link from "next/link";
 import { UsersThree } from "@phosphor-icons/react/dist/ssr";
 
 import { ApiError } from "@/lib/api";
-import { Badge, Button, Card, Spinner } from "@/components/ui";
-import { CLUB_TYPE_LABELS, type Club } from "@/lib/api/club";
-import { useClubsNearby, useRequestToJoin } from "@/lib/api/hooks/use-clubs";
+import { Badge, Button, ButtonLink, Card, Spinner } from "@/components/ui";
+import type { Club } from "@/lib/api/club";
+import {
+  useClubsNearby,
+  useClubTypeLabel,
+  useRequestToJoin,
+} from "@/lib/api/hooks/use-clubs";
 
 /**
  * ClubsFinder — lists clubs in the player's area (Club engine §6/§15) and lets
@@ -45,10 +49,12 @@ export function ClubsFinder({ areaId }: { areaId: string }) {
           <UsersThree size={26} weight="duotone" />
         </span>
         <p className="font-semibold">No clubs in your area yet</p>
-        <p className="text-sm text-fg-muted">
-          Be patient — clubs are being added. Check back soon to find a team
-          near you.
+        <p className="text-fg-muted text-sm">
+          Start one and other players will find it.
         </p>
+        <ButtonLink href="/clubs/create" size="md">
+          Start a club
+        </ButtonLink>
       </Card>
     );
   }
@@ -66,6 +72,7 @@ export function ClubsFinder({ areaId }: { areaId: string }) {
 
 function ClubRow({ club }: { club: Club }) {
   const requestToJoin = useRequestToJoin();
+  const typeLabel = useClubTypeLabel();
   const [requested, setRequested] = useState(false);
   const [needsProfile, setNeedsProfile] = useState(false);
 
@@ -95,7 +102,7 @@ function ClubRow({ club }: { club: Club }) {
           <p className="truncate font-semibold tracking-tight">{club.name}</p>
           <div className="mt-1">
             <Badge size="sm">
-              {CLUB_TYPE_LABELS[club.club_type] ?? club.club_type}
+              {typeLabel(club.club_type)}
             </Badge>
           </div>
         </div>

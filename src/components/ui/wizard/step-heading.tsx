@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 import { StepStagger } from "./step-transition";
 
 /**
- * The question at the top of every setup step.
+ * The question at the top of a step in a guided flow.
  *
  * One question per screen, at display scale with the tight tracking
  * DESIGN_LANGUAGE §2.6 calls "the single biggest premium signal". The optional

@@ -1,0 +1,26 @@
+key: club.tiers
+engine: club
+scope: platform
+value_type: json
+default: '["amateur","professional"]'
+approval_level: medium
+description: |
+  The two doors at club creation, in the order they are offered. Stable
+  snake_case keys; labels live in `club.tiers.labels` (Constitution Law 4).
+
+  `amateur` is the grassroots door: a community side, a friend crew, a school or
+  work team. It creates a live club immediately (Club engine doc §5, informal
+  V1 onboarding) and it may NOT take a name from `club.name.reserved_terms`.
+
+  `professional` is the claim door: a registered club, academy or institution. It
+  creates the club with `verification_state = pending`, hidden from every
+  public read until an admin clears it against the document-based upgrade path
+  (§10). It is the only door that may claim a reserved name, and claiming one
+  is what the review checks.
+
+  Tier is asked FIRST because everything after it depends on the answer: which
+  club types are offered (`club.types.tier`), whether a protected name is
+  refused or routed to review, and whether the club goes live on submit.
+
+  Medium approval — adding or removing a tier changes the shape of the creation
+  flow and the meaning of every entry in `club.types.tier`.
