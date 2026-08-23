@@ -1,0 +1,13 @@
+key: club.media.max_kilobytes
+engine: club
+scope: platform
+value_type: int
+default: '5120'
+approval_level: medium
+description: |
+  Largest crest upload accepted, in kilobytes. 5 MB by default.
+
+  The client crops and re-encodes before uploading, so an ordinary crest lands
+  far under this; the ceiling is there for the phone that sends a raw 12 MP
+  photo. "How big is too big" is a question about Ghanaian mobile data and the
+  answer will change, which is why it is config and not a literal.

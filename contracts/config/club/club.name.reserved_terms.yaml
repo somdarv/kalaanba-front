@@ -1,0 +1,31 @@
+key: club.name.reserved_terms
+engine: club
+scope: platform
+value_type: json
+default: '[{"canonical":"Asante Kotoko","aliases":["kotoko","porcupine warriors"]},{"canonical":"Hearts of Oak","aliases":["accra hearts of oak","phobia"]},{"canonical":"Aduana Stars","aliases":["aduana"]},{"canonical":"Medeama","aliases":["medeama sporting"]},{"canonical":"Karela United","aliases":["karela"]},{"canonical":"Nations FC","aliases":[]},{"canonical":"Bofoakwa Tano","aliases":["bofoakwa"]},{"canonical":"Real Tamale United","aliases":["rtu"]},{"canonical":"Tamale City","aliases":[]},{"canonical":"Manchester United","aliases":["man united","man utd","manchester utd","red devils"]},{"canonical":"Manchester City","aliases":["man city"]},{"canonical":"Liverpool","aliases":["the reds"]},{"canonical":"Chelsea","aliases":["the blues"]},{"canonical":"Arsenal","aliases":["the gunners"]},{"canonical":"Barcelona","aliases":["barca"]},{"canonical":"Real Madrid","aliases":[]},{"canonical":"Bayern Munich","aliases":["bayern munchen"]},{"canonical":"Juventus","aliases":["juve"]},{"canonical":"Paris Saint Germain","aliases":["psg"]}]'
+approval_level: medium
+description: |
+  Club names a `amateur` club may not take. An `professional` club MAY claim one, and
+  claiming it is exactly what the document review checks (Club engine doc §10).
+
+  Each entry is `{ "canonical": string, "aliases": string[] }`. The two are
+  matched with deliberately different widths (see ADR-0017):
+
+    - `canonical` matches if it appears ANYWHERE in the candidate as whole
+      tokens. "Tamale Manchester United" is refused.
+    - each `alias` matches only if it is the WHOLE candidate. "Man Utd" is
+      refused; "Kotoko Boys" is not.
+
+  The asymmetry is load-bearing. A full club name is specific enough that
+  containing it is always a claim on that club. A single alias word is not:
+  "Kotoko" is an ordinary Twi word and "Hearts" an ordinary English one, so
+  matching those loosely would refuse real Ghanaian teams the use of their own
+  name. When in doubt, put a word in `aliases`, never in a `canonical` of its
+  own.
+
+  Matching runs after normalisation: lowercased, diacritics and punctuation
+  stripped, `club.name.ignored_tokens` dropped, whitespace collapsed.
+
+  Medium approval — this list decides who may register a name. Adding a term
+  takes it away from everyone on the `amateur` tier immediately, with no deploy,
+  which is the point.

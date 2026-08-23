@@ -1,0 +1,13 @@
+key: club.tiers.descriptions
+engine: club
+scope: platform
+value_type: json
+default: '{"amateur":"Friends, a community side, a school or work team.","professional":"A registered club or academy. We check before it goes live."}'
+approval_level: low
+description: |
+  One line under each tier option, telling the person what picking it means.
+  The `professional` line states the consequence up front: the club does not go
+  live on submit. Someone who learns that only after filling in six steps has
+  been misled by omission.
+
+  Low approval — display copy.

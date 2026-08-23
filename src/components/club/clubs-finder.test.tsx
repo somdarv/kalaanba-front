@@ -12,11 +12,15 @@ vi.mock("@/lib/api/club", async (importOriginal) => {
     ...actual,
     listClubsNearby: vi.fn(),
     requestToJoinClub: vi.fn(),
+    // The club-type label is resolved from the config-served vocabulary now
+    // (ADR-0007), not from a map in the bundle, so the finder makes this call.
+    getClubMeta: vi.fn(),
   };
 });
 
 const listClubsNearby = vi.mocked(clubApi.listClubsNearby);
 const requestToJoinClub = vi.mocked(clubApi.requestToJoinClub);
+const getClubMeta = vi.mocked(clubApi.getClubMeta);
 
 const AREA = "8c2f9d0a-2c5b-4e3e-9c1e-6a3b1a0e1005";
 
@@ -44,7 +48,14 @@ function renderFinder() {
 }
 
 describe("ClubsFinder", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    getClubMeta.mockResolvedValue({
+      tiers: [{ key: "amateur", label: "A local team" }],
+      types: [{ key: "community", label: "Community club", tier: "amateur" }],
+      name: { min_length: 2, max_length: 120 },
+    });
+  });
 
   it("lists clubs in the area with a join action", async () => {
     listClubsNearby.mockResolvedValue([
@@ -57,7 +68,13 @@ describe("ClubsFinder", () => {
       expect(screen.getByText("Bantama Boys")).toBeInTheDocument(),
     );
     expect(screen.getByText("Aboabo United")).toBeInTheDocument();
-    expect(screen.getByText(/community club/i)).toBeInTheDocument();
+
+    // The type label arrives with the vocabulary, on its own query, so it can
+    // land a tick after the club list. Until it does the raw key shows, which
+    // is the deliberate fallback: a real word rather than a spinner mid-row.
+    expect(await screen.findByText(/community club/i)).toBeInTheDocument();
+    // "academy" has no entry in this vocabulary, so it falls back to its key.
+    expect(screen.getByText("academy")).toBeInTheDocument();
 
     const joinButtons = screen.getAllByRole("button", {
       name: /request to join/i,

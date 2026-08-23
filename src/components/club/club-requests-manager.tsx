@@ -1,8 +1,9 @@
 "use client";
 
 import { Badge, Button, Card, Spinner } from "@/components/ui";
-import { CLUB_TYPE_LABELS, type Club } from "@/lib/api/club";
+import type { Club } from "@/lib/api/club";
 import {
+  useClubTypeLabel,
   useDecideJoinRequest,
   useJoinRequests,
 } from "@/lib/api/hooks/use-clubs";
@@ -16,6 +17,7 @@ import {
  */
 export function ClubRequestsManager({ club }: { club: Club }) {
   const { data: requests, isLoading } = useJoinRequests(club.id);
+  const typeLabel = useClubTypeLabel();
   const decide = useDecideJoinRequest(club.id);
 
   return (
@@ -23,7 +25,7 @@ export function ClubRequestsManager({ club }: { club: Club }) {
       <div className="flex items-center justify-between gap-3">
         <p className="font-semibold tracking-tight">{club.name}</p>
         <Badge size="sm">
-          {CLUB_TYPE_LABELS[club.club_type] ?? club.club_type}
+          {typeLabel(club.club_type)}
         </Badge>
       </div>
 

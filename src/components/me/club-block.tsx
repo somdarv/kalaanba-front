@@ -3,8 +3,7 @@
 import Link from "next/link";
 
 import { ButtonLink, Crest, Divider, Skeleton } from "@/components/ui";
-import { useMyClubs } from "@/lib/api/hooks/use-clubs";
-import { CLUB_TYPE_LABELS } from "@/lib/api/club";
+import { useClubTypeLabel, useMyClubs } from "@/lib/api/hooks/use-clubs";
 import { labelFor, type MyPlayer, type PlayerMeta } from "@/lib/api/player";
 
 import { MeSection } from "./me-section";
@@ -35,6 +34,7 @@ const FREE_AGENT_KEY = "free_agent";
 export function ClubBlock({ player, meta }: ClubBlockProps) {
   const isFreeAgent = player.market_status === FREE_AGENT_KEY;
   const clubs = useMyClubs();
+  const typeLabel = useClubTypeLabel();
 
   if (isFreeAgent) {
     return (
@@ -80,7 +80,7 @@ export function ClubBlock({ player, meta }: ClubBlockProps) {
                     {club.name}
                   </span>
                   <span className="text-fg-subtle block truncate text-xs">
-                    {CLUB_TYPE_LABELS[club.club_type] ?? club.club_type}
+                    {typeLabel(club.club_type)}
                   </span>
                 </span>
               </Link>

@@ -1,0 +1,12 @@
+key: club.profile.name_min_length
+engine: club
+scope: platform
+value_type: int
+default: '2'
+approval_level: medium
+description: |
+  Shortest club name accepted at creation (Club engine doc §5 step 1). Served
+  by `GET /api/v1/clubs/meta` so the client form derives its validation from
+  this rather than duplicating a literal (ADR-0007 §3).
+
+  Medium approval — it gates what can be created.

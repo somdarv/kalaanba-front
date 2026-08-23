@@ -1,0 +1,11 @@
+key: club.types.descriptions
+engine: club
+scope: platform
+value_type: json
+default: '{"community":"An area or neighbourhood team.","informal":"A group of friends who play under one name.","school":"A school, class or campus team.","academy":"A training club with youth squads.","corporate":"A company or office team.","religious":"A church or mosque team.","institution":"A university, NGO or association team.","facility":"A team based at one pitch.","registered":"A club with papers or official backing."}'
+approval_level: low
+description: |
+  One line under each club-type option, drawn from the examples in Club engine
+  doc §3. Optional: a type with no entry renders its label alone.
+
+  Low approval — display copy.

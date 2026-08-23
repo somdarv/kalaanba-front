@@ -1,0 +1,16 @@
+key: club.types.labels
+engine: club
+scope: platform
+value_type: json
+default: '{"community":"Community club","informal":"Friends or crew","school":"School team","academy":"Academy","corporate":"Workplace team","religious":"Church or mosque team","institution":"Institution team","facility":"Facility team","registered":"Registered club"}'
+approval_level: low
+description: |
+  Display labels for the `club.types` keys, resolved by
+  `GET /api/v1/clubs/meta` and translatable per `Accept-Language`
+  (Constitution Law 4, ADR-0007). This is the config key that
+  `club.types`'s own description promised and nothing provided: until now the
+  frontend carried a hardcoded `CLUB_TYPE_LABELS` mirror of these defaults.
+
+  A key present in `club.types` but missing here falls back to the key itself.
+
+  Low approval — labels are cosmetic.

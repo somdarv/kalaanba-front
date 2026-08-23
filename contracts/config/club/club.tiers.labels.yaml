@@ -1,0 +1,21 @@
+key: club.tiers.labels
+engine: club
+scope: platform
+value_type: json
+default: '{"amateur":"Amateur","professional":"Professional"}'
+approval_level: low
+description: |
+  Display labels for the `club.tiers` keys, resolved by
+  `GET /api/v1/clubs/meta` and translatable per `Accept-Language`
+  (Constitution Law 4, ADR-0007).
+
+  A key present in `club.tiers` but missing here falls back to the key itself
+  rather than rendering a blank, unselectable option.
+
+  "Amateur" and "Professional" is the distinction the product owner uses and the
+  one a Ghanaian player already understands from the game itself. It was briefly
+  "A local team" / "An official club" on the worry that "amateur" reads as a
+  demotion; it does not, because amateur football is what most of the pitch is
+  and nobody on it is embarrassed by the word.
+
+  Low approval — labels are cosmetic.

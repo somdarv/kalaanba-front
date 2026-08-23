@@ -1,0 +1,16 @@
+key: club.media.throttle.per_minute
+engine: club
+scope: platform
+value_type: int
+default: '10'
+approval_level: medium
+description: |
+  Crest uploads allowed per minute, per acting user.
+
+  Keyed by user rather than by IP: a club's own wifi or an internet cafe is the
+  ordinary case, and an IP key would let one admin's retries lock out everyone
+  sitting beside them.
+
+  Separate from `club.read.throttle.per_minute` because an upload costs orders
+  of magnitude more than a read, and an admin fixing a crest must not exhaust
+  the budget that lets the club be found.

@@ -18,21 +18,56 @@ const out = process.argv[3];
  * PRODUCT.md §11 plus the Zone engine doc's own examples. Google returns the
  * landmarks INSIDE these (a police roundabout, a school, a market) and, when
  * filtered to geographic types, returns nothing at all for 8 of them.
+ *
+ * Expanded 2026-08-23: the seeded list stopped at 17 and a player creating a
+ * club in Tamale could not find their own area. Curated, not sourced, for the
+ * reason above. Needs a local review.
  */
 const TAMALE_LOCAL = [
-  "Lamashegu",
-  "Kalpohin",
-  "Vittin",
-  "Sakasaka",
-  "Choggu",
-  "Gumbihini",
   "Aboabo",
+  "Bagabaga",
+  "Banvim",
   "Bulpela",
-  "Taha",
+  "Changli",
+  "Checko",
+  "Choggu",
+  "Dabokpa",
+  "Datoyili",
+  "Dungu",
+  "Education Ridge",
+  "Fuo",
+  "Gumani",
+  "Gumbihini",
+  "Gurugu",
+  "Jakariyili",
+  "Jisonayili",
+  "Kalariga",
+  "Kalpohin",
+  "Kanvile",
+  "Kasalgo",
+  "Kpalsi",
+  "Kpanvo",
   "Kukuo",
-  "Sagnarigu",
+  "Lamashegu",
+  "Malshegu",
+  "Moshie Zongo",
+  "NORRIP Village",
+  "Nyanshegu",
   "Nyohini",
+  "Russian Bungalow",
+  "Sagnarigu",
+  "Sakasaka",
+  "Shishegu",
+  "Sognaayili",
+  "Taha",
   "Tishigu",
+  "Tutingli",
+  "Vittin",
+  "Warizehi",
+  "Waterworks",
+  "Yapalsi",
+  "Zogbeli",
+  "Zujung",
 ];
 
 /**

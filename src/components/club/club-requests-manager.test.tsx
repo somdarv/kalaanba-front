@@ -12,11 +12,16 @@ vi.mock("@/lib/api/club", async (importOriginal) => {
     ...actual,
     listJoinRequests: vi.fn(),
     decideJoinRequest: vi.fn(),
+    // The club-type badge resolves its label from the config-served vocabulary
+    // (ADR-0007). Unmocked it reaches for the real API, and a unit test must
+    // touch no network (engineering-standards §12).
+    getClubMeta: vi.fn(),
   };
 });
 
 const listJoinRequests = vi.mocked(clubApi.listJoinRequests);
 const decideJoinRequest = vi.mocked(clubApi.decideJoinRequest);
+const getClubMeta = vi.mocked(clubApi.getClubMeta);
 
 const CLUB = {
   id: "029c0365-1c59-49ee-a791-93c29b6b5bd8",
@@ -40,7 +45,14 @@ function renderManager() {
 }
 
 describe("ClubRequestsManager", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    getClubMeta.mockResolvedValue({
+      tiers: [{ key: "amateur", label: "A local team" }],
+      types: [{ key: "community", label: "Community club", tier: "amateur" }],
+      name: { min_length: 2, max_length: 120 },
+    });
+  });
 
   it("shows pending requests and accepts one", async () => {
     listJoinRequests.mockResolvedValue([

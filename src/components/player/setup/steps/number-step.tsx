@@ -4,9 +4,8 @@ import { useState } from "react";
 
 import { TextField } from "@/components/ui";
 
-import { NumberTile, TextTile } from "../choice-controls";
-import { StepHeading } from "../step-heading";
-import { StepStagger } from "../step-transition";
+import { NumberTile, TextTile } from "@/components/ui/wizard";
+import { StepStagger, StepHeading } from "@/components/ui/wizard";
 import type { StepProps } from "./step-props";
 
 /**

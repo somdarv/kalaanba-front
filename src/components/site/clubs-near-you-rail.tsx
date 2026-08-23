@@ -4,8 +4,7 @@ import Link from "next/link";
 import { UsersThree } from "@phosphor-icons/react";
 
 import { Badge, ButtonLink, Card, Crest, EmptyState, Skeleton } from "@/components/ui";
-import { CLUB_TYPE_LABELS } from "@/lib/api/club";
-import { useClubsNearby } from "@/lib/api/hooks/use-clubs";
+import { useClubsNearby, useClubTypeLabel } from "@/lib/api/hooks/use-clubs";
 
 /**
  * "Clubs near you" on the home surface — the only real football Kalaanba can
@@ -29,6 +28,7 @@ export type ClubsNearYouRailProps = {
 
 export function ClubsNearYouRail({ areaId }: ClubsNearYouRailProps) {
   const { data: clubs, isLoading, isError } = useClubsNearby(areaId);
+  const typeLabel = useClubTypeLabel();
 
   if (!areaId) return null;
 
@@ -61,7 +61,7 @@ export function ClubsNearYouRail({ areaId }: ClubsNearYouRailProps) {
           icon={<UsersThree size={26} weight="duotone" />}
           title="No clubs here yet"
           description="Be the first. Start your club and other players will find it."
-          action={<ButtonLink href="/clubs/manage">Start a club</ButtonLink>}
+          action={<ButtonLink href="/clubs/create">Start a club</ButtonLink>}
           size="sm"
         />
       ) : (
@@ -81,7 +81,7 @@ export function ClubsNearYouRail({ areaId }: ClubsNearYouRailProps) {
                     {club.name}
                   </p>
                   <Badge size="sm" className="mt-2">
-                    {CLUB_TYPE_LABELS[club.club_type] ?? club.club_type}
+                    {typeLabel(club.club_type)}
                   </Badge>
                 </Card>
               </Link>

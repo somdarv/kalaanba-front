@@ -1,15 +1,23 @@
 import Link from "next/link";
-import { CaretRight, UserCirclePlus, UsersThree } from "@phosphor-icons/react/dist/ssr";
+import {
+  CaretRight,
+  FlagBanner,
+  UserCirclePlus,
+  UsersThree,
+} from "@phosphor-icons/react/dist/ssr";
 
 /**
  * HomeCtaPrompts — post-signup soft prompts on the live-activity home
  * (WP-20260702-home-rewire).
  *
- * Two optional entry points, never a forced wizard: become a player, or join a
- * club near you. "Create a club" is intentionally omitted in V1 — the product
- * direction is "join a club near you" first. The destinations (WP-B player
- * profile, WP-C club finder) don't exist yet, so both route to coming-soon
- * stubs.
+ * Three optional entry points, never a forced wizard: become a player, join a
+ * club near you, or start one.
+ *
+ * "Start a club" was deliberately absent until WP-20260823, on the product
+ * direction that joining comes before founding. It arrives now that creation
+ * has a flow and, more to the point, a door policy: a club claiming to be a
+ * real one is held for review rather than published (ADR-0017). It sits last
+ * because joining is still the commoner thing to want.
  *
  * Design: composes tokens from the Card recipe (bg-surface + shadow-md +
  * rounded-card) per DESIGN_LANGUAGE §4; each card is a full next/link tap
@@ -36,6 +44,12 @@ const PROMPTS: Prompt[] = [
     title: "Join a club near you",
     subtitle: "Find teams playing in your area and ask to join.",
     icon: UsersThree,
+  },
+  {
+    href: "/clubs/create",
+    title: "Start a club",
+    subtitle: "Give your team a name and put it on the map.",
+    icon: FlagBanner,
   },
 ];
 

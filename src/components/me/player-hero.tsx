@@ -6,8 +6,7 @@ import { PlayerCard } from "@/components/player/setup/player-card";
 import { buildPlayerCardModel } from "@/components/player/setup/player-card-model";
 import { ShareCardButton } from "@/components/player/share/share-card-button";
 
-import { PhotoCropper } from "./photo-cropper";
-import { PhotoSheet } from "./photo-sheet";
+import { PhotoCropper, PhotoSheet } from "@/components/ui/image-crop";
 import { Button, ButtonLink, Card, flowGutter } from "@/components/ui";
 import {
   useUpdatePlayer,

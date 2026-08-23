@@ -1,0 +1,160 @@
+openapi: 3.1.0
+info:
+  title: "Club — Creation form vocabulary"
+  version: "1.0.0"
+  description: |
+    Everything a client needs to *render* the club-creation flow, resolved from
+    Admin Configuration at request time: the two tiers, the club types and which
+    tier each belongs to, their display labels, and the name bounds the form
+    must enforce.
+
+    Second implementation of ADR-0007. Constitution Law 2 (configurability) and
+    Law 4 (stable keys / configurable labels) are unenforceable if the client
+    compiles its own copy of a config value into a bundle, and the club surface
+    was already doing exactly that: `CLUB_TYPE_LABELS` in `src/lib/api/club.ts`
+    was a hardcoded mirror of the `club.types` defaults, carrying a comment
+    admitting it. This endpoint replaces it.
+
+    Scope discipline: presentation vocabulary only. No club, no user, nothing
+    computed (Law 3). In particular this endpoint does NOT serve
+    `club.name.reserved_terms` — see the note on the `name` schema below.
+
+    Public read: the vocabulary is not sensitive and signed-out surfaces need it
+    too. Rate-limited at the anonymous tier.
+
+paths:
+  /api/v1/clubs/meta:
+    get:
+      summary: Tiers, club types, labels and name bounds for the creation flow
+      operationId: getClubMeta
+      security: []
+      parameters:
+        - in: header
+          name: Accept-Language
+          required: false
+          schema: { type: string }
+          description: |
+            Resolves the label maps. Changes labels ONLY — never keys, never
+            order (Constitution Law 4).
+
+            Resolution narrows from the full tag to the bare language to the
+            unsuffixed default: `fr-FR` reads `club.types.labels.fr-fr`, then
+            `.fr`, then `club.types.labels`. Responses carry
+            `Vary: Accept-Language`.
+        - in: header
+          name: If-None-Match
+          required: false
+          schema: { type: string }
+          description: Reference data; clients should cache and revalidate.
+      responses:
+        "200":
+          description: The current creation-form vocabulary.
+          headers:
+            ETag:
+              schema: { type: string }
+              description: Changes when any sourced config key changes.
+            Cache-Control:
+              schema: { type: string }
+              description: |
+                max-age is `club.meta.cache_ttl_seconds`;
+                stale-while-revalidate is 12x it.
+                Example: public, max-age=300, stale-while-revalidate=3600
+            Vary:
+              schema: { type: string }
+              description: Always `Accept-Language` — labels vary by locale.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data: { $ref: "#/components/schemas/ClubMetaView" }
+                  meta: { type: object }
+        "304":
+          description: Not modified — the cached copy is current.
+
+components:
+  schemas:
+    LabelledOption:
+      type: object
+      additionalProperties: false
+      required: [key, label]
+      properties:
+        key:
+          type: string
+          description: |
+            Stable internal snake_case key. All logic keys on this; it never
+            changes for cosmetic reasons (Constitution Law 4).
+        label:
+          type: string
+          description: |
+            Display string, translated per Accept-Language. Falls back to `key`
+            when the label map has no entry — a missing label must never render
+            an unselectable blank option.
+        description:
+          type: [string, "null"]
+          description: One line on what picking this means. Null when unwritten.
+
+    ClubTypeOption:
+      type: object
+      additionalProperties: false
+      required: [key, label, tier]
+      description: |
+        A club type (Club engine doc §3) plus the tier it belongs to. The client
+        offers only the types whose `tier` matches the door the person picked.
+      properties:
+        key: { type: string, example: academy }
+        label: { type: string, example: Academy }
+        description: { type: [string, "null"] }
+        tier:
+          type: string
+          description: |
+            A member of `tiers[].key`, from the `club.types.tier` map. A type
+            absent from that map is reported as the first tier — the safer
+            default, since that tier may not claim a reserved name.
+          example: official
+
+    ClubMetaView:
+      type: object
+      additionalProperties: false
+      required: [tiers, types, name]
+      properties:
+        tiers:
+          type: array
+          minItems: 1
+          description: |
+            The doors at creation, in `club.tiers` order — order is presentation
+            and belongs to config, not to the client's sort. Labels from
+            `club.tiers.labels`, `description` from `club.tiers.descriptions`.
+
+            This is the FIRST question in the flow. Everything after it depends
+            on the answer: which types are offered, whether a protected name is
+            refused or routed to review, and whether the club goes live on
+            submit.
+          items: { $ref: "#/components/schemas/LabelledOption" }
+
+        types:
+          type: array
+          description: |
+            Club types in `club.types` order, each carrying its tier. Labels from
+            `club.types.labels`, `description` from `club.types.descriptions`.
+          items: { $ref: "#/components/schemas/ClubTypeOption" }
+
+        name:
+          type: object
+          additionalProperties: false
+          required: [min_length, max_length]
+          description: |
+            Length bounds the form must enforce, from
+            `club.profile.name_min_length` / `_max_length`. Client validation is
+            DERIVED from these, never duplicated as literals (ADR-0007 §3).
+
+            **The reserved-name list is deliberately absent.** Whether a name may
+            be used is a verdict, and verdicts are backend truth (Law 3). Serving
+            the list would also hand every client a permanently stale copy of a
+            config value that changes without a deploy, and would publish the
+            exact list to route around. The client submits the name and reacts
+            to `club.name_reserved`.
+          properties:
+            min_length: { type: integer }
+            max_length: { type: integer }

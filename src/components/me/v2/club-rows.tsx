@@ -3,8 +3,7 @@
 import Link from "next/link";
 
 import { ButtonLink, Crest, Divider, Skeleton } from "@/components/ui";
-import { CLUB_TYPE_LABELS } from "@/lib/api/club";
-import { useMyClubs } from "@/lib/api/hooks/use-clubs";
+import { useClubTypeLabel, useMyClubs } from "@/lib/api/hooks/use-clubs";
 import type { MyPlayer } from "@/lib/api/player";
 
 /**
@@ -28,6 +27,7 @@ export const FREE_AGENT_KEY = "free_agent";
 export function ClubRows({ player }: { player: MyPlayer }) {
   const isFreeAgent = player.market_status === FREE_AGENT_KEY;
   const clubs = useMyClubs();
+  const typeLabel = useClubTypeLabel();
 
   if (isFreeAgent) {
     return (
@@ -71,7 +71,7 @@ export function ClubRows({ player }: { player: MyPlayer }) {
                 {club.name}
               </span>
               <span className="text-fg-subtle block truncate text-xs">
-                {CLUB_TYPE_LABELS[club.club_type] ?? club.club_type}
+                {typeLabel(club.club_type)}
               </span>
             </span>
           </Link>

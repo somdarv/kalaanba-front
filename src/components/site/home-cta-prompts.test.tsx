@@ -16,13 +16,17 @@ describe("HomeCtaPrompts", () => {
     expect(club).toHaveAttribute("href", "/clubs/near-you");
   });
 
-  it("hides 'Create a club' in V1", () => {
+  it("offers starting a club", () => {
+    // Absent until WP-20260823: creation had no flow, and no door policy to
+    // stop the first person who signed up registering Asante Kotoko.
     render(<HomeCtaPrompts />);
-    expect(screen.queryByText(/create a club/i)).not.toBeInTheDocument();
+
+    const create = screen.getByRole("link", { name: /start a club/i });
+    expect(create).toHaveAttribute("href", "/clubs/create");
   });
 
-  it("renders exactly two prompts", () => {
+  it("renders exactly three prompts", () => {
     render(<HomeCtaPrompts />);
-    expect(screen.getAllByRole("link")).toHaveLength(2);
+    expect(screen.getAllByRole("link")).toHaveLength(3);
   });
 });

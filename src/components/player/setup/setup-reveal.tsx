@@ -16,7 +16,7 @@ import { labelFor, type Player, type PlayerMeta } from "@/lib/api/player";
 
 import { PlayerCard } from "./player-card";
 import { ANNOUNCEMENT_HOLD_MS, SetupAnnouncement } from "./setup-announcement";
-import { RevealBeat } from "./step-transition";
+import { RevealBeat } from "@/components/ui/wizard";
 
 /**
  * The payoff screen. Renders the player the API just returned — not the local

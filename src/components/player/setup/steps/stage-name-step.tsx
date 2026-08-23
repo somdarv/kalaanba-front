@@ -4,8 +4,7 @@ import { useMemo } from "react";
 
 import { ChipToggle, TextField } from "@/components/ui";
 
-import { StepHeading } from "../step-heading";
-import { StepStagger } from "../step-transition";
+import { StepStagger, StepHeading } from "@/components/ui/wizard";
 import type { StepProps } from "./step-props";
 
 /**

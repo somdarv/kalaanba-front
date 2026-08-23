@@ -12,7 +12,7 @@ import {
 } from "@/hooks/use-player-setup-wizard";
 
 import { SetupReveal } from "./setup-reveal";
-import { WizardShell } from "./wizard-shell";
+import { WizardShell } from "@/components/ui/wizard";
 import { AvailabilityStep } from "./steps/availability-step";
 import { IdentityStep } from "./steps/identity-step";
 import { NumberStep } from "./steps/number-step";
