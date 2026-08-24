@@ -660,8 +660,12 @@ html.light .kx-ground-soft {
 }
 
 /* ---------------------------------------------------------------------
-   EXPERIMENTAL — WP-20260823-me-spotlight. Composed by `/me` only, the way
-   .elev-soft above is, and under the same gate.
+   EXPERIMENTAL — WP-20260823-me-spotlight, the way .elev-soft above is and
+   under the same gate.
+
+   Composed by `/me` and, since 2026-08-24, the club flow's review card — the
+   owner asked for that one by name. Two surfaces, still an experiment: the
+   ADR is owed before it becomes a default anyone reaches for.
 
    The reference is the Player of the Matchweek panel still standing on
    `/legacy/landing`: a white card with a real diffused shadow, on a ground

@@ -15,8 +15,11 @@ import {
 import { labelFor, type Player, type PlayerMeta } from "@/lib/api/player";
 
 import { PlayerCard } from "./player-card";
-import { ANNOUNCEMENT_HOLD_MS, SetupAnnouncement } from "./setup-announcement";
-import { RevealBeat } from "@/components/ui/wizard";
+import {
+  ANNOUNCEMENT_HOLD_MS,
+  FlowAnnouncement,
+  RevealBeat,
+} from "@/components/ui/wizard";
 
 /**
  * The payoff screen. Renders the player the API just returned — not the local
@@ -126,7 +129,9 @@ export function SetupReveal({
               the first render anyway, so dropping it costs the swap nothing. */}
           <AnimatePresence mode="wait">
             {isAnnouncing ? (
-              <SetupAnnouncement key="announcement" />
+              <FlowAnnouncement key="announcement">
+                Profile created
+              </FlowAnnouncement>
             ) : (
               <div key="profile" className="flex flex-col gap-6">
                 <header className="space-y-2">

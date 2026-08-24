@@ -4,7 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { PlayerSetupWizard } from "./player-setup-wizard";
-import { ANNOUNCEMENT_HOLD_MS } from "./setup-announcement";
+import { ANNOUNCEMENT_HOLD_MS } from "@/components/ui/wizard";
 import { ApiError } from "@/lib/api/envelope";
 import * as playerApi from "@/lib/api/player";
 import type { PlayerMeta } from "@/lib/api/player";

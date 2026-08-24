@@ -7,6 +7,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/cn";
 
 import { Overlay } from "./overlay";
+import { InsideSheetProvider } from "./sheet-context";
 
 /**
  * `<BottomSheet>` — the canonical mobile modal surface.
@@ -208,9 +209,14 @@ export function BottomSheet({
           )}
         </div>
 
-        <div className="max-h-[70vh] overflow-y-auto px-5 pb-5 sm:max-h-[60vh]">
-          {children}
-        </div>
+        {/* Anything rendered in here knows it is inside a sheet, so a nested
+            control does not open a second one on top of this. See
+            `sheet-context.tsx`. */}
+        <InsideSheetProvider value={true}>
+          <div className="max-h-[70vh] overflow-y-auto px-5 pb-5 sm:max-h-[60vh]">
+            {children}
+          </div>
+        </InsideSheetProvider>
       </div>
     </Overlay>
   );

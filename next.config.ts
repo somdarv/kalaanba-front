@@ -65,7 +65,32 @@ const nextConfig: NextConfig = {
       ? path.resolve(process.cwd(), "cache-handler.mjs")
       : undefined,
   cacheMaxMemorySize: 0,
-  images: { remotePatterns },
+  images: {
+    remotePatterns,
+
+    /**
+     * Next 16 refuses to OPTIMISE an image whose host resolves to a local or
+     * private IP, whatever `remotePatterns` says, unless this is set. It is an
+     * SSRF guard: without it, anything that can influence an image URL can
+     * make the server fetch things on its own network.
+     *
+     * That is why a club crest served from the API's `local` media driver
+     * (`http://localhost:8000/storage/club-crests/...`) came back 400 while a
+     * player headshot from R2 loaded fine — the R2 host is public, and the
+     * allow-list was never the thing rejecting it.
+     *
+     * **Development only, and that is not a formality.** In production every
+     * media host is public, so this buys nothing there and costs the guard.
+     * `NODE_ENV` is `development` under `next dev` and `production` under
+     * `next build`, so a build can never turn it on by accident.
+     *
+     * The alternative fix is to give the API a `club.media.driver` of `r2` so
+     * crests are public in dev too. Worth doing on its own merits, but this
+     * has to be right regardless: someone running the whole stack offline on
+     * the `local` driver should still see their own badge.
+     */
+    dangerouslyAllowLocalIP: process.env.NODE_ENV === "development",
+  },
 };
 
 export default nextConfig;

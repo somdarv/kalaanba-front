@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { MapPin } from "@phosphor-icons/react";
 
-import { Select, Skeleton, type SelectOption } from "@/components/ui";
+import { Select, type SelectOption } from "@/components/ui";
 import { StepHeading, StepStagger } from "@/components/ui/wizard";
 import { useHubs } from "@/lib/api/hooks/use-zone";
 
@@ -42,24 +42,27 @@ export function HubStep({ wizard }: ClubStepProps) {
       </StepHeading>
 
       <StepStagger index={1}>
-        {hubs.isLoading ? (
-          <Skeleton className="h-12 w-full rounded-full" />
-        ) : (
-          <Select
-            label="City hub"
-            placeholder="Choose a hub"
-            searchable
-            leftIcon={<MapPin size={18} weight="bold" />}
-            options={options}
-            value={current || null}
-            onChange={(next) => {
-              setValue("city_hub_id", next ?? "", { shouldValidate: true });
-              // An area belongs to one hub, so a changed hub strands it.
-              setValue("area_id", "");
-            }}
-            error={wizard.form.formState.errors.city_hub_id?.message}
-          />
-        )}
+        {/* No skeleton standing in for the control. The hub list is warmed
+            when the FLOW starts (`useWarmZoneCaches`), four steps before
+            anyone reaches this, so it is almost always here already; and a
+            grey bar where the control should be makes a person wait on a
+            question they could be reading. The control is real from the first
+            frame and says "Loading" inside itself if it opens early. */}
+        <Select
+          label="City hub"
+          placeholder="Choose a hub"
+          searchable
+          loading={hubs.isLoading}
+          leftIcon={<MapPin size={18} weight="bold" />}
+          options={options}
+          value={current || null}
+          onChange={(next) => {
+            setValue("city_hub_id", next ?? "", { shouldValidate: true });
+            // An area belongs to one hub, so a changed hub strands it.
+            setValue("area_id", "");
+          }}
+          error={wizard.form.formState.errors.city_hub_id?.message}
+        />
       </StepStagger>
     </>
   );

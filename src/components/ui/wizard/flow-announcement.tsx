@@ -4,14 +4,22 @@ import { Check } from "@phosphor-icons/react";
 import { LazyMotion, domAnimation, m, useReducedMotion } from "framer-motion";
 
 /**
- * "Profile created" — the moment, not the screen.
+ * The moment a guided flow lands, not the screen it lands on.
+ *
+ * Promoted out of `player/setup/` in WP-20260824-setup-surface when club
+ * creation became the second caller — the same move `WizardShell` made. The
+ * only thing that differs between the two flows is the sentence, so that is
+ * the only thing that is a prop.
+ *
+ * Whatever this says, the screen underneath must not say it again: saying it
+ * twice makes the second one noise.
  *
  * This holds the top of the reveal on its own for a beat and then leaves, and
- * the profile takes the space it was using. It is deliberately transient:
+ * the content takes the space it was using. It is deliberately transient:
  * DESIGN_LANGUAGE §1.1 (Solid) wants confirmation the write landed, and §4.3
  * wants one thing asking for attention at a time. A permanent "Profile
  * created" banner satisfies the first and breaks the second, because it sits
- * over the card competing with it forever. A moment satisfies both.
+ * over the content competing with it forever. A moment satisfies both.
  *
  * The mark stamps in on `--ease-entrance` (§3.2 — the arrival easing, with its
  * hint of overshoot) before the words arrive, because a tick is read faster
@@ -31,7 +39,12 @@ const EASE_ENTRANCE = [0.16, 1.05, 0.4, 1] as const;
 /** How long the moment holds before it hands the screen over, in ms. */
 export const ANNOUNCEMENT_HOLD_MS = 1500;
 
-export function SetupAnnouncement() {
+export type FlowAnnouncementProps = {
+  /** What landed. Two or three words, past tense. */
+  children: string;
+};
+
+export function FlowAnnouncement({ children }: FlowAnnouncementProps) {
   const reduce = useReducedMotion();
   const duration = reduce ? 0 : DURATION_S;
 
@@ -67,7 +80,7 @@ export function SetupAnnouncement() {
           }}
           className="font-display text-fg text-2xl font-bold tracking-tight"
         >
-          Profile created
+          {children}
         </m.p>
       </m.div>
     </LazyMotion>
