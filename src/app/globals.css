@@ -303,9 +303,42 @@ html.light {
   --surface-overlay: oklch(1.000 0.000 264);
   --surface-2:       var(--surface-elev);
 
-  --fg:        oklch(0.255 0.022 264);
-  --fg-muted:  oklch(0.500 0.020 264);
-  --fg-subtle: oklch(0.540 0.018 264);
+  /* Ink on paper is NEUTRAL. 2026-08-24, owner's call, from a design where
+     the heading was specified #3D3D3D against this ramp's #1d232e.
+
+     §2.1.1 caught this defect three times at the top of the light ramp and
+     wrote the rule for L >= 0.90 only. It is the same defect at the bottom.
+     Measured as the sRGB R-B spread the section prescribes:
+
+       --fg          #1d232e   R-B -17
+       --fg-muted    #5d636f   R-B -18   <- worse than the heading it sits under
+       --fg-subtle   #696f7a   R-B -17
+
+     A page of text at -17 does not read as black that happens to be cool. It
+     reads as slate, which is the word §2.1.1 already uses for it. §2.1 locks
+     neutrals to hue 264 and says nothing about how much of it to carry;
+     chroma 0.000 is "none", which is what the near-white tokens already ship.
+
+     TWO DIFFERENT CHANGES HERE, and only one of them is a value judgement.
+
+     --fg takes the drawn colour whole: L 0.255 -> 0.360 AND chroma to 0. That
+     costs contrast, 15.78:1 -> 10.86:1 on paper, which is still far above the
+     4.5 floor and is the softer page the design asks for.
+
+     --fg-muted and --fg-subtle drop CHROMA ONLY. Their lightness is untouched,
+     because nothing asked for them to soften and --fg-subtle at 5.06:1 has
+     little room above the floor to spend. At this chroma the change is free:
+     both measure 6.00:1 and 5.06:1 before and after, identical to three
+     figures, because 0.02 of chroma at these lightnesses moves luminance by
+     nothing. The cast was costing contrast nowhere and costing neutrality
+     everywhere.
+
+     They move together or not at all. A neutral heading over slate body text
+     is worse than either ramp held consistently, and that is what changing
+     --fg alone would have shipped. `design-tokens.test.ts` pins all three. */
+  --fg:        oklch(0.360 0.000 264); /* #3d3d3d, 10.86:1 on paper */
+  --fg-muted:  oklch(0.500 0.000 264); /* #636363,  6.00:1 on paper */
+  --fg-subtle: oklch(0.540 0.000 264); /* #6f6f6f,  5.06:1 on paper */
 
   --border:        oklch(0.905 0.000 264);
   --border-strong: oklch(0.909 0.000 264);
@@ -624,6 +657,201 @@ html.light {
 :root[data-theme="light"] .kx-ground-soft,
 html.light .kx-ground-soft {
   background-color: color-mix(in oklab, var(--surface-elev) 92%, var(--border));
+}
+
+/* ---------------------------------------------------------------------
+   EXPERIMENTAL — WP-20260823-me-spotlight. Composed by `/me` only, the way
+   .elev-soft above is, and under the same gate.
+
+   The reference is the Player of the Matchweek panel still standing on
+   `/legacy/landing`: a white card with a real diffused shadow, on a ground
+   carrying a soft brand wash at its top edge. DESIGN_LANGUAGE §7 keeps that
+   route built precisely so old and new can be compared, and the owner's read
+   of it is that the CARD works because the GROUND works. Both halves are
+   ported here in v3 tokens; nothing is imported from `_archive`.
+
+   .elev-spotlight is `raised` with the shadow stepped one tier up. §4.3's
+   order still holds — --border draws the edge and --highlight-inset lifts the
+   top — but --shadow-md is what puts the panel ABOVE a tinted ground rather
+   than flat on it. The light ramp is why the step is needed at all: at ΔL
+   0.009 between paper and every light surface (see the .elev-soft note), a
+   card on this page is separated by its shadow or by nothing.
+
+   No shadow is invented. --shadow-md is the system's own middle tier,
+   0 8px 24px -12px at 14% in light, and this is its first consumer here.
+
+   .kx-ground-spotlight keeps the recessed base .kx-ground-soft derived (paper
+   mixed a quarter of the way toward the hairline) and adds the wash: two
+   radial ellipses on the top edge, --primary left at alpha 0.10 and --accent
+   right at 0.08. Those are the two brand hues the token set already holds
+   (350 and 245), at about the strength the legacy surface used once its 0.70
+   wrapper opacity is folded in.
+
+   THE WASH IS CAPPED AT 560px AND DOES NOT REPEAT. A percentage-sized radial
+   resolves against the painted box, and this class lands on a shell that is
+   viewport-tall at `lg` and document-tall on a phone. The same gradient would
+   be a 300px glow on one and a 1200px stain on the other.
+
+   Nothing on this surface reads text off the ground — every string sits on a
+   card — so the wash cannot move a contrast ratio. That is what makes 10%
+   affordable on paper at all.
+
+   THE WASH COLOURS ARE STATIC oklch(), NOT color-mix(), and this one was
+   confirmed by compiling rather than assumed. The --secondary-hover note above
+   warns that Lightning CSS compiles a color-mix down to a bare var() fallback
+   for browsers without it; that warning holds inside a gradient too. Written
+   as color-mix, this rule emitted
+
+     background-image: radial-gradient(..., var(--primary) 0%, transparent 66%)
+
+   as its pre-@supports fallback -- the brand fill at FULL strength. On the
+   pre-Chrome-111 / pre-Safari-16.2 Android slice that note names, the ground
+   would render as solid pink and blue glare instead of a wash.
+
+   L, C and H below are --primary and --accent unchanged, which the light block
+   shares with dark ("Fills are shared with dark"). Only alpha is added, so
+   this states the tokens rather than inventing a colour, and it is scoped to
+   the experiment class rather than added to :root. If the shape wins, these
+   become real --ground-wash-* tokens through an ADR (§8).
+   --------------------------------------------------------------------- */
+.elev-spotlight {
+  background-color: var(--surface-elev);
+  border: 1px solid var(--kx-border) ;
+  box-shadow: var(--highlight-inset), var(--shadow-md);
+}
+
+.kx-ground-spotlight {
+  --kx-wash-brand:  oklch(18.356% 0.02409 343.818 / 0.1); /* --primary  + alpha */
+  --kx-wash-accent: oklch(0.655 0.130 245 / 0.08); /* --accent   + alpha */
+
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(62% 100% at 14% 0%, var(--kx-wash-brand) 0%, transparent 66%),
+    radial-gradient(58% 100% at 86% 0%, var(--kx-wash-accent) 0%, transparent 66%);
+  background-repeat: no-repeat;
+  background-position: top center;
+  background-size: 100% 560px;
+}
+:root[data-theme="light"] .kx-ground-spotlight,
+html.light .kx-ground-spotlight {
+  background-color: color-mix(in oklab, var(--surface-elev) 92%, var(--border));
+}
+
+/* ---------------------------------------------------------------------
+   Brand at alpha, written STATIC.
+
+   Tailwind's `/opacity` modifier on a var() colour (`bg-primary/20`) compiles
+   to a color-mix, and Lightning CSS then emits this as the pre-@supports
+   fallback:
+
+     .bg-primary/10 { background-color: var(--primary); }
+
+   which is the brand fill at FULL strength. It is the identical hazard the
+   --secondary-hover note above was written against, arriving through a utility
+   class instead of a custom property. On the pre-Chrome-111 / pre-Safari-16.2
+   Android slice that note names, a 10% pink tint renders as a solid pink slab.
+
+   These two steps are what the setup surface needs. Hue, L and C are --primary
+   unchanged (shared across themes); only alpha is added. Scoped to a class
+   rather than added to :root, because a third consumer is the signal to make
+   them real tokens through an ADR (§8), not to keep widening this.
+   --------------------------------------------------------------------- */
+.kx-brand-tints {
+  --kx-brand-08: oklch(0.680 0.200 350 / 0.08); /* selected option fill */
+  --kx-brand-20: oklch(0.680 0.200 350 / 0.20); /* a step not reached yet */
+}
+
+/* ---------------------------------------------------------------------
+   Ground pattern — page texture. WP-20260824-setup-surface.
+
+   Supplied artwork, run through the same discipline player-card-patterns.ts
+   sets out: "Patterns are shapes, not colours." The PNG is white-on-transparent
+   and carries no colour of its own; the LAYER supplies it from --fg, so the
+   texture follows the theme and no literal is baked into an asset.
+
+   WHAT WAS DONE TO THE FILE, and why each step was needed.
+
+   1. SEAMLESS BY MIRRORING. The supplied tile does not wrap: its edge
+      discontinuity measures ~24 (mean abs, 0-255) against 2.7-5.0 for an
+      ordinary interior seam, so tiling it drew a faint grid. The shipped
+      master is the artwork plus its own reflections, 2x2. Every outer edge
+      then meets its own mirror image, which is continuous by construction and
+      needs no seamless source. The cost is that the visible motif is half the
+      master, so --kx-pattern-size is set for the master, not the motif.
+
+   2. IT IS AN ALPHA MASK, NOT A LUMINANCE ONE. A greyscale PNG needs
+      `mask-mode: luminance`, which is Chrome 120+. Carrying the shape in the
+      ALPHA channel makes the default `match-source` correct, so the mask works
+      as far back as -webkit-mask-image does.
+
+   3. TWO LEVELS, PALETTISED. Alpha is thresholded to on/off. At the opacity a
+      ground texture prints, antialiasing on a hatch line is not visible and it
+      is most of the entropy. 1182 KB -> 17 KB, a 70x reduction, and well under
+      the ~100 KB the card patterns are held to (§9.6 — these players pay for
+      their data).
+
+   IT CANNOT BLOCK PAINT. A mask URL on a pseudo-element is a low-priority
+   resource: the ground colour and all content paint first and the texture
+   arrives after. That is only true while nothing preloads it and nothing puts
+   it in an <img>. The page is designed to look finished without it.
+
+   CONTRAST. Paper is light enough that this is not the card's problem: --fg
+   over paper is 10.86:1, and 5% ink under a glyph takes it to about 10.4:1.
+   The real limit is legibility of text over texture, which is why the default
+   ink is 0.05 rather than the card's MAX_PATTERN_OPACITY of 0.12.
+
+   THE LAYER IS FIXED, SO THE TEXTURE DOES NOT SCROLL. Content moves over a
+   still ground, which is what stops a full-page pattern reading as wallpaper
+   being dragged past a window. `position: fixed` and NOT
+   `background-attachment: fixed`, which is the usual way to ask for this and
+   is janky-to-broken on iOS Safari — the one browser most of these players are
+   not on, but enough of them are.
+
+   One caveat worth knowing before moving this: a fixed element is positioned
+   against the viewport only while no ancestor has `transform`, `filter`,
+   `perspective`, `will-change` or `contain`. Any of those on a wrapper above it
+   makes that wrapper the containing block and the texture starts scrolling
+   again. Framer Motion sets `transform`, so the layer belongs high (it is on
+   <body>), never inside an animated region.
+
+   WHERE IT LIVES. On <body>, once, so it is genuinely app-wide. It shows
+   through any surface that does not paint its own ground, which is why
+   `AppShell`, `WizardShell` and the setup reveal dropped a `bg-bg` that only
+   repeated the body colour anyway. A surface that DOES paint a deliberate
+   ground of its own (`/me`'s spotlight wash, the auth shell) occludes the body
+   layer and composes this class itself: `::before` at z-index -1 paints above
+   its OWN background and below its content, so the texture returns without
+   ever being drawn twice.
+
+   Both knobs are per-surface: set --kx-pattern-ink / --kx-pattern-size on the
+   element that composes the class.
+   --------------------------------------------------------------------- */
+.kx-ground-pattern {
+  position: relative;
+  /* The ::before sits at z-index -1 so it paints ABOVE this element's own
+     background and BELOW its children. `isolation` keeps that negative index
+     inside this stacking context rather than letting it escape to an
+     ancestor and slide behind the page. */
+  isolation: isolate;
+}
+
+@supports (mask-image: url("/images/patterns/ground-zigzag.png")) or
+  (-webkit-mask-image: url("/images/patterns/ground-zigzag.png")) {
+  .kx-ground-pattern::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-color: var(--fg);
+    opacity: var(--kx-pattern-ink, 0.05);
+    -webkit-mask-image: url("/images/patterns/ground-zigzag.png");
+    mask-image: url("/images/patterns/ground-zigzag.png");
+    -webkit-mask-size: var(--kx-pattern-size, 1400px);
+    mask-size: var(--kx-pattern-size, 1400px);
+    -webkit-mask-repeat: repeat;
+    mask-repeat: repeat;
+  }
 }
 
 /* Numeric treatment — DESIGN_LANGUAGE §2.6. Owned by <StatValue>; this class

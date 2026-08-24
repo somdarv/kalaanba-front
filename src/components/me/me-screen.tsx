@@ -39,13 +39,22 @@ import { PlayerHero } from "./player-hero";
  * **Layout.** One column on a phone, in the order a player cares about, and the
  * page scrolls the way every other route does.
  *
- * **`kx-ground-soft` is an experiment (WP-20260822-me-soft-cards).** The blocks
- * moved from `Card tone="raised"` to `tone="soft"`, which drops the border and
- * lets the fill carry the card. A fill can only do that against a different
- * fill, and the light ramp this product ships has no ground step, so the shell
- * takes a recessed one here. Both are scoped to `/me` and `/me/v2` and both
- * need an ADR to go anywhere else (DESIGN_LANGUAGE §8). The rationale is
- * written out beside the recipe in `globals.css`.
+ * **`kx-ground-spotlight` is an experiment (WP-20260823-me-spotlight), and it
+ * replaces `kx-ground-soft` here.** The reference is the Player of the
+ * Matchweek panel on `/legacy/landing`, on the owner's read that the card
+ * works there because the ground works: a washed ground under a white panel
+ * with a real shadow. So the ground keeps the recessed step `soft` introduced
+ * and adds a brand wash across its top edge, and the blocks move from
+ * `tone="soft"` to `tone="spotlight"`, which puts the line back and steps the
+ * shadow up. Neither half works alone. The wash is what makes a shadow
+ * legible, and the shadow is what the wash is for.
+ *
+ * `/me/v2` is untouched and still composes `kx-ground-soft`, which is the
+ * point: two grounds, two card recipes, one surface each, comparable side by
+ * side the way `/legacy/showcase` compares old against new (§7). Both are
+ * scoped to this pair of routes and both need an ADR to go anywhere else
+ * (DESIGN_LANGUAGE §8). The rationale is written out beside the recipe in
+ * `globals.css`.
  *
  * At `lg` the page itself stops scrolling and the two columns scroll
  * independently inside a fixed viewport. Sticky was the first attempt and it
@@ -124,7 +133,7 @@ export function MeScreen() {
   return (
     <AppShell
       header={<SiteNav />}
-      className="kx-ground-soft lg:h-dvh lg:overflow-hidden"
+      className="kx-ground-spotlight kx-ground-pattern lg:h-dvh lg:overflow-hidden"
       contentClassName="max-w-6xl lg:min-h-0 lg:overflow-hidden lg:pb-6"
     >
       <div className="flex flex-col gap-4 lg:grid lg:h-full lg:min-h-0 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)] lg:items-start lg:gap-6">

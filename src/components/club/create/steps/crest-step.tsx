@@ -9,7 +9,7 @@ import { StepHeading, StepStagger } from "@/components/ui/wizard";
 import { useObjectUrl } from "@/hooks/use-object-url";
 import { preparePhoto } from "@/lib/images/prepare-photo";
 
-import { stepLead, type ClubStepProps } from "./step-props";
+import { type ClubStepProps } from "./step-props";
 
 /**
  * Step 4 — the club badge (Club engine doc §5 step 6).
@@ -50,7 +50,7 @@ export function CrestStep({ wizard }: ClubStepProps) {
 
   return (
     <>
-      <StepHeading lead={stepLead(wizard)} note="You can add this later.">
+      <StepHeading note="You can add this later.">
         Add your club badge
       </StepHeading>
 
@@ -60,7 +60,7 @@ export function CrestStep({ wizard }: ClubStepProps) {
             type="button"
             onClick={() => setSheetOpen(true)}
             aria-label={crest ? "Change the club badge" : "Add a club badge"}
-            className="rounded-full outline-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus-ring"
+            className="focus-visible:outline-focus-ring rounded-full outline-none focus-visible:outline-2 focus-visible:outline-offset-4"
           >
             {isPreparing ? (
               <span className="bg-surface-2 grid size-28 place-items-center rounded-full">

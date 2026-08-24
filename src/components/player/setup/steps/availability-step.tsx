@@ -36,10 +36,7 @@ export function AvailabilityStep({ wizard, meta }: StepProps) {
 
   return (
     <>
-      <StepHeading
-        lead="Step 5 of 5"
-        note="Clubs picking a squad see this. You can change it any time."
-      >
+      <StepHeading note="Clubs picking a squad see this. You can change it any time.">
         Are you free to play?
       </StepHeading>
 

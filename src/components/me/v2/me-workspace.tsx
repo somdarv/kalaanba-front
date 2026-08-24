@@ -113,7 +113,7 @@ export function MeWorkspace() {
   return (
     <AppShell
       header={<SiteNav />}
-      className="kx-ground-soft lg:h-dvh lg:overflow-hidden"
+      className="kx-ground-soft kx-ground-pattern lg:h-dvh lg:overflow-hidden"
       contentClassName="max-w-6xl lg:min-h-0 lg:overflow-hidden lg:pb-6"
     >
       {/* `min-h-0` on the panes is load-bearing: a grid item's automatic

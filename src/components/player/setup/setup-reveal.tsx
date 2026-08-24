@@ -102,8 +102,9 @@ export function SetupReveal({
     },
   ];
 
+  // No `bg-bg`: <body> paints the ground and carries the texture layer.
   return (
-    <div className="bg-bg flex min-h-dvh flex-col">
+    <div className="flex min-h-dvh flex-col">
       {/* The flow's other screens carry a top bar; the payoff had none, so the
           brand dropped out exactly where the player is being handed something.
           Pink, not theme ink: this is the one screen in the flow that is a

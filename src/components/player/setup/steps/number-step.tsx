@@ -33,10 +33,7 @@ export function NumberStep({ wizard, meta }: StepProps) {
 
   return (
     <>
-      <StepHeading
-        lead="Step 3 of 5"
-        note="The number you like. A club can still give you another one."
-      >
+      <StepHeading note="The number you like. A club can still give you another one.">
         Pick your number
       </StepHeading>
 

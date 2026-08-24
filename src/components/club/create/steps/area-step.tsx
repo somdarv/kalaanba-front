@@ -7,7 +7,7 @@ import { StepHeading, StepStagger } from "@/components/ui/wizard";
 import { SuggestAreaDialog } from "@/components/onboarding";
 import { useAreas, useHubs } from "@/lib/api/hooks/use-zone";
 
-import { stepLead, type ClubStepProps } from "./step-props";
+import { type ClubStepProps } from "./step-props";
 
 /**
  * Step 5 — the Area (Club §6, Zone §5). Kalaanba maps Area to Zone/Belt
@@ -28,7 +28,8 @@ export function AreaStep({ wizard }: ClubStepProps) {
   const [suggestOpen, setSuggestOpen] = useState(false);
 
   const options: SelectOption[] = useMemo(
-    () => (areas.data ?? []).map((area) => ({ value: area.id, label: area.name })),
+    () =>
+      (areas.data ?? []).map((area) => ({ value: area.id, label: area.name })),
     [areas.data],
   );
 
@@ -40,10 +41,7 @@ export function AreaStep({ wizard }: ClubStepProps) {
 
   return (
     <>
-      <StepHeading
-        lead={stepLead(wizard)}
-        note="Where the club is from. You can play your matches anywhere."
-      >
+      <StepHeading note="Where the club is from. You can play your matches anywhere.">
         Which area do you play from?
       </StepHeading>
 

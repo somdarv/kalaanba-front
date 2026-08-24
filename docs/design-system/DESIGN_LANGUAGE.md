@@ -2,7 +2,14 @@
 
 > **Tagline**: _Solid. Proactive. Premium._
 > **Status**: Built. Token layer is v3 (OKLCH) per `ADR-0006`, amended by `ADR-0010`.
-> **Last updated**: 2026-08-19 - (a) brand and state **fills** return to v2's
+> **Last updated**: 2026-08-24 (WP-20260824-setup-surface) - (a) **the light
+> ink family is neutral.** `--fg` takes the drawn `#3D3D3D`
+> (`oklch(0.360 0.000 264)`); `--fg-muted` and `--fg-subtle` drop chroma to
+> 0.000 with their lightness held. §2.1.1 is extended to the bottom of the light
+> ramp to cover it. (b) §2.6 gains **one** exception: the guided-flow question
+> sets flat. Per §8 both are colour/type tweaks rather than token additions, so
+> the stamp is bumped and no ADR is opened.
+> Previously: 2026-08-19 - (a) brand and state **fills** return to v2's
 > lightness band and carry a **dark** label (`ADR-0010`): `--primary` is `#ED58A9`,
 > not the plum `#C62685`, and the *pressed* state is now the worst case for
 > contrast rather than the safest. (b) light-theme `--surface` lightened and
@@ -84,6 +91,33 @@ C 0.000. Three occurrences is not taste, it is a missing rule.
 pressed surfaces, dividers, hairlines, skeleton bases, disabled fills. It does
 **not** apply to the dark theme, where the ground is the blue-black family and
 the chroma is doing its job.
+
+### 2.1.1a The same rule at the other end: ink on paper (2026-08-24)
+
+**The light theme's ink carries chroma 0.000 too.** This section was written
+from three sightings at L ≥ 0.90 and scoped to them, and the scope was the
+mistake: the ink family had the identical defect and nothing was measuring it.
+
+| | sRGB | R−B | verdict |
+| --- | --- | --- | --- |
+| `--fg` (was) | #1d232e | −17 | slate |
+| `--fg-muted` (was) | #5d636f | **−18** | slate, worse than the heading above it |
+| `--fg-subtle` (was) | #696f7a | −17 | slate |
+
+The threshold is the same one the table above sets (−5 and beyond is a bug), so
+these were three to four times over it. A page of text at −17 does not read as
+black that happens to be cool; it reads as the word this section already uses.
+
+**Neutralising the two secondary inks is free**, which is what settles it: at
+this chroma the change moves contrast by nothing (6.00:1 and 5.06:1 on paper,
+identical to three figures before and after). The cast was buying no contrast
+and costing neutrality on every screen. `--fg` also moved lightness, 0.255 →
+0.360, but that is a separate, deliberate softening from a supplied design and
+not part of this rule.
+
+**They move as a family.** A neutral heading over slate body copy is worse than
+either ramp held consistently. `design-tokens.test.ts` pins all three, and the
+dark ramp stays excluded for the reason given directly above.
 
 **What it does not govern (ADR-0013, 2026-08-20)**: an interaction surface that
 carries the brand *on purpose*. `--hover-overlay` (brand hue at 7%) and
@@ -185,6 +219,15 @@ Canonical values live in **§3.2** — that is the single definition. (This sect
 ### 2.6 Typography
 
 - **Display**: `Sora` — hero 64/1.05 tracking `-0.025em`, h1 40/1.1 `-0.02em`, h2 32/1.15 `-0.015em`. **Tight tracking on display is non-negotiable** — it's the single biggest "premium" signal.
+  - **One exception, 2026-08-24: the guided-flow question.** `<StepHeading>` —
+    the single question at the top of a setup screen — sets **44 / 1.0 /
+    tracking `0`**, on the owner's call from a supplied design. It is the only
+    display role in the product that sets flat. What makes it a different role
+    from the rest of this line: it is a question asked of one person rather
+    than a title over content, and it is the only display type that routinely
+    wraps to two lines inside an 80% column on a 360px phone. Nothing else
+    inherits this. Widening it is a new decision recorded here, never a copy of
+    the class.
 - **Body**: `Inter` — 16/1.55 default, 14/1.5 secondary, 12 uppercase `0.14em` for eyebrows (`<Eyebrow>`).
 - **Signature**: `Chic Budapest` — the player's own name signed across a card
   that has no verified record yet, and nothing else (`ADR-0016`). A licensed

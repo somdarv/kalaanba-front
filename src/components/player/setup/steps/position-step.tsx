@@ -20,7 +20,7 @@ export function PositionStep({ wizard, meta }: StepProps) {
 
   return (
     <>
-      <StepHeading lead="Step 4 of 5" note="Pick the one spot you play most.">
+      <StepHeading note="Pick the one spot you play most.">
         Where do you play?
       </StepHeading>
 

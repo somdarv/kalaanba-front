@@ -22,11 +22,19 @@ import { pressableBase } from "./pressable";
  * The recipes live in globals.css as `.elev-*` so non-Card surfaces
  * (sheets, popovers) compose the same thing instead of re-deriving it.
  *
- * A fourth tone, `soft`, is EXPERIMENTAL (WP-20260822-me-soft-cards) and is
- * composed only by `/me` while the shape is judged. It deletes the line and
- * lets the fill carry the card, which is the inverse of §4.3, so it needs an
- * ADR before any other surface reaches for it. The rationale and the light
- * theme's limitation are written out beside the recipe in globals.css.
+ * A fourth tone, `soft`, is EXPERIMENTAL (WP-20260822-me-soft-cards). It
+ * deletes the line and lets the fill carry the card, which is the inverse of
+ * §4.3, so it needs an ADR before any surface outside the experiment reaches
+ * for it. The rationale and the light theme's limitation are written out
+ * beside the recipe in globals.css.
+ *
+ * A fifth, `spotlight`, is the counter-experiment (WP-20260823-me-spotlight)
+ * and is what `/me` composes now. It is `raised` with the shadow stepped to
+ * --shadow-md, which is what lets a white card read as an object sitting ON a
+ * washed ground rather than a panel painted onto it. That is the whole trick
+ * of the Player of the Matchweek panel on `/legacy/landing`, and it only
+ * works paired with `.kx-ground-spotlight` underneath. Same gate as `soft`:
+ * an ADR before it travels (§8).
  *
  * History: v2 declared `flat | raised` and resolved BOTH to one string
  * (`bg-surface shadow-md`) — the prop was a no-op. It also dropped the
@@ -37,7 +45,7 @@ import { pressableBase } from "./pressable";
  * migration made the steps uniform, so the tiers are now expressible.
  */
 
-export type CardTone = "flat" | "raised" | "floating" | "soft";
+export type CardTone = "flat" | "raised" | "floating" | "soft" | "spotlight";
 export type CardSize = "md" | "lg";
 
 const TONES: Record<CardTone, string> = {
@@ -45,6 +53,7 @@ const TONES: Record<CardTone, string> = {
   raised: "elev-raised",
   floating: "elev-floating",
   soft: "elev-soft",
+  spotlight: "elev-spotlight",
 };
 
 const SIZES: Record<CardSize, string> = {

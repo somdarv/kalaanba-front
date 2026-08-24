@@ -1,6 +1,6 @@
 "use client";
 
-import { Progress } from "@/components/ui";
+import { Eyebrow } from "@/components/ui";
 import {
   CARD_STAT_KEYS,
   statLabelFor,
@@ -11,6 +11,7 @@ import {
   type VerifiedRecord,
 } from "@/lib/api/player";
 
+import { MeMeter } from "./me-meter";
 import { MeSection } from "./me-section";
 
 /**
@@ -60,13 +61,18 @@ export function CardConfidenceBlock({
 }: CardConfidenceBlockProps) {
   const { confirmed_matches, matches_to_next_tier } = confidence;
 
-  const toNext = matches_to_next_tier ?? null;
-  const hasNext = toNext !== null && toNext > 0;
+  // Narrowed to a positive number or nothing in one place, so the branch below
+  // can render it without a second null check the compiler cannot follow.
+  const toNext =
+    matches_to_next_tier != null && matches_to_next_tier > 0
+      ? matches_to_next_tier
+      : null;
 
   // Presentation only. The denominator is "matches in this step of the ladder",
   // which the server has already reduced to a remainder — this turns two given
   // numbers into a bar, it does not compute a tier.
-  const stepTotal = hasNext ? confirmed_matches + toNext : confirmed_matches;
+  const stepTotal =
+    toNext !== null ? confirmed_matches + toNext : confirmed_matches;
   const percent =
     stepTotal > 0 ? Math.round((confirmed_matches / stepTotal) * 100) : 0;
 
@@ -91,27 +97,34 @@ export function CardConfidenceBlock({
       }
     >
       {tracked.length > 0 ? (
-        <ul className="flex flex-wrap gap-x-2 gap-y-1.5">
+        <ul className="flex flex-wrap gap-x-2 gap-y-2">
           {tracked.map((stat) => (
             <li
               key={stat.key}
-              className="text-fg-muted rounded-pill bg-surface border-border border px-2.5 py-1 text-xs"
+              className="rounded-pill bg-surface border-border border px-3 py-2"
             >
-              {stat.label}
+              {/* Tracked uppercase, the way the reference panel writes every
+                  counter label it carries. At sentence case and 12px these
+                  read as four loose words; as micro-labels they read as the
+                  columns of a record that has not started yet. */}
+              <Eyebrow tone="muted">{stat.label}</Eyebrow>
             </li>
           ))}
         </ul>
       ) : null}
 
-      {hasNext ? (
-        <div className={tracked.length > 0 ? "mt-4 flex flex-col gap-1.5" : "flex flex-col gap-1.5"}>
-          <Progress
-            value={percent}
-            aria-label={`Progress to the next card level, ${percent} percent`}
+      {toNext !== null ? (
+        <div className={tracked.length > 0 ? "mt-4" : undefined}>
+          {/* The reading is the count, never the percentage. On a card with
+              nothing confirmed yet the percentage is 0, and a 0 at any size on
+              this surface is the §13 error one level down. "3 to go" states
+              the same step forward and cannot read as a verdict. */}
+          <MeMeter
+            label="Next level"
+            value={`${toNext} to go`}
+            percent={percent}
+            srLabel={`Progress to the next card level, ${percent} percent`}
           />
-          <p className="text-fg-subtle text-xs">
-            {toNext} more to reach the next level.
-          </p>
         </div>
       ) : null}
     </MeSection>

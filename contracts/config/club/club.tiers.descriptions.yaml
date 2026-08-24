@@ -2,7 +2,7 @@ key: club.tiers.descriptions
 engine: club
 scope: platform
 value_type: json
-default: '{"amateur":"Friends, a community side, a school or work team.","professional":"A registered club or academy. We check before it goes live."}'
+default: '{"amateur":"Friends, a community, a school or work team.","professional":"A registered club or academy. We check before it goes live."}'
 approval_level: low
 description: |
   One line under each tier option, telling the person what picking it means.

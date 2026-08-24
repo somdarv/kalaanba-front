@@ -36,10 +36,7 @@ export function StageNameStep({ wizard }: StepProps) {
 
   return (
     <>
-      <StepHeading
-        lead="Step 2 of 5"
-        note="This name shows on your card, in lineups, and when you score."
-      >
+      <StepHeading note="This name shows on your card, in lineups, and when you score.">
         What do they call you on the pitch?
       </StepHeading>
 

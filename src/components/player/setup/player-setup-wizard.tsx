@@ -103,6 +103,7 @@ export function PlayerSetupWizard({
         stepCount={wizard.stepCount}
         stepKey={wizard.step}
         direction={wizard.direction}
+        busy={wizard.isSubmitting}
         onBack={wizard.isFirstStep ? onExit : wizard.goBack}
         backLabel={wizard.isFirstStep ? "Leave setup" : "Previous step"}
         footer={

@@ -6,12 +6,12 @@ import { CaretLeft } from "@phosphor-icons/react";
 import {
   IconButton,
   KeyboardFooter,
-  Progress,
   flowColumn,
   flowGutter,
 } from "@/components/ui";
 
 import { StepTransition } from "./step-transition";
+import { WizardStepper } from "./wizard-stepper";
 
 /**
  * Chrome for a guided flow: a back affordance, a title, a progress line, the
@@ -32,6 +32,18 @@ import { StepTransition } from "./step-transition";
  * rather than tucked under it. One question per screen only reads as one
  * question if the question has room around it.
  *
+ * Progress is `<WizardStepper>` and it sits at the TOP OF THE COLUMN, not in
+ * the bar (WP-20260824-setup-surface). The hairline `<Progress>` it replaces
+ * was pinned under the sticky header, full-bleed, where it read as a loading
+ * indicator for the page rather than as a position in a flow. Beads want to
+ * line up with the question they belong to, so they take the column's own left
+ * edge and scroll with it. The bar keeps the back control and the flow's name,
+ * which are the two things that genuinely have to stay reachable.
+ *
+ * The ground texture comes from `<body>` (`.kx-ground-pattern`), so this shell
+ * paints no background of its own — a `bg-bg` here only repeated the body
+ * colour and covered the layer up.
+ *
  * Presentational only — it holds no wizard state.
  */
 
@@ -50,6 +62,15 @@ export type WizardShellProps = {
   children: ReactNode;
   /** The CTA row. Exactly one primary action (§4.3). */
   footer: ReactNode;
+  /**
+   * What the stepper's pill says. Defaults to "Step 3 of 7".
+   *
+   * A flow with named steps passes its own word; one that has not settled on
+   * names gets the count, which is what every step used to print for itself.
+   */
+  stepLabel?: string;
+  /** Spinner in the pill: this step is working. Usually `isSubmitting`. */
+  busy?: boolean;
 };
 
 export function WizardShell({
@@ -62,9 +83,11 @@ export function WizardShell({
   backLabel,
   children,
   footer,
+  stepLabel,
+  busy,
 }: WizardShellProps) {
   return (
-    <div className="bg-bg flex min-h-dvh flex-col">
+    <div className="flex min-h-dvh flex-col">
       <header className="bg-bg/95 sticky top-0 z-20 backdrop-blur-md">
         <div className="relative flex min-h-14 items-center justify-center px-2">
           <IconButton
@@ -79,19 +102,19 @@ export function WizardShell({
             {title}
           </p>
         </div>
-        <Progress
-          size="sm"
-          value={stepIndex + 1}
-          max={stepCount}
-          className="rounded-none bg-transparent"
-          aria-label={`Step ${stepIndex + 1} of ${stepCount}`}
-        />
       </header>
 
       <main
-        className={`flex-1 overscroll-contain ${flowGutter} pt-12 pb-6 sm:pt-14`}
+        className={`flex-1 overscroll-contain ${flowGutter} pt-10 pb-6 sm:pt-12`}
       >
         <div className={flowColumn}>
+          <WizardStepper
+            stepIndex={stepIndex}
+            stepCount={stepCount}
+            label={stepLabel}
+            busy={busy}
+            className="mb-9 sm:mb-10"
+          />
           <StepTransition stepKey={stepKey} direction={direction}>
             {children}
           </StepTransition>

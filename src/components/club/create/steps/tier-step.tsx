@@ -5,7 +5,7 @@ import { StepHeading, StepStagger } from "@/components/ui/wizard";
 
 import { PROFESSIONAL_TIER } from "@/lib/api/club";
 
-import { stepLead, type ClubStepProps } from "./step-props";
+import { type ClubStepProps } from "./step-props";
 
 /**
  * Step 1 — what kind of club this is (ADR-0017 §2).
@@ -47,10 +47,7 @@ export function TierStep({ meta, wizard }: ClubStepProps) {
 
   return (
     <>
-      <StepHeading
-        lead={stepLead(wizard)}
-        note="This changes what we ask for next."
-      >
+      <StepHeading note="This changes what we ask for next.">
         What kind of club is this?
       </StepHeading>
 

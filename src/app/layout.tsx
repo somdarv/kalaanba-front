@@ -127,7 +127,7 @@ export default function RootLayout({
       <head>
         <ThemeScript />
       </head>
-      <body className="bg-bg text-fg min-h-dvh">
+      <body className="kx-ground-pattern bg-bg text-fg min-h-dvh">
         <ThemeProvider>
           <AppProviders>
             <ToastProvider>{children}</ToastProvider>

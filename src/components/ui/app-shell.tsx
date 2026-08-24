@@ -62,7 +62,12 @@ export function AppShell({
   return (
     <div
       className={cn(
-        "relative flex min-h-dvh w-full flex-col bg-bg text-fg",
+        // No `bg-bg`: <body> already paints the ground and carries the
+        // app-wide texture layer (`.kx-ground-pattern`). Repeating the colour
+        // here painted an opaque box over it. A route that wants a DIFFERENT
+        // ground still passes one through `className`, and composes
+        // `.kx-ground-pattern` alongside it to bring the texture back.
+        "relative flex min-h-dvh w-full flex-col text-fg",
         className,
       )}
     >

@@ -11,13 +11,11 @@ export type ClubStepProps = {
   wizard: UseClubCreateWizard;
 };
 
-/**
- * "Step 3 of 7", derived rather than written.
- *
- * Each step used to carry its own literal, which went stale the moment the
- * badge step was inserted between the name and the location and every heading
- * after it started lying by one.
+/*
+ * `stepLead()` lived here and is gone (WP-20260824-setup-surface). It existed
+ * because each step carried its own "Step 3 of 7" literal and they went stale
+ * the moment the badge step was inserted; deriving it fixed the lying, but it
+ * still printed the count above every question. `<WizardStepper>` in the shell
+ * now carries it once, for both flows, so the steps say nothing about where
+ * they sit in the order.
  */
-export function stepLead(wizard: UseClubCreateWizard): string {
-  return `Step ${wizard.stepIndex + 1} of ${wizard.stepCount}`;
-}

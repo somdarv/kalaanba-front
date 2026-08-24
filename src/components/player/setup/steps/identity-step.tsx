@@ -22,9 +22,7 @@ export function IdentityStep({ wizard }: StepProps) {
 
   return (
     <>
-      <StepHeading lead="Step 1 of 5">
-        First, what&apos;s your name?
-      </StepHeading>
+      <StepHeading>First, what&apos;s your name?</StepHeading>
 
       <StepStagger index={1}>
         <div className="flex flex-col gap-4">

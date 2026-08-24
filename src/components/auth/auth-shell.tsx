@@ -73,7 +73,11 @@ export function AuthShell({ hero, children, className }: AuthShellProps) {
         // and the art fills what is left, so a page scrollbar means something
         // has overflowed, never that there is more to read. Anything that does
         // not fit scrolls INSIDE the sheet instead (see the form half below).
-        "relative flex h-dvh flex-col overflow-hidden bg-bg lg:bg-surface",
+        // `kx-ground-pattern` because this shell paints a ground of its own
+        // (`lg:bg-surface`), which occludes the app-wide layer on <body>. The
+        // pseudo-element paints above this element's own background, so the
+        // texture returns here without ever being drawn twice.
+        "kx-ground-pattern relative flex h-dvh flex-col overflow-hidden bg-bg lg:bg-surface",
         "lg:items-center lg:justify-center lg:p-6 2xl:p-10",
         className,
       )}
