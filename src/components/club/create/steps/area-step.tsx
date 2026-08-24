@@ -64,11 +64,21 @@ export function AreaStep({ wizard }: ClubStepProps) {
           </div>
         ) : (
           <div className="flex flex-col gap-3">
+            {/* NOT disabled while the areas load, and the placeholder does not
+                change to say so.
+
+                The list is warmed the moment a hub is picked a step earlier
+                (`useWarmZoneCaches`), so by the time anyone reaches this it is
+                usually already here. When it is not, a control locked shut
+                behind "Loading areas" makes the person wait and watch; one
+                that opens and fills in lets them spend the same second
+                reading the question. The sheet says "Loading" if it opens
+                before the list lands. */}
             <Select
               label="Area"
-              placeholder={areas.isLoading ? "Loading areas" : "Find your area"}
+              placeholder="Find your area"
               searchable
-              disabled={areas.isLoading}
+              loading={areas.isLoading}
               options={options}
               value={current || null}
               onChange={(next) =>
@@ -78,12 +88,22 @@ export function AreaStep({ wizard }: ClubStepProps) {
               hint="Your locality, suburb, or quarter."
             />
 
+            {/* The question is a statement and only the ANSWER is the
+                control, so only the answer carries the brand. The whole line
+                in pink read as one long link and gave no clue where to press.
+
+                `--primary-ink`, not `--primary`: the fill measures 3.19:1 on
+                paper and fails AA at 14px. `-ink` is the token tuned to be
+                read (§2.1). */}
             <button
               type="button"
               onClick={() => setSuggestOpen(true)}
-              className="text-primary self-start text-left text-sm font-medium underline-offset-2 hover:underline"
+              className="text-fg-muted mt-3 self-start text-left text-sm"
             >
-              Can&rsquo;t find your area? Suggest it
+              Can&rsquo;t find your area?{" "}
+              <span className="text-primary-ink font-semibold underline underline-offset-2">
+                Suggest it
+              </span>
             </button>
           </div>
         )}

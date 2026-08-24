@@ -8,6 +8,7 @@ import { z } from "zod";
 import { ApiError } from "@/lib/api/envelope";
 import type { Club, ClubMeta } from "@/lib/api/club";
 import { useCreateClub, useUploadClubCrest } from "@/lib/api/hooks/use-clubs";
+import { useWarmZoneCaches } from "@/lib/api/hooks/use-zone";
 
 /**
  * State machine behind the club-creation flow (WP-20260823-club-creation).
@@ -222,6 +223,17 @@ export function useClubCreateWizard({
   const [direction, setDirection] = useState<1 | -1>(1);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [club, setClub] = useState<Club | null>(null);
+  /**
+   * Covers the WHOLE submit, not one mutation of it.
+   *
+   * This was `create.isPending`, which goes false the moment the club row
+   * comes back — while the badge upload is still running. The CTA stopped
+   * spinning, the screen did not change, and the flow sat dead for as long as
+   * the image took on a mobile connection. A control that stops working and
+   * leaves the page still is the shape of something broken, which is the one
+   * impression this screen cannot give: the club HAS been created by then.
+   */
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [crest, setCrest] = useState<Blob | null>(null);
   const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -296,6 +308,34 @@ export function useClubCreateWizard({
   // each render, which opts the whole hook out of the React Compiler.
   const tierKey = useWatch({ control: form.control, name: "tier" });
 
+  /**
+   * Zone reads start before the screens that need them.
+   *
+   * Steps 5 and 6 ask for a hub and then an area, and both are network reads
+   * on a connection these players pay for. Waiting until each step MOUNTS to
+   * begin is what put a spinner in front of a question the person was ready to
+   * answer.
+   *
+   * Hubs start with the flow: they depend on nothing, and there are five steps
+   * between here and the picker. Areas cannot start that early because they
+   * are listed per hub, so they start the instant a hub is chosen, which still
+   * buys a whole step of head start.
+   *
+   * Both are `prefetchQuery`, so a failed warm-up is silent and the step still
+   * owns its own loading and error states. `staleTime` means this costs one
+   * request per hub no matter how often the effect runs.
+   */
+  const { warmHubs, warmAreas } = useWarmZoneCaches();
+  const hubId = useWatch({ control: form.control, name: "city_hub_id" });
+
+  useEffect(() => {
+    warmHubs();
+  }, [warmHubs]);
+
+  useEffect(() => {
+    warmAreas(hubId ?? "");
+  }, [hubId, warmAreas]);
+
   const typesForTier = useMemo(
     () => meta.types.filter((type) => type.tier === tierKey),
     [meta.types, tierKey],
@@ -308,6 +348,7 @@ export function useClubCreateWizard({
 
   const submit = useCallback(async () => {
     setSubmitError(null);
+    setIsSubmitting(true);
 
     try {
       const created = await create.mutateAsync(form.getValues());
@@ -350,6 +391,10 @@ export function useClubCreateWizard({
       }
 
       setSubmitError("We could not create the club. Try again.");
+    } finally {
+      // On success this batches with `setClub`, so the outcome screen replaces
+      // a still-spinning button rather than a still one.
+      setIsSubmitting(false);
     }
   }, [create, crest, form, uploadCrest]);
 
@@ -413,7 +458,7 @@ export function useClubCreateWizard({
     direction,
     isFirstStep: stepIndex === 0,
     isLastStep: step === "review",
-    isSubmitting: create.isPending,
+    isSubmitting,
     submitError,
     club,
     typesForTier,

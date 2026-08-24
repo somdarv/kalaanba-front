@@ -55,22 +55,39 @@ export function CrestStep({ wizard }: ClubStepProps) {
       </StepHeading>
 
       <StepStagger index={1}>
-        <div className="flex flex-col items-center gap-5">
+        {/* One column the width of the badge, aligned to the question above it
+            rather than centred, with the control sitting directly under the
+            thing it changes. Centred, the badge and its button read as two
+            loose objects in the middle of a tall empty step; stacked and
+            matched in width they read as one control.
+
+            The width is stated here and the crest's `2xl` matches it, so the
+            button can be `fullWidth` and land on the badge's exact edges. */}
+        <div className="flex w-44 flex-col gap-3 sm:w-56">
           <button
             type="button"
             onClick={() => setSheetOpen(true)}
             aria-label={crest ? "Change the club badge" : "Add a club badge"}
-            className="focus-visible:outline-focus-ring rounded-full outline-none focus-visible:outline-2 focus-visible:outline-offset-4"
+            // `flex` so the button hugs the crest: an inline-flex child leaves
+            // a few pixels of line-box under it, which showed as the ring and
+            // the plate disagreeing by a hair.
+            //
+            // Focus ring traces the crest's own shape. It was `rounded-full`
+            // against a rounded-square plate, so the ring never matched the
+            // thing it was marking.
+            className="focus-visible:outline-focus-ring rounded-card flex w-full outline-none focus-visible:outline-2 focus-visible:outline-offset-4"
           >
             {isPreparing ? (
-              <span className="bg-surface-2 grid size-28 place-items-center rounded-full">
+              // Same box as the crest it stands in for, so confirming a crop
+              // does not make the page jump.
+              <span className="bg-surface-2 rounded-card grid aspect-square w-full place-items-center">
                 <Spinner label="Preparing your badge" />
               </span>
             ) : (
               <Crest
                 name={wizard.form.getValues("name") || "Club"}
                 src={previewUrl}
-                size="xl"
+                size="2xl"
               />
             )}
           </button>
@@ -78,6 +95,7 @@ export function CrestStep({ wizard }: ClubStepProps) {
           <Button
             intent="secondary"
             size="md"
+            fullWidth
             leadingIcon={<Camera size={18} weight="bold" />}
             onClick={() => setSheetOpen(true)}
           >

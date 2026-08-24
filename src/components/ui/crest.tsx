@@ -18,14 +18,30 @@ import Image from "next/image";
 import type { HTMLAttributes } from "react";
 import { cn } from "@/lib/cn";
 
-export type CrestSize = "xs" | "sm" | "md" | "lg" | "xl";
+export type CrestSize = "xs" | "sm" | "md" | "lg" | "xl" | "2xl";
 
+/**
+ * `2xl` is the crest as the SUBJECT of a screen rather than an adornment on a
+ * row — the club badge step, where it is the only object on the page and every
+ * other size left it floating in a column of empty space.
+ *
+ * It is the one size that is RESPONSIVE, because it is the one size large
+ * enough for the viewport to matter: 176px on a phone, 224px from `sm` up. The
+ * intrinsic number below is the LARGER of the two, so the file is never
+ * upscaled on the screens that show it biggest and is merely scaled down on a
+ * phone.
+ *
+ * These numbers drive `next/image`'s intrinsic width, which is why a call site
+ * cannot just pass a bigger class: the file would render at the mapped size
+ * and get upscaled by the browser.
+ */
 const SIZE_PX: Record<CrestSize, number> = {
   xs: 20,
   sm: 28,
   md: 36,
   lg: 48,
   xl: 72,
+  "2xl": 224,
 };
 
 const SIZE_CLASS: Record<CrestSize, string> = {
@@ -34,6 +50,11 @@ const SIZE_CLASS: Record<CrestSize, string> = {
   md: "size-9 text-xs rounded-[0.5rem]",
   lg: "size-12 text-sm rounded-row",
   xl: "size-18 text-lg rounded-control",
+  // Corner steps up with the plate: at 144px `--radius-control` reads as a
+  // barely-softened square. `--radius-card` is the next token up (§2.3) and
+  // stops just short of proportional, which is the firmer edge the player card
+  // settled on for the same reason (JOURNAL 2026-08-21).
+  "2xl": "size-44 sm:size-56 text-4xl sm:text-5xl rounded-card",
 };
 
 /** Club initials: up to 3 characters, so "Real Tamale United" reads RTU. */

@@ -10,10 +10,14 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from "react";
-import { CaretDown, MagnifyingGlass } from "@phosphor-icons/react";
+import { CaretDown } from "@phosphor-icons/react";
 import { Popover } from "./popover";
+import { BottomSheet } from "./bottom-sheet";
+import { SelectOptions, type SelectOption } from "./select-options";
 import { cn } from "@/lib/cn";
 import { controlHeight } from "./control-scale";
+import { useIsInsideSheet } from "./sheet-context";
+import { DESKTOP_QUERY, useMediaQuery } from "@/hooks/use-media-query";
 
 /**
  * Select — custom dropdown with rich option rendering.
@@ -26,15 +30,22 @@ import { controlHeight } from "./control-scale";
  * Search is opt-in via `searchable`. Keyboard: ArrowUp/Down to move,
  * Enter to select, Escape to close.
  *
+ * **On a phone the options open as a `<BottomSheet>`, not a popover**
+ * (WP-20260824-setup-surface, owner's request). A popover anchored to a
+ * control halfway up a 360px screen opens a panel that the thumb cannot
+ * comfortably reach and the keyboard can cover; the bottom of the screen is
+ * where a phone puts a list of choices, which is why `<BottomSheet>` is
+ * already called "the primary modal surface on mobile" in DESIGN_LANGUAGE
+ * §4.1. The popover stays on pointer devices, where an anchored panel is
+ * exactly right and a sheet would be absurd.
+ *
+ * The switch is a real media query rather than a CSS one because the two are
+ * different COMPONENTS, not two styles of one. `useMediaQuery` answers `false`
+ * before hydration, so a phone never gets a frame of the desktop form.
+ *
  * COMPONENT_INVENTORY.md §2.07 Select / dropdown.
  */
-export type SelectOption<T extends string = string> = {
-  value: T;
-  label: string;
-  description?: string;
-  leading?: ReactNode;
-  disabled?: boolean;
-};
+export type { SelectOption };
 
 export type SelectProps<T extends string> = {
   options: SelectOption<T>[];
@@ -49,6 +60,15 @@ export type SelectProps<T extends string> = {
   leftIcon?: ReactNode;
   /** Per-option rendering override (rare). */
   renderOption?: (option: SelectOption<T>) => ReactNode;
+  /**
+   * Options are still loading.
+   *
+   * Deliberately NOT the same as `disabled`. A control locked shut while a
+   * request runs tells the person to wait; one that opens and fills in lets
+   * them spend the wait reading the question instead. The only thing this
+   * changes is what the empty list says.
+   */
+  loading?: boolean;
   disabled?: boolean;
   fluid?: boolean;
   className?: string;
@@ -69,6 +89,7 @@ function SelectInner<T extends string>(
     searchable,
     leftIcon,
     renderOption,
+    loading,
     disabled,
     fluid = true,
     className,
@@ -88,6 +109,11 @@ function SelectInner<T extends string>(
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const isDesktop = useMediaQuery(DESKTOP_QUERY);
+  // A sheet inside a sheet is two backdrops and two drag surfaces. When this
+  // Select is already in one, it keeps its popover on every screen size.
+  const isInsideSheet = useIsInsideSheet();
+  const usePopover = isDesktop || isInsideSheet;
 
   const filtered = useMemo(() => {
     if (!searchable || !query.trim()) return options;
@@ -128,6 +154,24 @@ function SelectInner<T extends string>(
       if (opt) commit(opt);
     }
   };
+
+  const renderList = (variant: "popover" | "sheet") => (
+    <SelectOptions
+      listId={listId}
+      options={filtered}
+      value={value}
+      activeIndex={activeIndex}
+      onActiveIndexChange={setActiveIndex}
+      onCommit={commit}
+      onKeyDown={onKey}
+      searchable={searchable}
+      query={query}
+      onQueryChange={setQuery}
+      renderOption={renderOption}
+      loading={loading}
+      variant={variant}
+    />
+  );
 
   return (
     <div className={cn("block", fluid ? "w-full" : undefined, className)}>
@@ -208,79 +252,28 @@ function SelectInner<T extends string>(
           />
         </button>
 
-        <Popover open={open} onClose={() => setOpen(false)} anchorRef={triggerRef}>
-          <div onKeyDown={onKey} className="p-2">
-            {searchable ? (
-              <div className="mb-2 flex h-10 items-center gap-2 rounded-control bg-surface-elev px-4">
-                <MagnifyingGlass size={16} weight="bold" className="text-fg-muted" />
-                <input
-                  autoFocus
-                  type="text"
-                  value={query}
-                  onChange={(e) => {
-                    setQuery(e.target.value);
-                    setActiveIndex(0);
-                  }}
-                  placeholder="Search…"
-                  aria-label="Search options"
-                  className="w-full bg-transparent text-input text-fg outline-none placeholder:text-fg-subtle"
-                />
-              </div>
-            ) : null}
-            <ul
-              id={listId}
-              role="listbox"
-              className="max-h-72 overflow-y-auto py-1"
-            >
-              {filtered.length === 0 ? (
-                <li className="px-3 py-3 text-sm text-fg-muted">No results.</li>
-              ) : (
-                filtered.map((option, index) => {
-                  const isSelected = option.value === value;
-                  const isActive = index === activeIndex;
-                  return (
-                    <li
-                      key={option.value}
-                      role="option"
-                      aria-selected={isSelected}
-                      aria-disabled={option.disabled || undefined}
-                      onMouseEnter={() => setActiveIndex(index)}
-                      onClick={() => commit(option)}
-                      className={cn(
-                        "flex cursor-pointer items-center gap-3 rounded-control px-3 py-2.5 text-sm",
-                        isActive && "bg-(--hover-overlay)",
-                        isSelected && "text-primary-ink",
-                        option.disabled && "cursor-not-allowed opacity-50",
-                      )}
-                    >
-                      {renderOption ? (
-                        renderOption(option)
-                      ) : (
-                        <>
-                          {option.leading ? (
-                            <span className="flex size-6 shrink-0 items-center justify-center">
-                              {option.leading}
-                            </span>
-                          ) : null}
-                          <span className="min-w-0 flex-1">
-                            <span className="block truncate font-medium text-fg">
-                              {option.label}
-                            </span>
-                            {option.description ? (
-                              <span className="block truncate text-xs text-fg-muted">
-                                {option.description}
-                              </span>
-                            ) : null}
-                          </span>
-                        </>
-                      )}
-                    </li>
-                  );
-                })
-              )}
-            </ul>
-          </div>
-        </Popover>
+        {/* Same list, two frames. The sheet gets the phone, the popover gets
+            the pointer. See the note at the top of the file. */}
+        {usePopover ? (
+          <Popover
+            open={open}
+            onClose={() => setOpen(false)}
+            anchorRef={triggerRef}
+          >
+            {renderList("popover")}
+          </Popover>
+        ) : (
+          <BottomSheet
+            open={open}
+            onOpenChange={setOpen}
+            // A sheet is a titled surface; a popover is not. The field's own
+            // label is the honest title, and the placeholder ("Choose a hub")
+            // is the fallback for a Select that has none.
+            title={label ?? ariaLabel ?? placeholder}
+          >
+            {renderList("sheet")}
+          </BottomSheet>
+        )}
       </div>
 
       {error || hint ? (

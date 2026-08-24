@@ -28,8 +28,10 @@ import { pressableBase } from "./pressable";
  * for it. The rationale and the light theme's limitation are written out
  * beside the recipe in globals.css.
  *
- * A fifth, `spotlight`, is the counter-experiment (WP-20260823-me-spotlight)
- * and is what `/me` composes now. It is `raised` with the shadow stepped to
+ * A fifth, `spotlight`, is the counter-experiment (WP-20260823-me-spotlight).
+ * `/me` composes it, and so does the club flow's review card, which the owner
+ * asked for by name ("the card style from the /me surface"). Two surfaces is
+ * still an experiment, not a default: it is `raised` with the shadow stepped to
  * --shadow-md, which is what lets a white card read as an object sitting ON a
  * washed ground rather than a panel painted onto it. That is the whole trick
  * of the Player of the Matchweek panel on `/legacy/landing`, and it only

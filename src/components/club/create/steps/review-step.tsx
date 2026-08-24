@@ -1,6 +1,6 @@
 "use client";
 
-import { Crest, Divider } from "@/components/ui";
+import { Card, Crest, Divider, Eyebrow } from "@/components/ui";
 import { StepHeading, StepStagger } from "@/components/ui/wizard";
 import { clubTypeLabel, PROFESSIONAL_TIER } from "@/lib/api/club";
 import { useObjectUrl } from "@/hooks/use-object-url";
@@ -19,6 +19,16 @@ import { type ClubStepProps } from "./step-props";
  * For an official claim this screen carries the one thing that must not be a
  * surprise: the club does not go live here. The CTA above it reads "Send for
  * checking" rather than "Create club" for the same reason.
+ *
+ * **`Card tone="spotlight"`, the recipe `/me` runs on** (owner's request,
+ * WP-20260824-setup-surface). This is the last thing seen before the club
+ * exists, and it is the one screen in the flow showing an OBJECT rather than
+ * asking a question — the same job the blocks on `/me` do. A hand-rolled
+ * `bg-surface … shadow-md` was approximating that recipe rather than composing
+ * it, which is what DESIGN_LANGUAGE §2.4 says not to do.
+ *
+ * Sizes come up with it: the badge is the thing being confirmed and at 48px it
+ * was an icon beside a name rather than the club's own mark.
  */
 export function ReviewStep({ meta, wizard }: ClubStepProps) {
   const values = wizard.form.getValues();
@@ -42,11 +52,11 @@ export function ReviewStep({ meta, wizard }: ClubStepProps) {
       <StepHeading>Check this over</StepHeading>
 
       <StepStagger index={1}>
-        <div className="rounded-card bg-surface flex flex-col gap-4 p-4 shadow-md">
-          <div className="flex items-center gap-3">
-            <Crest name={values.name} src={crestUrl} size="lg" />
+        <Card tone="spotlight" size="md">
+          <div className="flex items-center gap-4">
+            <Crest name={values.name} src={crestUrl} size="xl" />
             <div className="min-w-0">
-              <p className="font-display text-fg truncate text-lg font-bold tracking-tight">
+              <p className="font-display text-fg truncate text-xl font-extrabold tracking-tight">
                 {values.name}
               </p>
               <p className="text-fg-muted truncate text-sm">
@@ -55,14 +65,14 @@ export function ReviewStep({ meta, wizard }: ClubStepProps) {
             </div>
           </div>
 
-          <Divider />
-
-          <dl className="flex flex-col gap-2 text-sm">
+          <dl className="mt-5">
             <Row label="Kind" value={wizard.tier?.label ?? values.tier} />
+            <Divider />
             <Row label="City hub" value={hubName} />
+            <Divider />
             <Row label="Area" value={areaName} />
           </dl>
-        </div>
+        </Card>
 
         {isProfessional ? (
           <p className="text-fg-muted mt-4 text-sm">
@@ -75,11 +85,21 @@ export function ReviewStep({ meta, wizard }: ClubStepProps) {
   );
 }
 
+/**
+ * The same label/value shape `/me` uses: a tracked uppercase micro-label
+ * against a semibold value. Written out rather than imported from
+ * `components/me/`, because a club flow reaching into the player surface for a
+ * six-line row would be a feature depending on a feature
+ * (engineering-standards §3). Both compose `<Eyebrow>`, which is where the
+ * rule actually lives.
+ */
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-baseline justify-between gap-4">
-      <dt className="text-fg-muted">{label}</dt>
-      <dd className="text-fg min-w-0 truncate text-right font-medium">
+    <div className="flex items-baseline justify-between gap-4 py-3">
+      <Eyebrow as="dt" tone="muted" className="shrink-0">
+        {label}
+      </Eyebrow>
+      <dd className="text-fg min-w-0 truncate text-right text-sm font-semibold">
         {value}
       </dd>
     </div>

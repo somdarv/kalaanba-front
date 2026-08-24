@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { ToastProvider } from "@/components/ui";
+import { ANNOUNCEMENT_HOLD_MS } from "@/components/ui/wizard";
 import { ClubCreateWizard } from "./club-create-wizard";
 import { ApiError } from "@/lib/api/envelope";
 import * as clubApi from "@/lib/api/club";
@@ -256,8 +257,15 @@ describe("ClubCreateWizard", () => {
       area_id: AREA_ID,
     });
 
-    expect(await screen.findByText(/taha stars is live/i)).toBeInTheDocument();
-    expect(screen.getByText(/you own it/i)).toBeInTheDocument();
+    // The outcome opens on a "Club created" moment that holds for
+    // ANNOUNCEMENT_HOLD_MS before the club takes its place, so this has to
+    // outwait it (WP-20260824-setup-surface).
+    expect(
+      await screen.findByText(/taha stars is live/i, undefined, {
+        timeout: ANNOUNCEMENT_HOLD_MS + 2000,
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Active")).toBeInTheDocument();
   });
 
   it("sends a reserved name back to the name step with its own copy", async () => {
