@@ -3,7 +3,7 @@
 import { RadioGroup } from "@/components/ui";
 import { StepHeading, StepStagger } from "@/components/ui/wizard";
 
-import { stepLead, type ClubStepProps } from "./step-props";
+import { type ClubStepProps } from "./step-props";
 
 /**
  * Step 2 — what kind of team, within the tier already chosen (Club §3).
@@ -24,9 +24,7 @@ export function TypeStep({ wizard }: ClubStepProps) {
 
   return (
     <>
-      <StepHeading lead={stepLead(wizard)} note="Pick the closest one.">
-        What kind of team?
-      </StepHeading>
+      <StepHeading note="Pick the closest one.">What kind of team?</StepHeading>
 
       <StepStagger index={1}>
         <RadioGroup

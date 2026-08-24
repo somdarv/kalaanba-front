@@ -11,6 +11,8 @@
 export { WizardShell } from "./wizard-shell";
 export type { WizardShellProps } from "./wizard-shell";
 export { StepTransition, StepStagger, RevealBeat } from "./step-transition";
+export { WizardStepper } from "./wizard-stepper";
+export type { WizardStepperProps } from "./wizard-stepper";
 export { StepHeading } from "./step-heading";
 export type { StepHeadingProps } from "./step-heading";
 export { NumberTile, TextTile, ChoiceCard } from "./choice-controls";

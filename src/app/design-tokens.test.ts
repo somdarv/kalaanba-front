@@ -348,6 +348,23 @@ describe("design tokens — light theme ground", () => {
       contrastRatio(lightToken("--fg-muted"), lightToken("--bg")),
     ).toBeGreaterThanOrEqual(4.5);
   });
+
+  /**
+   * §2.1.1 extended to the bottom of the light ramp, 2026-08-24. The section
+   * measured the defect on near-white and wrote the rule for L >= 0.90; the
+   * ink family carried the same cast (--fg-muted was the worst of the three
+   * at R-B -18) and nothing measured it. This is that measure.
+   *
+   * The dark ramp is deliberately NOT covered: there the ground is the
+   * blue-black family and the chroma is doing its job, which is what the
+   * `C > 0` hue-lock assertion above pins.
+   */
+  it.each(["--fg", "--fg-muted", "--fg-subtle"] as const)(
+    "%s carries no chroma on paper (§2.1.1, the slate rule)",
+    (name) => {
+      expect(lightToken(name).C).toBe(0);
+    },
+  );
 });
 
 /**

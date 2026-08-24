@@ -6,7 +6,7 @@ import { clubTypeLabel, PROFESSIONAL_TIER } from "@/lib/api/club";
 import { useObjectUrl } from "@/hooks/use-object-url";
 import { useAreas, useHubs } from "@/lib/api/hooks/use-zone";
 
-import { stepLead, type ClubStepProps } from "./step-props";
+import { type ClubStepProps } from "./step-props";
 
 /**
  * Step 6 — read it back before writing it.
@@ -39,7 +39,7 @@ export function ReviewStep({ meta, wizard }: ClubStepProps) {
 
   return (
     <>
-      <StepHeading lead={stepLead(wizard)}>Check this over</StepHeading>
+      <StepHeading>Check this over</StepHeading>
 
       <StepStagger index={1}>
         <div className="rounded-card bg-surface flex flex-col gap-4 p-4 shadow-md">

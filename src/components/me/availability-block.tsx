@@ -86,10 +86,20 @@ export function AvailabilityBlock({ player, meta }: AvailabilityBlockProps) {
           </Button>
         }
       >
-        {/* `aria-live` so a screen reader hears the new value settle after the
+        {/* Display face, one step under the heading, the way the reference
+            panel writes the player's name under its headline
+            (WP-20260823-me-spotlight). This value is the whole point of the
+            block, and at 14px it sat below its own "Change" button.
+
+            `aria-live` so a screen reader hears the new value settle after the
             sheet closes, which is the only feedback the toast does not carry. */}
-        <p className="text-fg text-sm font-semibold" aria-live="polite">
-          {currentOption?.label ?? labelFor(meta.availability, current) ?? current}
+        <p
+          className="font-display text-fg text-base font-bold tracking-tight"
+          aria-live="polite"
+        >
+          {currentOption?.label ??
+            labelFor(meta.availability, current) ??
+            current}
         </p>
         {currentOption?.description ? (
           <p className="text-fg-muted mt-1 text-sm">

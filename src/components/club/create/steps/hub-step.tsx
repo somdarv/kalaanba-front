@@ -7,7 +7,7 @@ import { Select, Skeleton, type SelectOption } from "@/components/ui";
 import { StepHeading, StepStagger } from "@/components/ui/wizard";
 import { useHubs } from "@/lib/api/hooks/use-zone";
 
-import { stepLead, type ClubStepProps } from "./step-props";
+import { type ClubStepProps } from "./step-props";
 
 /**
  * Step 4 — the City Hub (Club §6, Zone §2/§5).
@@ -37,7 +37,7 @@ export function HubStep({ wizard }: ClubStepProps) {
 
   return (
     <>
-      <StepHeading lead={stepLead(wizard)} note="The club's football home.">
+      <StepHeading note="The club's football home.">
         Which city hub?
       </StepHeading>
 

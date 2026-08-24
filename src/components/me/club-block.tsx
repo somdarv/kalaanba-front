@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 
-import { ButtonLink, Crest, Divider, Skeleton } from "@/components/ui";
+import { ButtonLink, Crest, Divider, Eyebrow, Skeleton } from "@/components/ui";
 import { useClubTypeLabel, useMyClubs } from "@/lib/api/hooks/use-clubs";
 import { labelFor, type MyPlayer, type PlayerMeta } from "@/lib/api/player";
 
@@ -57,9 +57,14 @@ export function ClubBlock({ player, meta }: ClubBlockProps) {
   return (
     <MeSection
       title="Your club"
+      // A chip, not a sentence fragment. Beside a display-scale heading the
+      // status now reads the way the reference panel writes its own status
+      // chips: pilled, tracked, quiet (WP-20260823-me-spotlight).
       note={
-        <span className="text-fg-muted text-sm">
-          {labelFor(meta.market_statuses, player.market_status)}
+        <span className="rounded-pill bg-surface border-border border px-2.5 py-1.5">
+          <Eyebrow tone="muted">
+            {labelFor(meta.market_statuses, player.market_status)}
+          </Eyebrow>
         </span>
       }
     >
